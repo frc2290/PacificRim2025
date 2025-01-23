@@ -5,10 +5,10 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.FLYTLib.FLYTPeriodic;
+import frc.robot.FLYTLib.RobotSystem;
 import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.RollerRoll;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Roller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -24,6 +24,13 @@ public class RobotContainer {
 
   //robot roller motor.
   private final Roller m_roller = new Roller();
+  private final FLYTPeriodic m_flyt = new FLYTPeriodic(); //MAKE SURE THIS IS HERE
+  private final RobotSystem m_robotSystem = new RobotSystem(); //For MainRobot systems, gyro, pdh, etc.
+
+  //IMPORTNAT ALWAYS INCLUDE WHEN FLYTLIB IS USED
+
+    
+
 
   //xbox controller
   private final CommandXboxController m_driverController =

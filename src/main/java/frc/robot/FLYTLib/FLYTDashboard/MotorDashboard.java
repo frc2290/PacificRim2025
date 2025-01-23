@@ -8,10 +8,12 @@ import frc.robot.FLYTLib.FLYTMotorLib.SuperController;
 
 public class MotorDashboard extends SuperDashboard{
     
+    //Network tables for the controller configuration
     NetworkTable table;
     SuperController controller;
     private NetworkTableEntry kP, kI, kD, kFF;
     
+    //constructor, just needs motor controller object
     public MotorDashboard(SuperController m_controller){
         controller = m_controller;
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -19,12 +21,8 @@ public class MotorDashboard extends SuperDashboard{
     }
 
 
-    
-    private void update(){
-        motorState();
-    }
 
-    //works on printing motor states
+    //works on printing motor status
     private void motorState(){
         set("MotorID", controller.getMotorID());
         set("MotorVoltageComp", controller.getPos());
@@ -35,6 +33,7 @@ public class MotorDashboard extends SuperDashboard{
 
     }
 
+    //tunes the motor gains
     private void motorTune(){
         controller.pidTune(kP.getDouble(0), kI.getDouble(0), kD.getDouble(0), kFF.getDouble(0));
 
@@ -50,7 +49,7 @@ public class MotorDashboard extends SuperDashboard{
 
     @Override
     public void periodic() {
-        if(GlobalVar.debug) update();
+        if(GlobalVar.debug) motorState();
         if(GlobalVar.debug) motorTune();
     }
     
