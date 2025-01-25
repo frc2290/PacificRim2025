@@ -18,6 +18,10 @@ public class MotorDashboard extends SuperDashboard{
         controller = m_controller;
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         table = inst.getTable("Motor" + String.valueOf(controller.getMotorID()));
+        kP = table.getEntry("kP");
+        kI = table.getEntry("kI");
+        kD = table.getEntry("kD");
+        kFF = table.getEntry("kFF");
     }
 
 
@@ -25,18 +29,17 @@ public class MotorDashboard extends SuperDashboard{
     //works on printing motor status
     private void motorState(){
         set("MotorID", controller.getMotorID());
-        set("MotorVoltageComp", controller.getPos());
-        set("MotorCurrentLim", controller.getVel());
-        set("MotorTemp", controller.getVol());
+        set("MotorPosition", controller.getPos());
+        set("MotorVelocity", controller.getVel());
+        set("MotorVoltage", controller.getVol());
         set("MotorCurrent", controller.getCurrent());
-        set("MotorVoltage", controller.getTemp());
+        set("MotorTempreture", controller.getTemp());
 
     }
 
     //tunes the motor gains
     private void motorTune(){
         controller.pidTune(kP.getDouble(0), kI.getDouble(0), kD.getDouble(0), kFF.getDouble(0));
-
     }
 
 
@@ -51,6 +54,10 @@ public class MotorDashboard extends SuperDashboard{
     public void periodic() {
         if(GlobalVar.debug) motorState();
         if(GlobalVar.debug) motorTune();
+        // set("p", getP())
+        // if (get("p") != controller.getP()) {
+        //  changeP();
+        // }
     }
     
 

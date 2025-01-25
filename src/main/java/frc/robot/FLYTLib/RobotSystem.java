@@ -21,6 +21,7 @@ public class RobotSystem extends FLYTPeriodic{
     private PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);//set it up
     private PDHDashboard PDHDash = new PDHDashboard(PDH); //initialize the dashboard
 
+    
     //Network tables for the controller configuration
     NetworkTable table;
     private NetworkTableEntry kGyroOffest;
@@ -29,7 +30,6 @@ public class RobotSystem extends FLYTPeriodic{
     private double gyro_yawOffset = 0.0; //set gyro offset
 
     public RobotSystem(){
-        
             NetworkTableInstance inst = NetworkTableInstance.getDefault();
             table = inst.getTable("Gyro");
     

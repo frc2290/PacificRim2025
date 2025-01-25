@@ -78,10 +78,13 @@ public class SparkController extends SuperController{
         //setup sparkmax object reference
         sparkMax = new SparkMax(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
         config = new SparkMaxConfig();
+        encoderConfig = new EncoderConfig();
         motorID = m_id;
         //checks if brushless or not, since by defult brushless has encoder
         if(m_brushless){
-            relEncoder = sparkMax.getEncoder();
+            relEncoder = sparkMax.getEncoder(); 
+            e_encoderAvailable = true;
+
         }
 
         //something should be added here later
