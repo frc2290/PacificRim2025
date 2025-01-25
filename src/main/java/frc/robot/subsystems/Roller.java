@@ -14,7 +14,7 @@ public class Roller extends SubsystemBase {
 
     //Roller for Kitbot using sparkmax brushless motor controller
     public Roller() {
-        roller = new SparkController(RollerM.m_id, RollerM.m_brushless, RollerM.m_break_mode);
+        roller = new SparkController(RollerM.m_id, RollerM.m_brushless, RollerM.m_break_mode, true);
         roller.advanceControl(RollerM.m_voltage_compensation, RollerM.m_motor_current, 0, 0);
         roller.encocderCfg(100,0);
         dashboard = new MotorDashboard(roller);

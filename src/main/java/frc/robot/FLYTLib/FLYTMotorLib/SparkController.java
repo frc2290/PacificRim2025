@@ -74,10 +74,13 @@ public class SparkController extends SuperController{
      * @param m_brushless - motor type
      * @param m_break - motor idle mode
      */
-    public SparkController(int m_id, boolean m_brushless, boolean m_break){
+    public SparkController(int m_id, boolean m_brushless, boolean m_break, boolean invert){
         //setup sparkmax object reference
         sparkMax = new SparkMax(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
+        
         config = new SparkMaxConfig();
+        config.inverted(invert);
+        ControllerUpdate();
         encoderConfig = new EncoderConfig();
         motorID = m_id;
         //checks if brushless or not, since by defult brushless has encoder
@@ -100,10 +103,12 @@ public class SparkController extends SuperController{
      * @param m_break - motor idel mode
      * @param e_absalute - encoder type
      */
-    public SparkController(int m_id, boolean m_brushless, boolean m_break, boolean e_absalute){
+    public SparkController(int m_id, boolean m_brushless, boolean m_break, boolean invert, boolean e_absalute){
         //setup sparkmax object reference
         sparkMax = new SparkMax(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
         config = new SparkMaxConfig();
+        config.inverted(invert);
+        ControllerUpdate();
 
         //if motor is brushless and has connected absalute encoder
         if(m_brushless && e_absalute){
