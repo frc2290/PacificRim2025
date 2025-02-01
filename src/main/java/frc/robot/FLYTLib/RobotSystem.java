@@ -8,9 +8,10 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import frc.robot.FLYTLib.FLYTDashboard.PDHDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FLYTLib.FLYTDashboard.OldStuff.PDHDashboard;
 
-public class RobotSystem extends FLYTPeriodic{
+public class RobotSystem extends SubsystemBase{
 
 
 
@@ -32,7 +33,7 @@ public class RobotSystem extends FLYTPeriodic{
     public RobotSystem(){
             NetworkTableInstance inst = NetworkTableInstance.getDefault();
             table = inst.getTable("Gyro");
-    
+            kGyroOffest = table.getEntry("GyroOffset");
             //set up the gyro
             gyro.reset();
 

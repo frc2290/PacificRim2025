@@ -1,7 +1,6 @@
-package frc.robot.FLYTLib.FLYTDashboard;
+package frc.robot.FLYTLib.FLYTDashboard.OldStuff;
 
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import frc.robot.FLYTLib.GlobalVar;

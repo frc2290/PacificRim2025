@@ -1,20 +1,20 @@
-package frc.robot.FLYTLib.FLYTDashboard;
+package frc.robot.FLYTLib.FLYTDashboard.OldStuff;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.FLYTLib.GlobalVar;
-import frc.robot.FLYTLib.FLYTMotorLib.SuperController;
+import frc.robot.FLYTLib.FLYTMotorLib.FlytMotorController;
 
-public class MotorDashboard extends SuperDashboard{
+public class MotorDashboard extends SuperDashboard {
     
     //Network tables for the controller configuration
     NetworkTable table;
-    SuperController controller;
-    private NetworkTableEntry kP, kI, kD, kFF;
+    FlytMotorController controller;
+    private NetworkTableEntry kP, kI, kD, kFF, set,cType;
     
     //constructor, just needs motor controller object
-    public MotorDashboard(SuperController m_controller){
+    public MotorDashboard(FlytMotorController m_controller){
         controller = m_controller;
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         table = inst.getTable("Motor" + String.valueOf(controller.getMotorID()));
@@ -22,8 +22,19 @@ public class MotorDashboard extends SuperDashboard{
         kI = table.getEntry("kI");
         kD = table.getEntry("kD");
         kFF = table.getEntry("kFF");
+        set = table.getEntry("SetPoint");
+        cType = table.getEntry("ControlType");
+        kP.setDouble(0);
+        kI.setDouble(0);
+        kD.setDouble(0);
+        kFF.setDouble(0);
+        set.setDouble(0);
+        controller.pidSetup(-1, 1, 0, 0, true,0);
     }
 
+    public void test() {
+        System.out.println("Howdy");
+    }
 
 
     //works on printing motor status
@@ -38,7 +49,7 @@ public class MotorDashboard extends SuperDashboard{
     }
 
     //tunes the motor gains
-    private void motorTune(){
+    private void motorTune(double kp, double ki, double kd, double ff){
         controller.pidTune(kP.getDouble(0), kI.getDouble(0), kD.getDouble(0), kFF.getDouble(0));
     }
 
@@ -52,12 +63,13 @@ public class MotorDashboard extends SuperDashboard{
 
     @Override
     public void periodic() {
-        if(GlobalVar.debug) motorState();
-        if(GlobalVar.debug) motorTune();
-        // set("p", getP())
-        // if (get("p") != controller.getP()) {
-        //  changeP();
-        // }
+        if(GlobalVar.debug) {
+            motorState();
+        }
+        if(GlobalVar.debug) {
+            motorTune(kP.getDouble(0.0), kI.getDouble(0.0), kD.getDouble(0.0), kFF.getDouble(0.0));
+            controller.set(set.getDouble(0.0));
+        }
     }
     
 

@@ -1,42 +1,26 @@
 package frc.robot.FLYTLib.FLYTMotorLib;
 
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.MAXMotionConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-public class SparkController extends SuperController{
+public class SparkFlexController extends FlytMotorController {
 
     /*
      * Rev Library
      */
     //motor controller
-    SparkMax sparkMax; //General controller
-    SparkMaxConfig config; //Controller configuration objects
-
-
+    SparkFlex sparkFlex; //General controller
+    SparkFlexConfig config; //Controller configuration objects
 
     //encoders
     AbsoluteEncoder absEncoder; //absalute encoder
@@ -44,17 +28,13 @@ public class SparkController extends SuperController{
     EncoderConfig encoderConfig; //general encoder configuration
     AbsoluteEncoderConfig absEncoderConfig; //absalute
 
-
     //Motion contorler
     MAXMotionConfig motionConfig;
-
-
 
     //closed loop
     ClosedLoopConfig closedLoopCfg; //closed loop configuration
     SparkClosedLoopController closedLoopController; //closed loop control
 
- 
     //private vars for internal calculation and specifications
     private boolean e_encoderAvailable = false; //check if enxternal encoder connected
     private boolean e_absalute = false; //check if specified encoder is absalute
@@ -63,29 +43,27 @@ public class SparkController extends SuperController{
     private ControlType controlType;
     private double motorID;
 
-    
-
-
-
     /**
      * Run this constructor for brushed and brushless motors with no connected external encoders.
      * You are required to run encoderCfg() if brushless is chosen.
+     * @param m_motorName - name of the motor
      * @param m_id - motor id
      * @param m_brushless - motor type
      * @param m_break - motor idle mode
      */
-    public SparkController(int m_id, boolean m_brushless, boolean m_break, boolean invert){
-        //setup sparkmax object reference
-        sparkMax = new SparkMax(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
+    public SparkFlexController(String m_motorName, int m_id, boolean m_brushless, boolean m_break, boolean invert){
+        super(m_motorName);
+        //setup sparkFlex object reference
+        sparkFlex = new SparkFlex(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
         
-        config = new SparkMaxConfig();
+        config = new SparkFlexConfig();
         config.inverted(invert);
         ControllerUpdate();
         encoderConfig = new EncoderConfig();
         motorID = m_id;
         //checks if brushless or not, since by defult brushless has encoder
         if(m_brushless){
-            relEncoder = sparkMax.getEncoder(); 
+            relEncoder = sparkFlex.getEncoder(); 
             e_encoderAvailable = true;
 
         }
@@ -95,43 +73,56 @@ public class SparkController extends SuperController{
     }
 
 
-
+/*
     /**
      * Run this constructor for brushed and brushless motors that have connected external encoder
+     * @param m_motorName - name of the motor
      * @param m_id - motor id
      * @param m_brushless - motor type
      * @param m_break - motor idel mode
      * @param e_absalute - encoder type
      */
-    public SparkController(int m_id, boolean m_brushless, boolean m_break, boolean invert, boolean e_absalute){
-        //setup sparkmax object reference
-        sparkMax = new SparkMax(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
-        config = new SparkMaxConfig();
+    /*public SparkFlexController(String m_motorName, int m_id, boolean m_brushless, boolean m_break, boolean invert, boolean me_absalute){
+        super(m_motorName);
+        //setup sparkFlex object reference
+        sparkFlex = new SparkFlex(m_id, m_brushless ? MotorType.kBrushless : MotorType.kBrushed);
+        config = new SparkFlexConfig();
         config.inverted(invert);
         ControllerUpdate();
 
+        if (me_absalute) {
+            absEncoder = sparkFlex.getAbsoluteEncoder();
+            e_absalute = true;
+            e_encoderAvailable = true;
+        } else {
+            //relEncoder = sparkFlex.getAlternateEncoder();
+            e_absalute = false;
+            e_encoderAvailable = true;
+        }
+        /*
         //if motor is brushless and has connected absalute encoder
         if(m_brushless && e_absalute){
             e_absalute = true;
-            absEncoder = sparkMax.getAbsoluteEncoder();
+            absEncoder = sparkFlex.getAbsoluteEncoder();
             e_encoderAvailable = true;
         //if motor is brushless and encoder is not absalute
         }else if(m_brushless && !e_absalute){
             e_absalute = false;
-            relEncoder = sparkMax.getAlternateEncoder();
+            relEncoder = sparkFlex.getAlternateEncoder();
             e_encoderAvailable = true;
         //if motor is brushed and connected absalute encoder
         }else if(!m_brushless && e_absalute){
             e_absalute = true;
-            absEncoder = sparkMax.getAbsoluteEncoder();
+            absEncoder = sparkFlex.getAbsoluteEncoder();
             e_encoderAvailable = true;
             //if motor is brushed and conected relative encoder
         }else if(!m_brushless && !e_absalute){
             e_absalute = false;
-            relEncoder = sparkMax.getAlternateEncoder();
+            relEncoder = sparkFlex.getAlternateEncoder();
             e_encoderAvailable = true;
         }
-    }
+            
+    }*/
 
 
     /**
@@ -141,7 +132,7 @@ public class SparkController extends SuperController{
     public void set(double set){
 
         if(pidDisabled){
-            sparkMax.set(set);
+            sparkFlex.set(set);
         }else if(ControlType.kCurrent == controlType || ControlType.kDutyCycle == controlType || ControlType.kVoltage == controlType){
             closedLoopController.setReference(set, controlType);
         }else{
@@ -154,7 +145,7 @@ public class SparkController extends SuperController{
      * Disable motor
      */
     public void disable(){
-        sparkMax.disable();        
+        sparkFlex.disable();        
     }
 
     /**
@@ -203,21 +194,21 @@ public class SparkController extends SuperController{
      * Get motor Temprature
      */
     public double getTemp(){
-        return sparkMax.getMotorTemperature();
+        return sparkFlex.getMotorTemperature();
     }
 
     /** 
      * Get applied motor Current
      */
     public double getCurrent(){
-        return sparkMax.getOutputCurrent();
+        return sparkFlex.getOutputCurrent();
     }
 
     /**
      * Get current bus velocity
      */
     public double getVol(){
-        return sparkMax.getBusVoltage();
+        return sparkFlex.getBusVoltage();
     }
 
     /**
@@ -264,12 +255,7 @@ public class SparkController extends SuperController{
      * @param controlType - 0:position, 1:velocity, 2:kmaxPosition, 3:kmaxVelocity, 4:Voltage, 5:Current, 6:kDuty
      */
     public void pidSetup(double min, double max, double izone, double imax, boolean primaryEnc, int controlType){    
-        if(pidDisabled)
-        {
-
-        }else{
-
-        
+        if(!pidDisabled) {
             closedLoopCfg.outputRange(min, imax);
             closedLoopCfg.iZone(izone);
             closedLoopCfg.iMaxAccum(imax);
@@ -384,7 +370,7 @@ public class SparkController extends SuperController{
 
     //Updates the controller with new config params
     private void ControllerUpdate(){
-        sparkMax.configure(config, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters); 
+        sparkFlex.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters); 
     }
 
 }
