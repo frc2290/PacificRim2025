@@ -1,6 +1,6 @@
-package frc.robot.FLYTLib.FLYTMotorLib;
+package frc.utils.FLYTLib.FLYTMotorLib;
 
-import frc.robot.FLYTLib.FLYTDashboard.FlytLogger;
+import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 public abstract class FlytMotorController {
 

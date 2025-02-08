@@ -1,4 +1,4 @@
-package frc.robot.FLYTLib;
+package frc.utils.FLYTLib;
 
 //servo class, to control simple servos that are conencted directly to roborio
 public class Servo {

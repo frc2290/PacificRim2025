@@ -4,10 +4,16 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.math.util.Units.degreesToRadians;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -98,5 +104,26 @@ public final class Constants {
 
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 5676;
+  }
+
+  public static final class VisionConstants {
+    public static final double CAMERA_HEIGHT_METERS = 0.161925;
+    public static final double CAMERA_PITCH_RADIANS = degreesToRadians(37.5);
+    public static final double TARGET_HEIGHT_METERS = 1.4351;
+    /** Physical location of the apriltag camera on the robot, relative to the center of the robot. */
+    public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
+        new Translation3d(-0.32385, 0.1016, 0.161925),
+        new Rotation3d(0.0, degreesToRadians(37.5), degreesToRadians(5.0)));
+
+    public static final double FIELD_LENGTH_METERS = 16.54175;
+    public static final double FIELD_WIDTH_METERS = 8.0137;
+
+    // Pose on the opposite side of the field. Use with `relativeTo` to flip a pose to the opposite alliance
+    public static final Pose2d FLIPPING_POSE = new Pose2d(
+        new Translation2d(FIELD_LENGTH_METERS, FIELD_WIDTH_METERS),
+        new Rotation2d(Math.PI));
+
+    /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */
+    public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
   }
 }

@@ -1,9 +1,9 @@
-package frc.robot.FLYTLib.FLYTDashboard.OldStuff;
+package frc.utils.FLYTLib.FLYTDashboard.OldStuff;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import frc.robot.FLYTLib.GlobalVar;
+import frc.utils.FLYTLib.GlobalVar;
 
 
 public class PDHDashboard extends SuperDashboard{

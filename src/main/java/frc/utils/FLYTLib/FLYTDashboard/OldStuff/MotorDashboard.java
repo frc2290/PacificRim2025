@@ -1,10 +1,10 @@
-package frc.robot.FLYTLib.FLYTDashboard.OldStuff;
+package frc.utils.FLYTLib.FLYTDashboard.OldStuff;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import frc.robot.FLYTLib.GlobalVar;
-import frc.robot.FLYTLib.FLYTMotorLib.FlytMotorController;
+import frc.utils.FLYTLib.GlobalVar;
+import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 
 public class MotorDashboard extends SuperDashboard {
     

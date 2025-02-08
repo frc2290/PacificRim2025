@@ -1,4 +1,4 @@
-package frc.robot.FLYTLib;
+package frc.utils.FLYTLib;
 
 // Create a custom exception class
 class FLYTLibException extends Exception {

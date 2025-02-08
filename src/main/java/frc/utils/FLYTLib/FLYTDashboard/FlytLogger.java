@@ -1,4 +1,4 @@
-package frc.robot.FLYTLib.FLYTDashboard;
+package frc.utils.FLYTLib.FLYTDashboard;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;

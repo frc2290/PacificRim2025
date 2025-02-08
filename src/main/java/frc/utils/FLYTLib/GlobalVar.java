@@ -1,4 +1,4 @@
-package frc.robot.FLYTLib;
+package frc.utils.FLYTLib;
 
 public class GlobalVar {
 

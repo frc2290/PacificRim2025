@@ -1,4 +1,4 @@
-package frc.robot.FLYTLib;
+package frc.utils.FLYTLib;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
@@ -9,7 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FLYTLib.FLYTDashboard.OldStuff.PDHDashboard;
+import frc.utils.FLYTLib.FLYTDashboard.OldStuff.PDHDashboard;
 
 public class RobotSystem extends SubsystemBase{
 
