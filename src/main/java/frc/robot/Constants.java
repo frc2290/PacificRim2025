@@ -126,4 +126,9 @@ public final class Constants {
     /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */
     public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
   }
+
+  public static final class Lift{
+    public static final int motorId = 80;
+    public static final int motorId2 = 0;
+  }
 }

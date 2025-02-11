@@ -39,7 +39,6 @@ public class SparkMaxController extends FlytMotorController {
     private boolean e_encoderAvailable = false; //check if enxternal encoder connected
     private boolean e_absalute = false; //check if specified encoder is absalute
     private boolean pidREADY =  false; //  checks and sees if pid setup was successfully used
-    public boolean pidDisabled = true;
     private ControlType controlType;
     private double motorID;
 
@@ -80,7 +79,7 @@ public class SparkMaxController extends FlytMotorController {
      * @param m_id - motor id
      * @param m_brushless - motor type
      * @param m_break - motor idel mode
-     * @param e_absalute - encoder type
+    * @param e_absalute - encoder type
      */
     public SparkMaxController(String m_motorName, int m_id, boolean m_brushless, boolean m_break, boolean invert, boolean me_absalute){
         super(m_motorName);
@@ -131,14 +130,16 @@ public class SparkMaxController extends FlytMotorController {
      */
     public void set(double set){
 
-        if(pidDisabled){
-            sparkMax.set(set);
-        }else if(ControlType.kCurrent == controlType || ControlType.kDutyCycle == controlType || ControlType.kVoltage == controlType){
+        if(ControlType.kCurrent == controlType || ControlType.kDutyCycle == controlType || ControlType.kVoltage == controlType){
             closedLoopController.setReference(set, controlType);
         }else{
             closedLoopController.setReference(set/conversionFactor, controlType);
         }
 
+    }
+
+    public void setPower(double set) {
+        sparkMax.set(set);
     }
 
     /**
@@ -255,7 +256,6 @@ public class SparkMaxController extends FlytMotorController {
      * @param controlType - 0:position, 1:velocity, 2:kmaxPosition, 3:kmaxVelocity, 4:Voltage, 5:Current, 6:kDuty
      */
     public void pidSetup(double min, double max, double izone, double imax, boolean primaryEnc, int controlType){    
-        if(!pidDisabled) {
             closedLoopCfg.outputRange(min, imax);
             closedLoopCfg.iZone(izone);
             closedLoopCfg.iMaxAccum(imax);
@@ -299,7 +299,6 @@ public class SparkMaxController extends FlytMotorController {
             ControllerUpdate();
             //ADD MAX ALLOUD ERROR
             //ADD ERROR FOR INVALLID CONTROL TYPE NUM
-        }
 
     }
 

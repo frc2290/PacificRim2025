@@ -39,7 +39,6 @@ public class SparkFlexController extends FlytMotorController {
     private boolean e_encoderAvailable = false; //check if enxternal encoder connected
     private boolean e_absalute = false; //check if specified encoder is absalute
     private boolean pidREADY =  false; //  checks and sees if pid setup was successfully used
-    public boolean pidDisabled = true;
     private ControlType controlType;
     private double motorID;
 
@@ -131,14 +130,20 @@ public class SparkFlexController extends FlytMotorController {
      */
     public void set(double set){
 
-        if(pidDisabled){
-            sparkFlex.set(set);
-        }else if(ControlType.kCurrent == controlType || ControlType.kDutyCycle == controlType || ControlType.kVoltage == controlType){
+
+        if(ControlType.kCurrent == controlType || ControlType.kDutyCycle == controlType || ControlType.kVoltage == controlType){
             closedLoopController.setReference(set, controlType);
         }else{
             closedLoopController.setReference(set/conversionFactor, controlType);
         }
 
+    }
+
+    /**
+     * Set motor power directly, overrides control loops
+     */
+    public void setPower(double set){
+        sparkFlex.set(set);
     }
 
     /**
@@ -232,14 +237,11 @@ public class SparkFlexController extends FlytMotorController {
             
             if(p != 0){
                 closedLoopCfg.p(p);
-                pidDisabled = false;
                 closedLoopCfg.i(i);
                 closedLoopCfg.d(d);
                 closedLoopCfg.velocityFF(ff);
                 config.apply(closedLoopCfg);
                 ControllerUpdate();
-            }else{
-                pidDisabled = true;
             }
         }
         //ERROR IF PID SETUP WASN'T USED BEFORE
@@ -255,7 +257,7 @@ public class SparkFlexController extends FlytMotorController {
      * @param controlType - 0:position, 1:velocity, 2:kmaxPosition, 3:kmaxVelocity, 4:Voltage, 5:Current, 6:kDuty
      */
     public void pidSetup(double min, double max, double izone, double imax, boolean primaryEnc, int controlType){    
-        if(!pidDisabled) {
+
             closedLoopCfg.outputRange(min, imax);
             closedLoopCfg.iZone(izone);
             closedLoopCfg.iMaxAccum(imax);
@@ -299,9 +301,9 @@ public class SparkFlexController extends FlytMotorController {
             ControllerUpdate();
             //ADD MAX ALLOUD ERROR
             //ADD ERROR FOR INVALLID CONTROL TYPE NUM
-        }
+        
 
-    }
+        }
 
     /**
      * Setup motion profile Run pidSetup First!!

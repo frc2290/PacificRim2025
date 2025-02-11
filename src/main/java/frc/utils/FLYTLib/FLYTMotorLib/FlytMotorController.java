@@ -26,6 +26,12 @@ public abstract class FlytMotorController {
      */
     public abstract void set(double set);
 
+    /**
+     * Set feed power to the motor directly, overrides control loop
+     * @param set
+     */
+    public abstract void setPower(double set);
+
 
     /**
      * Disable motor
