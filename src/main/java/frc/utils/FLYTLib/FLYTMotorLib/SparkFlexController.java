@@ -187,14 +187,6 @@ public class SparkFlexController extends FlytMotorController {
         }
     }
 
-    ///
-    /**
-     * Get current Acceleration (multiplied by conversion factor) (UNDER DEVELOPMENT) RETURNS ONLY ZERO
-     */
-    public double getAcc(){
-        return 0;
-    }
-    ///
     /**
      * Get motor Temprature
      */

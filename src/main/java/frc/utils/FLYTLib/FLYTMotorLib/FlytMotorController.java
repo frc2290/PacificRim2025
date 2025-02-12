@@ -49,9 +49,6 @@ public abstract class FlytMotorController {
      */
     public abstract double getVel();
 
-
-    public abstract double getAcc();
-
     /**
      * Get motor Temprature
      */

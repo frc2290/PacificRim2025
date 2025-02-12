@@ -38,9 +38,9 @@ public class SparkMaxController extends FlytMotorController {
     //private vars for internal calculation and specifications
     private boolean e_encoderAvailable = false; //check if enxternal encoder connected
     private boolean e_absalute = false; //check if specified encoder is absalute
-    private boolean pidREADY =  false; //  checks and sees if pid setup was successfully used
-    private ControlType controlType;
-    private double motorID;
+    private boolean pidREADY =  false; //checks and sees if pid setup was successfully used
+    private ControlType controlType; //control type
+    private double motorID; //motor id
 
     /**
      * Run this constructor for brushed and brushless motors with no connected external encoders.
@@ -71,10 +71,8 @@ public class SparkMaxController extends FlytMotorController {
 
     }
 
-
-
     /**
-     * Run this constructor for brushed and brushless motors that have connected external encoder
+     * Run this constructor for brushed and brushless motors with connected external encoder
      * @param m_motorName - name of the motor
      * @param m_id - motor id
      * @param m_brushless - motor type
@@ -124,6 +122,7 @@ public class SparkMaxController extends FlytMotorController {
     }
 
 
+
     /**
      * Set relative speed, multiplies factor by availble voltage. (conversion factored)
      * If pid is enabled, set postion, set velocity, etc.
@@ -138,6 +137,9 @@ public class SparkMaxController extends FlytMotorController {
 
     }
 
+    /**
+     * Set motor power directly, overrides control loop unless it is still running
+     */
     public void setPower(double set) {
         sparkMax.set(set);
     }
@@ -183,14 +185,6 @@ public class SparkMaxController extends FlytMotorController {
         }
     }
 
-    ///
-    /**
-     * Get current Acceleration (multiplied by conversion factor) (UNDER DEVELOPMENT) RETURNS ONLY ZERO
-     */
-    public double getAcc(){
-        return 0;
-    }
-    ///
     /**
      * Get motor Temprature
      */
