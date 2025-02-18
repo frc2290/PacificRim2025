@@ -31,6 +31,10 @@ public class Elevator extends SubsystemBase{
         motor1.set(setpoint);
     }
 
+    public void setPower(double power) {
+        motor1.setPower(power);
+    }
+
 
     @Override
     public void periodic() {
