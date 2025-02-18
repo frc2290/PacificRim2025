@@ -60,7 +60,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   private final SwerveDrivePoseEstimator poseEstimator;
   private final Field2d field2d = new Field2d();
   private final PhotonRunnable photonEstimator;
+  private final PhotonRunnable photonEstimator2;
   private final Notifier photonNotifier;
+  private final Notifier photonNotifier2;
 
   private OriginPosition originPosition = kBlueAllianceWallRightSide;
   private boolean sawTag = false;
@@ -68,8 +70,11 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   RobotConfig config;
 
   public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
-    photonEstimator = new PhotonRunnable("ThriftyCam1");
+    photonEstimator = new PhotonRunnable("ThriftyCamRight80");
+    photonEstimator2 = new PhotonRunnable("ThriftyCamLeft92");
+
     photonNotifier = new Notifier(photonEstimator);
+    photonNotifier2 = new Notifier(photonEstimator2);
 
     this.rotationSupplier = m_drive::newHeading;
     this.modulePositionSupplier = m_drive::getModulePositions;
@@ -81,11 +86,15 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         modulePositionSupplier.get(),
         new Pose2d(),
         stateStdDevs,
-        visionMeasurementStdDevs);
+    visionMeasurementStdDevs);
+
+    
     
     // Start PhotonVision thread
     photonNotifier.setName("PhotonRunnable");
     photonNotifier.startPeriodic(0.02);
+    photonNotifier2.setName("PhotonRunnable2");
+    photonNotifier2.startPeriodic(0.02);
 
     // try{
     //   config = RobotConfig.fromGUISettings();
@@ -164,6 +173,18 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
       poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
     }
 
+    var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
+    if (visionPose2 != null) {
+      // New pose from vision
+      sawTag = true;
+      var pose2d2 = visionPose2.estimatedPose.toPose2d();
+      if (originPosition != kBlueAllianceWallRightSide) {
+        pose2d2 = flipAlliance(pose2d2);
+      }
+      poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+    }
+
+
     // Set the pose on the dashboard
     var dashboardPose = poseEstimator.getEstimatedPosition();
     if (originPosition == kRedAllianceWallRightSide) {
@@ -187,7 +208,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   }
 
   public PhotonPipelineResult getLatestTag() {
-    return photonEstimator.grabLatestTag();
+    return photonEstimator2.grabLatestTag();
   }
 
   public ChassisSpeeds getChassisSpeeds() {
