@@ -28,6 +28,30 @@ import static edu.wpi.first.math.util.Units.degreesToRadians;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static final class DifferentialArm{
+    //configuration
+    public static final double voltageComp = 0;
+    public static final int currentStallLim = 0;
+    public static final int currentFreeLim = 0;
+
+    //pid tune values Internal loop
+    public static final double v_kp = 0;
+    public static final double v_ki = 0;
+    public static final double v_kd = 0;
+    public static final double v_ff = 0;
+
+
+    //pid tune values external extension
+    public static final double e_kp = 0;
+    public static final double e_ki = 0;
+    public static final double e_kd = 0;
+
+    //pid tune values external rotation
+    public static final double r_kp = 0;
+    public static final double r_ki = 0;
+    public static final double r_kd = 0;
+  }
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
