@@ -6,7 +6,7 @@ import frc.robot.Constants;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 import frc.utils.FLYTLib.FLYTMotorLib.SparkMaxController;
 
-public class DifferentialArm extends SubsystemBase {
+public class DifferentialArmSubsystem extends SubsystemBase {
 
     //two motors
     //each controlled by trapesoidal control postion loop cascacaded with internal velocity loop
@@ -21,9 +21,12 @@ public class DifferentialArm extends SubsystemBase {
     private double setExtension; //set extention position
     private double setRotation; //set rotation position
 
+    private double extensionPos;
+    private double rotationPos;
 
 
-   public DifferentialArm(){
+
+   public DifferentialArmSubsystem(){
         motor1 = new SparkMaxController(getName(), 0, true, true, false);
         motor2 = new SparkMaxController(getName(), 0, true, true, false);
         motor1.advanceControl(Constants.DifferentialArm.voltageComp, Constants.DifferentialArm.currentStallLim, Constants.DifferentialArm.currentFreeLim, 0);
@@ -64,11 +67,11 @@ public class DifferentialArm extends SubsystemBase {
     @Override
     public void periodic() {
         //logging stuff
-        motor1.updateLogger();
-        motor2.updateLogger();
+        motor1.updateLogger(Constants.debugMode);
+        motor2.updateLogger(Constants.debugMode);
 
         //Position Extension PID Loop
-        //setPosition(pid_extension.calculate(encoder.getDistance(), setExtension),pid_rotation.calculate(encoder.getDistance(), setRotation));
+        //setPosition(pid_extension.calculate(pos, setExtension),pid_rotation.calculate(encoder.getDistance(), setRotation));
         //GET ENCODER DISTANCE HAS TO BE FIGURED OUT
     }
 }

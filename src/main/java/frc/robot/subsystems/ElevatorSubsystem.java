@@ -5,7 +5,7 @@ import frc.robot.Constants;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 import frc.utils.FLYTLib.FLYTMotorLib.SparkMaxController;
 
-public class Elevator extends SubsystemBase{
+public class ElevatorSubsystem extends SubsystemBase{
 
     //motor group
     FlytMotorController motor1; 
@@ -13,7 +13,7 @@ public class Elevator extends SubsystemBase{
 
 
 
-    public Elevator(){
+    public ElevatorSubsystem(){
         motor1 = new SparkMaxController(getName(), Constants.Lift.motorId, true, true, false); //motor construct
         motor1.advanceControl(0,0,0,0);//setup advace control
         motor1.pidSetup(-1, 1, 0, 0, true, 0); //setup pid
@@ -38,7 +38,7 @@ public class Elevator extends SubsystemBase{
 
     @Override
     public void periodic() {
-        motor1.updateLogger();
+        motor1.updateLogger(Constants.debugMode);
         
     }
     

@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.Topic;
 public class FlytDashboardVariable {
 
     private String name;
+    private boolean debug;
     private Supplier<Boolean> boolSupplier;
     private Supplier<Integer> intSupplier;
     private Supplier<Double> doubleSupplier;
@@ -22,8 +23,13 @@ public class FlytDashboardVariable {
 
     private NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
-    public FlytDashboardVariable(String m_name) {
+    public FlytDashboardVariable(String m_name, boolean m_debug) {
         name = m_name;
+        debug = m_debug;
+    }
+
+    public boolean debugOnly() {
+        return debug;
     }
 
     //creat a subsrciber for named topic
@@ -73,23 +79,25 @@ public class FlytDashboardVariable {
         return type;
     }
 
-    public void update() {
-        switch (type) {
-            case 0:
-                publisher.setBoolean(boolSupplier.get());
-                break;
-            case 1:
-                publisher.setInteger(intSupplier.get());
-                break;
-            case 2:
-                publisher.setDouble(doubleSupplier.get());
-                break;
-            case 3:
-                publisher.setString(stringSupplier.get());
-                break;
-            default:
-                publisher.setString("Issue in FlytDashboardVariable Class");
-                break;
+    public void update(boolean m_override) {
+        if (!debugOnly() || m_override) {
+            switch (type) {
+                case 0:
+                    publisher.setBoolean(boolSupplier.get());
+                    break;
+                case 1:
+                    publisher.setInteger(intSupplier.get());
+                    break;
+                case 2:
+                    publisher.setDouble(doubleSupplier.get());
+                    break;
+                case 3:
+                    publisher.setString(stringSupplier.get());
+                    break;
+                default:
+                    publisher.setString("Issue in FlytDashboardVariable Class");
+                    break;
+            }
         }
     }
 }

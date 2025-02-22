@@ -4,21 +4,27 @@
 
 package frc.robot.commands;
 
+import frc.robot.subsystems.DifferentialArmSubsystem;
+import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorSubsystem;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ElevatorMove extends Command {
+/** An example command that uses an example subsystem. */
+public class ExtensionExtend extends Command {
+  
+  private final DifferentialArmSubsystem differentialArmSubsystem;
 
-  private ElevatorSubsystem elevator;
   private double power = 0;
 
-  /** Creates a new ElevatorUp. */
-  public ElevatorMove(ElevatorSubsystem m_elevator, double m_power) {
-    elevator = m_elevator;
+  /**
+   * Creates a new ExampleCommand.
+   *
+   * @param subsystem The subsystem used by this command.
+   */
+  public ExtensionExtend(DifferentialArmSubsystem m_differentialArm, double m_power) {
+    differentialArmSubsystem = m_differentialArm;
     power = m_power;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(elevator);
+    addRequirements(differentialArmSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -28,14 +34,12 @@ public class ElevatorMove extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    elevator.setPower(power);
+    differentialArmSubsystem.Extend(power);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    elevator.setPower(0);
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override

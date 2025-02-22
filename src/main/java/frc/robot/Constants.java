@@ -29,6 +29,8 @@ import static edu.wpi.first.math.util.Units.degreesToRadians;
  */
 public final class Constants {
 
+  public static final boolean debugMode = false;
+
   public static final class DifferentialArm{
     //configuration
     public static final double voltageComp = 0;

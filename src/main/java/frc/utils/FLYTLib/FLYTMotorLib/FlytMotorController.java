@@ -14,9 +14,9 @@ public abstract class FlytMotorController {
     public FlytMotorController(String m_controllerName) {
         controllerName = m_controllerName;//why?
         controllerLogger = new FlytLogger(controllerName);
-        controllerLogger.addDoublePublisher("MotorID", () -> getMotorID());
-        controllerLogger.addDoublePublisher("MotorPos", () -> getPos());
-        controllerLogger.addDoublePublisher("P", () -> getP());
+        controllerLogger.addDoublePublisher("MotorID", true, () -> getMotorID());
+        controllerLogger.addDoublePublisher("MotorPos", true, () -> getPos());
+        controllerLogger.addDoublePublisher("P", true, () -> getP());
 
     }
 
@@ -143,8 +143,8 @@ public abstract class FlytMotorController {
      * Method to be called in periodic of Subsystem the Controller is used in.
      * This updates the dashboard values.
      */
-    public void updateLogger() {
-        controllerLogger.update();
+    public void updateLogger(boolean debug) {
+        controllerLogger.update(debug);
     }
 
     public double getDouble(String doubleName) {
