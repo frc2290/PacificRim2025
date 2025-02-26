@@ -60,6 +60,7 @@ public class SparkMaxController extends FlytMotorController {
         ControllerUpdate();
         encoderConfig = new EncoderConfig();
         motorID = m_id;
+        closedLoopCfg = new ClosedLoopConfig();
         //checks if brushless or not, since by defult brushless has encoder
         if(m_brushless){
             relEncoder = sparkMax.getEncoder(); 
@@ -86,6 +87,7 @@ public class SparkMaxController extends FlytMotorController {
         config = new SparkMaxConfig();
         config.inverted(invert);
         ControllerUpdate();
+        closedLoopCfg = new ClosedLoopConfig();
 
         if (me_absalute) {
             absEncoder = sparkMax.getAbsoluteEncoder();

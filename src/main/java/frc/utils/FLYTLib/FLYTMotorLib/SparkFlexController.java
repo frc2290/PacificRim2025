@@ -38,7 +38,6 @@ public class SparkFlexController extends FlytMotorController {
     //private vars for internal calculation and specifications
     private boolean e_encoderAvailable = false; //check if enxternal encoder connected
     private boolean e_absalute = false; //check if specified encoder is absalute
-    private boolean pidREADY =  false; //  checks and sees if pid setup was successfully used
     private ControlType controlType;
     private double motorID;
 
@@ -60,6 +59,8 @@ public class SparkFlexController extends FlytMotorController {
         ControllerUpdate();
         encoderConfig = new EncoderConfig();
         motorID = m_id;
+
+        closedLoopCfg = new ClosedLoopConfig();
         //checks if brushless or not, since by defult brushless has encoder
         if(m_brushless){
             relEncoder = sparkFlex.getEncoder(); 
@@ -225,8 +226,6 @@ public class SparkFlexController extends FlytMotorController {
      */
     public void pidTune(double p, double i, double d, double ff){
 
-        if (pidREADY) {
-            
             if(p != 0){
                 closedLoopCfg.p(p);
                 closedLoopCfg.i(i);
@@ -235,8 +234,6 @@ public class SparkFlexController extends FlytMotorController {
                 config.apply(closedLoopCfg);
                 ControllerUpdate();
             }
-        }
-        //ERROR IF PID SETUP WASN'T USED BEFORE
     }
 
     /**
@@ -255,7 +252,6 @@ public class SparkFlexController extends FlytMotorController {
             closedLoopCfg.iMaxAccum(imax);
             closedLoopCfg.feedbackSensor(primaryEnc ? FeedbackSensor.kPrimaryEncoder : FeedbackSensor.kAlternateOrExternalEncoder);
             config.apply(closedLoopCfg);
-            pidREADY = true;
 
             switch (controlType) {
                 case 0:
