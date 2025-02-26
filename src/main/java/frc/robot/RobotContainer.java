@@ -20,6 +20,9 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ElevatorMove;
+import frc.robot.commands.ExtensionExtend;
+import frc.robot.commands.RollEndeffector;
+import frc.robot.commands.WristRotate;
 import frc.robot.subsystems.DifferentialArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -42,7 +45,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 public class RobotContainer {
 	// The robot's subsystems
 	private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+  //private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
   private final Endeffector m_endeffector = new Endeffector();
   private final DifferentialArmSubsystem m_DiffArm = new DifferentialArmSubsystem(m_endeffector);
@@ -86,16 +89,24 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
-    new JoystickButton(m_driverController, Button.kRightBumper.value)
-        .whileTrue(new RunCommand(
-            () -> m_robotDrive.setX(),
-            m_robotDrive));
-    new JoystickButton(m_driverController, Button.kLeftBumper.value)
-        .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
+    // new JoystickButton(m_driverController, Button.kRightBumper.value)
+    //     .whileTrue(new RunCommand(
+    //         () -> m_robotDrive.setX(),
+    //         m_robotDrive));
+    // new JoystickButton(m_driverController, Button.kLeftBumper.value)
+    //     .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
     new JoystickButton(m_driverController, Button.kA.value)
-        .whileTrue(new ElevatorMove(m_elevator, 10));
+        .whileTrue(new ElevatorMove(m_elevator, 0.2));
     new JoystickButton(m_driverController, Button.kY.value)
-        .whileTrue(new ElevatorMove(m_elevator, -10));
+        .whileTrue(new ElevatorMove(m_elevator, -0.2));
+    new JoystickButton(m_driverController, Button.kX.value)
+        .whileTrue(new ExtensionExtend(m_DiffArm, 0.2));
+    new JoystickButton(m_driverController, Button.kB.value)
+        .whileTrue(new ExtensionExtend(m_DiffArm, -0.2));
+    new JoystickButton(m_driverController, Button.kLeftBumper.value)
+        .whileTrue(new RollEndeffector(m_endeffector, 0.5)); //intake
+    new JoystickButton(m_driverController, Button.kRightBumper.value)
+        .whileTrue(new RollEndeffector(m_endeffector, -0.5)); //outtake
   }
 
   /**

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.DifferentialArm;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 import frc.utils.FLYTLib.FLYTMotorLib.SparkMaxController;
 
@@ -26,13 +27,11 @@ public class DifferentialArmSubsystem extends SubsystemBase {
     private double extensionPos;
     private double rotationPos;
 
-
-
    public DifferentialArmSubsystem(Endeffector m_endeffector){
         endeffector = m_endeffector;
-        motor1 = new SparkMaxController(getName(), 0, true, true, false);
-        motor2 = new SparkMaxController(getName(), 0, true, true, false);
-        motor1.advanceControl(Constants.DifferentialArm.voltageComp, Constants.DifferentialArm.currentStallLim, Constants.DifferentialArm.currentFreeLim, 0);
+        motor1 = new SparkMaxController(getName(), DifferentialArm.kLeftMotorId, true, true, false);
+        motor2 = new SparkMaxController(getName(), DifferentialArm.kRightMotorId, true, true, false);
+        //motor1.advanceControl(Constants.DifferentialArm.voltageComp, Constants.DifferentialArm.currentStallLim, Constants.DifferentialArm.currentFreeLim, 0);
         //motor2.advanceControl(Constants.DifferentialArm.voltageComp, Constants.DifferentialArm.currentStallLim, Constants.DifferentialArm.currentFreeLim, 0);
         //motor1.pidSetup(-1, 1, 0, 1, true, 1); //setup p
         //motor2.pidSetup(-1, 1, 0, 1, true, 1); //setup pid
@@ -42,14 +41,12 @@ public class DifferentialArmSubsystem extends SubsystemBase {
         //setup position loop ADD FEEDFARWARD
         //pid_extension = new PIDController(Constants.DifferentialArm.e_kp, Constants.DifferentialArm.e_ki, Constants.DifferentialArm.e_kp);
         //pid_rotation = new PIDController(Constants.DifferentialArm.r_kp, Constants.DifferentialArm.r_ki, Constants.DifferentialArm.r_kp);
-
     }
 
     public void Extend(double setpoint){
         motor2.setPower(setpoint);
         motor1.setPower(setpoint);
         //setExtension = setpoint
-
     }
     
     public void Rotate(double setpoint){

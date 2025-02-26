@@ -31,7 +31,10 @@ public final class Constants {
 
   public static final boolean debugMode = false;
 
-  public static final class DifferentialArm{
+  public static final class DifferentialArm {
+    // Motors
+    public static final int kLeftMotorId = 60;
+    public static final int kRightMotorId = 61;
     //configuration
     public static final double voltageComp = 0;
     public static final int currentStallLim = 0;
@@ -54,6 +57,7 @@ public final class Constants {
     public static final double r_ki = 0;
     public static final double r_kd = 0;
   }
+
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
@@ -153,8 +157,12 @@ public final class Constants {
     public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
   }
 
-  public static final class Lift{
-    public static final int motorId = 80;
-    public static final int motorId2 = 0;
+  public static final class Elevator {
+    public static final int kLeftElevatorMotorId = 50;
+    public static final int kRightElevatorMotorId = 51;
+  }
+
+  public static final class Manipulator {
+    public static final int kManipulatorMotorId = 7;
   }
 }
