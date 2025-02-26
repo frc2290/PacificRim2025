@@ -23,6 +23,7 @@ import frc.robot.commands.ElevatorMove;
 import frc.robot.subsystems.DifferentialArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.Endeffector;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -43,7 +44,8 @@ public class RobotContainer {
 	private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final DifferentialArmSubsystem m_DiffArm = new DifferentialArmSubsystem();
+  private final Endeffector m_endeffector = new Endeffector();
+  private final DifferentialArmSubsystem m_DiffArm = new DifferentialArmSubsystem(m_endeffector);
 
 	// The driver's controller
 	XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);

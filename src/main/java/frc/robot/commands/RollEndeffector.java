@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.DifferentialArmSubsystem;
 import frc.robot.subsystems.Endeffector;
 
 public class RollEndeffector extends Command{

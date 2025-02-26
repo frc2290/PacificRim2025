@@ -15,6 +15,8 @@ public class DifferentialArmSubsystem extends SubsystemBase {
     private FlytMotorController motor1; //flyt motor
     private FlytMotorController motor2; //flyt motor
 
+    private Endeffector endeffector;
+
     private PIDController pid_extension; //position loop extension
     private PIDController pid_rotation; //position loop rotation
 
@@ -26,7 +28,8 @@ public class DifferentialArmSubsystem extends SubsystemBase {
 
 
 
-   public DifferentialArmSubsystem(){
+   public DifferentialArmSubsystem(Endeffector m_endeffector){
+        endeffector = m_endeffector;
         motor1 = new SparkMaxController(getName(), 0, true, true, false);
         motor2 = new SparkMaxController(getName(), 0, true, true, false);
         motor1.advanceControl(Constants.DifferentialArm.voltageComp, Constants.DifferentialArm.currentStallLim, Constants.DifferentialArm.currentFreeLim, 0);
@@ -60,10 +63,16 @@ public class DifferentialArmSubsystem extends SubsystemBase {
         motor1.set(setPoint-setOmega);
         motor2.set(setPoint+setOmega);
     }
+    
+    public double getExtensionPosition(){
+        return (motor1.getPos()+motor2.getPos())/2;
+    }
+
+    public double getRotationPosition(){
+        return endeffector.getWristPos();
+    }
 
     
-
-
     @Override
     public void periodic() {
         //logging stuff
@@ -71,7 +80,7 @@ public class DifferentialArmSubsystem extends SubsystemBase {
         motor2.updateLogger(Constants.debugMode);
 
         //Position Extension PID Loop
-        //setPosition(pid_extension.calculate(pos, setExtension),pid_rotation.calculate(encoder.getDistance(), setRotation));
-        //GET ENCODER DISTANCE HAS TO BE FIGURED OUT
+        //setPosition(pid_extension.calculate(getExtensionPosition(), setExtension),pid_rotation.calculate(getRotationPosition(), setRotation));
+        //GET ENCODER DISTANCE HAS TO BE FIGURED OUT LATER
     }
 }

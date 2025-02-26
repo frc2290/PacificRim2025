@@ -24,6 +24,10 @@ public class Endeffector extends SubsystemBase {
         motor.setPower(power);
     }
 
+    public double getWristPos(){
+        return motor.getPos();
+    }
+
 
 
     @Override
