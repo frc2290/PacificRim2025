@@ -31,6 +31,22 @@ public final class Constants {
 
   public static final boolean debugMode = false;
 
+  public static final class Elevator {
+    public static final int kLeftElevatorMotorId = 50;
+    public static final int kRightElevatorMotorId = 51;
+
+    public static final double kPositionConversion = 0.01589872411; // ((7/34) * (15/31) * (0.0508 * Math.PI)); // Meters Position
+
+    public static final double kP = 1.5;
+    public static final double kI = 0;
+    public static final double kD = 0;
+    public static final double kKG = 0.42;
+  }
+
+  public static final class Manipulator {
+    public static final int kManipulatorMotorId = 7;
+  }
+
   public static final class DifferentialArm {
     // Motors
     public static final int kLeftMotorId = 60;
@@ -41,10 +57,10 @@ public final class Constants {
     public static final int currentFreeLim = 0;
 
     //pid tune values Internal loop
-    public static final double v_kp = 0;
+    public static final double v_kp = 0.001;
     public static final double v_ki = 0;
     public static final double v_kd = 0;
-    public static final double v_ff = 0;
+    public static final double v_KG = 0;
 
 
     //pid tune values external extension
@@ -82,15 +98,15 @@ public final class Constants {
     public static final double kBackRightChassisAngularOffset = (Math.PI / 2);
 
     // SPARK MAX CAN IDs
-    public static final int kFrontLeftDrivingCanId = 40;
-    public static final int kRearLeftDrivingCanId = 46;
-    public static final int kFrontRightDrivingCanId = 42;
-    public static final int kRearRightDrivingCanId = 44;
+    public static final int kFrontLeftDrivingCanId = 42;
+    public static final int kRearLeftDrivingCanId = 40;
+    public static final int kFrontRightDrivingCanId = 44;
+    public static final int kRearRightDrivingCanId = 46;
 
-    public static final int kFrontLeftTurningCanId = 41;
-    public static final int kRearLeftTurningCanId = 47;
-    public static final int kFrontRightTurningCanId = 43;
-    public static final int kRearRightTurningCanId = 45;
+    public static final int kFrontLeftTurningCanId = 43;
+    public static final int kRearLeftTurningCanId = 41;
+    public static final int kFrontRightTurningCanId = 45;
+    public static final int kRearRightTurningCanId = 47;
 
     public static final boolean kGyroReversed = false;
   }
@@ -155,14 +171,5 @@ public final class Constants {
 
     /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */
     public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
-  }
-
-  public static final class Elevator {
-    public static final int kLeftElevatorMotorId = 50;
-    public static final int kRightElevatorMotorId = 51;
-  }
-
-  public static final class Manipulator {
-    public static final int kManipulatorMotorId = 7;
   }
 }

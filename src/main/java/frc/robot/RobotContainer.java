@@ -14,8 +14,8 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
@@ -23,10 +23,10 @@ import frc.robot.commands.ElevatorMove;
 import frc.robot.commands.ExtensionExtend;
 import frc.robot.commands.RollEndeffector;
 import frc.robot.commands.WristRotate;
-import frc.robot.subsystems.DifferentialArmSubsystem;
+import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.Endeffector;
+import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -47,8 +47,8 @@ public class RobotContainer {
 	private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   //private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final Endeffector m_endeffector = new Endeffector();
-  private final DifferentialArmSubsystem m_DiffArm = new DifferentialArmSubsystem(m_endeffector);
+  private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
+  private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
 
 	// The driver's controller
 	XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -59,8 +59,7 @@ public class RobotContainer {
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
 	 */
-	public RobotContainer() {
-		// Configure the button bindings
+	public RobotContainer() {// Configure the button bindings
 		configureButtonBindings();
 
 		// Build an auto chooser. This will use Commands.none() as the default option.
@@ -96,9 +95,9 @@ public class RobotContainer {
     // new JoystickButton(m_driverController, Button.kLeftBumper.value)
     //     .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
     new JoystickButton(m_driverController, Button.kA.value)
-        .whileTrue(new ElevatorMove(m_elevator, 0.2));
-    new JoystickButton(m_driverController, Button.kY.value)
         .whileTrue(new ElevatorMove(m_elevator, -0.2));
+    new JoystickButton(m_driverController, Button.kY.value)
+        .whileTrue(new ElevatorMove(m_elevator, 0.2));
     new JoystickButton(m_driverController, Button.kX.value)
         .whileTrue(new ExtensionExtend(m_DiffArm, 0.2));
     new JoystickButton(m_driverController, Button.kB.value)

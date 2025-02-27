@@ -4,13 +4,13 @@
 
 package frc.robot.commands;
 
-import frc.robot.subsystems.DifferentialArmSubsystem;
+import frc.robot.subsystems.DifferentialSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** An example command that uses an example subsystem. */
 public class ExtensionExtend extends Command {
   
-  private final DifferentialArmSubsystem differentialArmSubsystem;
+  private final DifferentialSubsystem differentialArmSubsystem;
 
   private double power = 0;
 
@@ -19,7 +19,7 @@ public class ExtensionExtend extends Command {
    *
    * @param subsystem The subsystem used by this command.
    */
-  public ExtensionExtend(DifferentialArmSubsystem m_differentialArm, double m_power) {
+  public ExtensionExtend(DifferentialSubsystem m_differentialArm, double m_power) {
     differentialArmSubsystem = m_differentialArm;
     power = m_power;
     // Use addRequirements() here to declare subsystem dependencies.
@@ -33,13 +33,13 @@ public class ExtensionExtend extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    differentialArmSubsystem.Extend(power);
+    differentialArmSubsystem.extend(power);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    differentialArmSubsystem.Extend(0);
+    differentialArmSubsystem.extend(0);
   }
 
   // Returns true when the command should end.

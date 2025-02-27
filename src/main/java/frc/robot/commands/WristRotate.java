@@ -1,12 +1,12 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.DifferentialArmSubsystem;
+import frc.robot.subsystems.DifferentialSubsystem;
 
 
 public class WristRotate extends Command{
 
-    private final DifferentialArmSubsystem differentialArmSubsystem;
+    private final DifferentialSubsystem differentialArmSubsystem;
 
   private double power = 0;
 
@@ -15,7 +15,7 @@ public class WristRotate extends Command{
    *
    * @param subsystem The subsystem used by this command.
    */
-  public WristRotate(DifferentialArmSubsystem m_differentialArm, double m_power) {
+  public WristRotate(DifferentialSubsystem m_differentialArm, double m_power) {
     differentialArmSubsystem = m_differentialArm;
     power = m_power;
     // Use addRequirements() here to declare subsystem dependencies.
@@ -29,13 +29,13 @@ public class WristRotate extends Command{
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    differentialArmSubsystem.Rotate(power);
+    differentialArmSubsystem.rotate(power);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    differentialArmSubsystem.Rotate(0); 
+    differentialArmSubsystem.rotate(0); 
   }
 
   // Returns true when the command should end.

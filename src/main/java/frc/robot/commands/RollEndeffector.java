@@ -1,13 +1,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Endeffector;
+import frc.robot.subsystems.ManipulatorSubsystem;
 
 public class RollEndeffector extends Command{
 
 
   
-  private final Endeffector intake;
+  private final ManipulatorSubsystem intake;
 
   private double power = 0;
 
@@ -17,7 +17,7 @@ public class RollEndeffector extends Command{
    *
    * @param subsystem The subsystem used by this command.
    */
-  public RollEndeffector(Endeffector m_intake, double m_power) {
+  public RollEndeffector(ManipulatorSubsystem m_intake, double m_power) {
     intake = m_intake;
     power = m_power;
     addRequirements(m_intake);

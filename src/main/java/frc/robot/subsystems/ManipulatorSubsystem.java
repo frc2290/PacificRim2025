@@ -6,20 +6,14 @@ import frc.robot.Constants.Manipulator;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 import frc.utils.FLYTLib.FLYTMotorLib.SparkMaxController;
 
-public class Endeffector extends SubsystemBase {
+public class ManipulatorSubsystem extends SubsystemBase {
 
-    //
     FlytMotorController motor;
 
-
-    public Endeffector (){
-
+    public ManipulatorSubsystem (){
         motor = new SparkMaxController(getName(), Manipulator.kManipulatorMotorId, true, true, false, true);
         //motor.advanceControl(0, 0, 0, 0);
-
     }
-
-
     
     public void Intake(double power){
         motor.setPower(power);
@@ -28,8 +22,6 @@ public class Endeffector extends SubsystemBase {
     public double getWristPos(){
         return motor.getPos();
     }
-
-
 
     @Override
     public void periodic() {
