@@ -44,16 +44,29 @@ public class TravelPosition extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    diff.setExtensionSetpoint(diffExt);
-    if (diff.atExtenstionSetpoint() && moved_ext) {
+    if (state.getCurrentState() != State.IntakePosition) {
       diff.setRotationSetpoint(diffRot);
       if (diff.atRotationSetpoint() && moved_rot) {
-        elevator.setElevatorSetpoint(elevatorPos);
-        moved_elev = true;
+        diff.setExtensionSetpoint(diffExt);
+        if (diff.atExtenstionSetpoint() && moved_ext) {
+          elevator.setElevatorSetpoint(elevatorPos);
+          moved_elev = true;
+        }
+        moved_ext = true;
       }
       moved_rot = true;
+    } else {
+      diff.setExtensionSetpoint(diffExt);
+      if (diff.atExtenstionSetpoint() && moved_ext) {
+        diff.setRotationSetpoint(diffRot);
+        if (diff.atRotationSetpoint() && moved_rot) {
+          elevator.setElevatorSetpoint(elevatorPos);
+          moved_elev = true;
+        }
+        moved_rot = true;
+      }
+      moved_ext = true;
     }
-    moved_ext = true;
   }
 
   // Called once the command ends or is interrupted.
