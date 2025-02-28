@@ -124,10 +124,12 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     @Override
     public void periodic() {
-        // double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
-        // if (elevatorSetpoint != tempSetpoint) {
-        //     elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
-        // }
+        if (Constants.debugMode) {
+            double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
+            if (elevatorSetpoint != tempSetpoint) {
+                elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
+            }
+        }
         elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
         elevatorDash.update(Constants.debugMode);
     }

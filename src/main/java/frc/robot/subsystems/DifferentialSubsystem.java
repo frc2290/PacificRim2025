@@ -196,13 +196,15 @@ public class DifferentialSubsystem extends SubsystemBase {
         //Position Extension PID Loop
         //setPosition(pid_extension.calculate(getExtensionPosition(), setExtension),pid_rotation.calculate(getRotationPosition(), setRotation));
         //GET ENCODER DISTANCE HAS TO BE FIGURED OUT LATER
-        double tempSetpoint = differentialDash.getDouble("Ext Setpoint");
-        if (extensionSetpoint != tempSetpoint) {
-            extensionSetpoint = tempSetpoint;
-        }
-        double tempRot = differentialDash.getDouble("Rot Setpoint");
-        if (rotationSetpoint != tempRot) {
-            rotationSetpoint = tempRot;
+        if (Constants.debugMode) {
+            double tempSetpoint = differentialDash.getDouble("Ext Setpoint");
+            if (extensionSetpoint != tempSetpoint) {
+                extensionSetpoint = tempSetpoint;
+            }
+            double tempRot = differentialDash.getDouble("Rot Setpoint");
+            if (rotationSetpoint != tempRot) {
+                rotationSetpoint = tempRot;
+            }
         }
         leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
