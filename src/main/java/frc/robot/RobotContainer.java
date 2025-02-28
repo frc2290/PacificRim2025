@@ -21,7 +21,9 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ElevatorMove;
 import frc.robot.commands.ExtensionExtend;
+import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.RollEndeffector;
+import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.WristRotate;
 import frc.robot.commands.Positions.IntakePosition;
 import frc.robot.commands.Positions.L1Position;
@@ -33,6 +35,8 @@ import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.State;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -57,6 +61,7 @@ public class RobotContainer {
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
   private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
+  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator);
 
 	// The driver's controller
 	XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -103,22 +108,31 @@ public class RobotContainer {
     // new JoystickButton(m_driverController, Button.kLeftBumper.value)
     //     .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
     new JoystickButton(m_driverController, Button.kA.value)
-        .onTrue(new L1Position(m_DiffArm, m_elevator));
+        .onTrue(new RunCommand(() -> m_state.setGoal(State.L1Position), m_state));
+        //.onTrue(new L1Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kB.value)
-        .onTrue(new L2Position(m_DiffArm, m_elevator));
+        .onTrue(new RunCommand(() -> m_state.setGoal(State.L2Position), m_state));
+        //.onTrue(new L2Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kY.value)
-        .onTrue(new L3Position(m_DiffArm, m_elevator));
+        .onTrue(new RunCommand(() -> m_state.setGoal(State.L3Position), m_state));
+        //.onTrue(new L3Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kX.value)
-        .onTrue(new L4Position(m_DiffArm, m_elevator));
+        .onTrue(new RunCommand(() -> m_state.setGoal(State.L4Position), m_state));
+        //.onTrue(new L4Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kLeftBumper.value)
-        .whileTrue(new RollEndeffector(m_endeffector, 0.5)); //intake
+        .whileTrue(new IntakeCoral(m_endeffector, m_state));
+        //.onTrue(new IntakeCoral(m_endeffector, m_state));
+        //.whileTrue(new RollEndeffector(m_endeffector, 0.5)); //intake
     new JoystickButton(m_driverController, Button.kRightBumper.value)
-        .whileTrue(new RollEndeffector(m_endeffector, -0.5)); //outtake
+        .onTrue(new ScoreCoral(m_endeffector, m_state));
+        //.whileTrue(new RollEndeffector(m_endeffector, -0.5)); //outtake
 
     new POVButton(m_driverController, 0)
-        .onTrue(new TravelPosition(m_DiffArm, m_elevator));
+        .onTrue(new RunCommand(() -> m_state.setGoal(State.TravelPosition), m_state));
+        //.onTrue(new TravelPosition(m_DiffArm, m_elevator));
     new POVButton(m_driverController, 180)
-        .onTrue(new IntakePosition(m_DiffArm, m_elevator));
+        .onTrue(new RunCommand(() -> m_state.setGoal(State.IntakePosition), m_state));
+        //.onTrue(new IntakePosition(m_DiffArm, m_elevator));
   }
 
   /**

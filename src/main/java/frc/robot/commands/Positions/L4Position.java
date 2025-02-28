@@ -7,6 +7,8 @@ package frc.robot.commands.Positions;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.State;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class L4Position extends Command {
@@ -16,14 +18,16 @@ public class L4Position extends Command {
 
   private ElevatorSubsystem elevator;
   private DifferentialSubsystem diff;
+  private StateSubsystem state;
 
   private boolean moved_ext = false;
   private boolean moved_rot = false;
   private boolean moved_elev = false;
   /** Creates a new TravelPosition. */
-  public L4Position(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator) {
+  public L4Position(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, StateSubsystem m_state) {
     elevator = m_elevator;
     diff = m_diff;
+    state = m_state;
     // Use addRequirements() here to declare subsystem dependencies.
     //addRequirements(m_diff, m_elevator);
   }
@@ -53,7 +57,9 @@ public class L4Position extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    state.setCurrentState(State.L4Position);
+  }
 
   // Returns true when the command should end.
   @Override

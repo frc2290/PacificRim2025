@@ -29,7 +29,7 @@ import static edu.wpi.first.math.util.Units.degreesToRadians;
  */
 public final class Constants {
 
-  public static final boolean debugMode = false;
+  public static final boolean debugMode = true;
 
   public static final class Elevator {
     public static final int kLeftElevatorMotorId = 50;

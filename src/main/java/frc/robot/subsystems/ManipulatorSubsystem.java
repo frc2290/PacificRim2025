@@ -1,31 +1,68 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Manipulator;
+import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
-import frc.utils.FLYTLib.FLYTMotorLib.SparkMaxController;
 
 public class ManipulatorSubsystem extends SubsystemBase {
 
-    FlytMotorController motor;
+    SparkMax manipulatorMotor;
+    SparkMaxConfig manipulatorConfig = new SparkMaxConfig();
+
+    SparkAbsoluteEncoder manipulatorAbsEncoder;
+    RelativeEncoder relEncoder;
+
+    FlytLogger manipDash = new FlytLogger("Manipulator");
 
     public ManipulatorSubsystem (){
-        motor = new SparkMaxController(getName(), Manipulator.kManipulatorMotorId, true, true, false, true);
-        //motor.advanceControl(0, 0, 0, 0);
+        manipulatorMotor = new SparkMax(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
+
+        manipulatorConfig.idleMode(IdleMode.kBrake);
+        manipulatorMotor.configure(manipulatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        manipulatorAbsEncoder = manipulatorMotor.getAbsoluteEncoder();
+        relEncoder = manipulatorMotor.getEncoder();
+
+        manipDash.addDoublePublisher("Motor Pos", true, () -> getMotorPos());
+        manipDash.addBoolPublisher("Got Coral", false, () -> gotCoral());
+        manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
     }
     
-    public void Intake(double power){
-        motor.setPower(power);
+    public void intake(double power){
+        manipulatorMotor.set(power);
     }
 
     public double getWristPos(){
-        return motor.getPos();
+        return manipulatorAbsEncoder.getPosition();
+    }
+
+    public double getMotorPos() {
+        return relEncoder.getPosition();
+    }
+
+    public void resetMotorPos() {
+        relEncoder.setPosition(0);
+    }
+
+    public boolean gotCoral() {
+        return manipulatorMotor.getOutputCurrent() > 5;
+        //return true;
     }
 
     @Override
     public void periodic() {
-        motor.updateLogger(Constants.debugMode);
+        manipDash.update(Constants.debugMode);
     }
     
 }

@@ -106,17 +106,17 @@ public class DifferentialSubsystem extends SubsystemBase {
         leftArm = leftMotor.getClosedLoopController();
         rightArm = rightMotor.getClosedLoopController();
 
-        differentialDash.addDoublePublisher("Left POS", false, () -> getLeftPos());
-        differentialDash.addDoublePublisher("Right POS", false, () -> getRightPos());
+        differentialDash.addDoublePublisher("Left POS", true, () -> getLeftPos());
+        differentialDash.addDoublePublisher("Right POS", true, () -> getRightPos());
         differentialDash.addDoublePublisher("Extension POS", false, () -> getExtensionPosition());
         differentialDash.addDoublePublisher("Rotation POS", false, () -> getRotationPosition());
         differentialDash.addBoolPublisher("At Extension", false, () -> atExtenstionSetpoint());
         differentialDash.addBoolPublisher("At Rotation", false, () -> atRotationSetpoint());
         differentialDash.addDoublePublisher("Ext Setpoint", false, () -> getExtensionSetpoint());
         differentialDash.addDoublePublisher("Rot Setpoint", false, () -> getRotationSetpoint());
-        differentialDash.addDoublePublisher("Output", false, () -> leftMotor.getAppliedOutput());
-        differentialDash.addDoublePublisher("Output 2", false, () -> rightMotor.getAppliedOutput());
-        differentialDash.addDoublePublisher("Voltage", false, () -> leftMotor.getBusVoltage());
+        differentialDash.addDoublePublisher("Output", true, () -> leftMotor.getAppliedOutput());
+        differentialDash.addDoublePublisher("Output 2", true, () -> rightMotor.getAppliedOutput());
+        differentialDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
     }
 
     public void extend(double setpoint){
