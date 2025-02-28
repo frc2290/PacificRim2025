@@ -11,6 +11,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
@@ -55,6 +59,11 @@ public class DifferentialSubsystem extends SubsystemBase {
     private double extensionSetpoint = 0;
     private double rotationSetpoint = 0;
 
+    //private TrapezoidProfile extendTrap = new TrapezoidProfile(new Constraints(5, 5));
+    //private TrapezoidProfile rotateTrap = new TrapezoidProfile(new Constraints(5, 5));
+    private SlewRateLimiter extendSlew = new SlewRateLimiter(800);
+    private SlewRateLimiter rotateSlew = new SlewRateLimiter(360);
+
    public DifferentialSubsystem(ManipulatorSubsystem m_endeffector){
         endeffector = m_endeffector;
         // motor1 = new SparkMaxController(getName(), DifferentialArm.kLeftMotorId, true, true, false);
@@ -73,7 +82,7 @@ public class DifferentialSubsystem extends SubsystemBase {
         leftMotor = new SparkMax(DifferentialArm.kLeftMotorId, MotorType.kBrushless);
         rightMotor = new SparkMax(DifferentialArm.kRightMotorId, MotorType.kBrushless);
 
-        leftConfig.inverted(false)
+        leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
                     .encoder
                         .positionConversionFactor(60);
@@ -90,7 +99,9 @@ public class DifferentialSubsystem extends SubsystemBase {
         rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         leftEnc = leftMotor.getEncoder();
+        leftEnc.setPosition(0);
         rightEnc = rightMotor.getEncoder();
+        rightEnc.setPosition(0);
 
         leftArm = leftMotor.getClosedLoopController();
         rightArm = rightMotor.getClosedLoopController();
@@ -101,7 +112,8 @@ public class DifferentialSubsystem extends SubsystemBase {
         differentialDash.addDoublePublisher("Rotation POS", false, () -> getRotationPosition());
         differentialDash.addBoolPublisher("At Extension", false, () -> atExtenstionSetpoint());
         differentialDash.addBoolPublisher("At Rotation", false, () -> atRotationSetpoint());
-        differentialDash.addDoublePublisher("Setpoint", false, () -> getExtensionSetpoint());
+        differentialDash.addDoublePublisher("Ext Setpoint", false, () -> getExtensionSetpoint());
+        differentialDash.addDoublePublisher("Rot Setpoint", false, () -> getRotationSetpoint());
         differentialDash.addDoublePublisher("Output", false, () -> leftMotor.getAppliedOutput());
         differentialDash.addDoublePublisher("Output 2", false, () -> rightMotor.getAppliedOutput());
         differentialDash.addDoublePublisher("Voltage", false, () -> leftMotor.getBusVoltage());
@@ -138,7 +150,11 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public double getExtensionSetpoint() {
-        return extensionPos;
+        return extensionSetpoint;
+    }
+
+    public double getRotationSetpoint() {
+        return rotationSetpoint;
     }
 
     public double getLeftPos() {
@@ -155,7 +171,8 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public double getRotationPosition(){
-        return endeffector.getWristPos();
+        return -(((getLeftPos() - getRightPos()) /2 )/ 200) * 360;
+        //return endeffector.getWristPos();
     }
 
     public boolean atExtenstionSetpoint() {
@@ -164,6 +181,10 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     public boolean atRotationSetpoint() {
         return (rotationSetpoint - 5) <= getRotationPosition() && getRotationPosition() <= (rotationSetpoint + 5);
+    }
+
+    private double degreesToMM(double degrees) {
+        return (degrees / 360) * 200;
     }
     
     @Override
@@ -175,12 +196,16 @@ public class DifferentialSubsystem extends SubsystemBase {
         //Position Extension PID Loop
         //setPosition(pid_extension.calculate(getExtensionPosition(), setExtension),pid_rotation.calculate(getRotationPosition(), setRotation));
         //GET ENCODER DISTANCE HAS TO BE FIGURED OUT LATER
-        double tempSetpoint = differentialDash.getDouble("Setpoint");
+        double tempSetpoint = differentialDash.getDouble("Ext Setpoint");
         if (extensionSetpoint != tempSetpoint) {
             extensionSetpoint = tempSetpoint;
         }
-        leftArm.setReference(extensionSetpoint, ControlType.kPosition);
-        rightArm.setReference(extensionSetpoint, ControlType.kPosition);
+        double tempRot = differentialDash.getDouble("Rot Setpoint");
+        if (rotationSetpoint != tempRot) {
+            rotationSetpoint = tempRot;
+        }
+        leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
+        rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         differentialDash.update(Constants.debugMode);
     }
 }

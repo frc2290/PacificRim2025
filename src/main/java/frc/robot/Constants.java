@@ -35,10 +35,10 @@ public final class Constants {
     public static final int kLeftElevatorMotorId = 50;
     public static final int kRightElevatorMotorId = 51;
 
-    public static final double kPositionConversion = 0.01589872411; // ((7/34) * (15/31) * (0.0508 * Math.PI)); // Meters Position
+    public static final double kPositionConversion = 0.01683762514; // ((7/34) * (15/31) * (0.0538 * Math.PI)); // Meters Position
 
     public static final double kP = 1.5;
-    public static final double kI = 0;
+    public static final double kI = 0.0001;
     public static final double kD = 0;
     public static final double kKG = 0.42;
   }
@@ -57,7 +57,7 @@ public final class Constants {
     public static final int currentFreeLim = 0;
 
     //pid tune values Internal loop
-    public static final double v_kp = 0.001;
+    public static final double v_kp = 0.015;
     public static final double v_ki = 0;
     public static final double v_kd = 0;
     public static final double v_KG = 0;

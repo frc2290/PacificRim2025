@@ -12,6 +12,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Elevator;
 import frc.robot.Constants;
@@ -39,6 +40,8 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     private double elevatorSetpoint = 0;
 
+    private SlewRateLimiter elevatorSlew = new SlewRateLimiter(1.5);
+
     //private ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0, 0.42, 0);
 
     public ElevatorSubsystem() {
@@ -56,6 +59,7 @@ public class ElevatorSubsystem extends SubsystemBase{
         elevator = leftMotor.getClosedLoopController();
 
         leftEnc = leftMotor.getEncoder();
+        leftEnc.setPosition(0);
 
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
@@ -115,16 +119,16 @@ public class ElevatorSubsystem extends SubsystemBase{
      * @return True if at setpoint
      */
     public boolean atPosition() {
-        return (elevatorSetpoint - 0.01) <= getPosition() && getPosition() <= (elevatorSetpoint + 0.01);
+        return (elevatorSetpoint - 0.02) <= getPosition() && getPosition() <= (elevatorSetpoint + 0.02);
     }
 
     @Override
     public void periodic() {
-        double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
-        if (elevatorSetpoint != tempSetpoint) {
-            elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
-        }
-        elevator.setReference(elevatorSetpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
+        // double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
+        // if (elevatorSetpoint != tempSetpoint) {
+        //     elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
+        // }
+        elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
         elevatorDash.update(Constants.debugMode);
     }
 }
