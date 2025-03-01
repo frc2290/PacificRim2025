@@ -16,9 +16,11 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.Auto;
 import frc.robot.commands.ElevatorMove;
 import frc.robot.commands.ExtensionExtend;
 import frc.robot.commands.IntakeCoral;
@@ -76,7 +78,8 @@ public class RobotContainer {
 		configureButtonBindings();
 
 		// Build an auto chooser. This will use Commands.none() as the default option.
-    	//auto_chooser = AutoBuilder.buildAutoChooser();
+      auto_chooser.addOption("Drive", new Auto(m_robotDrive));
+      SmartDashboard.putData(auto_chooser);
 
 		// Configure default commands
 		m_robotDrive.setDefaultCommand(
@@ -108,16 +111,16 @@ public class RobotContainer {
     // new JoystickButton(m_driverController, Button.kLeftBumper.value)
     //     .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
     new JoystickButton(m_driverController, Button.kA.value)
-        .onTrue(new RunCommand(() -> m_state.setGoal(State.L1Position), m_state));
+        .onTrue(m_state.setGoalCommand(State.L1Position));
         //.onTrue(new L1Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kB.value)
-        .onTrue(new RunCommand(() -> m_state.setGoal(State.L2Position), m_state));
+        .onTrue(m_state.setGoalCommand(State.L2Position));
         //.onTrue(new L2Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kY.value)
-        .onTrue(new RunCommand(() -> m_state.setGoal(State.L3Position), m_state));
+        .onTrue(m_state.setGoalCommand(State.L3Position));
         //.onTrue(new L3Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kX.value)
-        .onTrue(new RunCommand(() -> m_state.setGoal(State.L4Position), m_state));
+        .onTrue(m_state.setGoalCommand(State.L4Position));
         //.onTrue(new L4Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kLeftBumper.value)
         .whileTrue(new IntakeCoral(m_endeffector, m_state));
@@ -128,10 +131,10 @@ public class RobotContainer {
         //.whileTrue(new RollEndeffector(m_endeffector, -0.5)); //outtake
 
     new POVButton(m_driverController, 0)
-        .onTrue(new RunCommand(() -> m_state.setGoal(State.TravelPosition), m_state));
+        .onTrue(m_state.setGoalCommand(State.TravelPosition));
         //.onTrue(new TravelPosition(m_DiffArm, m_elevator));
     new POVButton(m_driverController, 180)
-        .onTrue(new RunCommand(() -> m_state.setGoal(State.IntakePosition), m_state));
+        .onTrue(m_state.setGoalCommand(State.IntakePosition));
         //.onTrue(new IntakePosition(m_DiffArm, m_elevator));
   }
 

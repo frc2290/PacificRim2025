@@ -14,6 +14,8 @@ public class ScoreCoral extends Command {
   private ManipulatorSubsystem manipulator;
   private StateSubsystem state;
 
+  private int count = 0;
+
   /** Creates a new ScoreCoral. */
   public ScoreCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
     manipulator = m_manip;
@@ -24,6 +26,7 @@ public class ScoreCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    count = 0;
     manipulator.resetMotorPos();
   }
 
@@ -31,17 +34,20 @@ public class ScoreCoral extends Command {
   @Override
   public void execute() {
     manipulator.intake(0.75);
+    count++;
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    state.setGoal(State.TravelPosition);
+    manipulator.intake(0);
+    state.setGoal(State.IntakePosition);
+
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return manipulator.getMotorPos() > 50;
+    return count > 20 && manipulator.getMotorPos() > 50;
   }
 }

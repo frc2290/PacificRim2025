@@ -28,7 +28,8 @@ public class ManipulatorSubsystem extends SubsystemBase {
     public ManipulatorSubsystem (){
         manipulatorMotor = new SparkMax(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
 
-        manipulatorConfig.idleMode(IdleMode.kBrake);
+        manipulatorConfig.idleMode(IdleMode.kBrake)
+                            .smartCurrentLimit(40);
         manipulatorMotor.configure(manipulatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         manipulatorAbsEncoder = manipulatorMotor.getAbsoluteEncoder();
@@ -45,6 +46,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     public double getWristPos(){
         return manipulatorAbsEncoder.getPosition();
+
     }
 
     public double getMotorPos() {
@@ -56,7 +58,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     }
 
     public boolean gotCoral() {
-        return manipulatorMotor.getOutputCurrent() > 5;
+        return manipulatorAbsEncoder.getVelocity() < 10;
         //return true;
     }
 

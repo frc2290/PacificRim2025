@@ -14,7 +14,7 @@ import frc.robot.subsystems.StateSubsystem.State;
 public class L2Position extends Command {
   private double elevatorPos = 0.65;
   private double diffExt = 25;
-  private double diffRot = 220;
+  private double diffRot = (220 - 40);
 
   private ElevatorSubsystem elevator;
   private DifferentialSubsystem diff;
@@ -64,7 +64,6 @@ public class L2Position extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    System.out.println(moved_ext && moved_rot && moved_elev);
     return (moved_ext && moved_rot && moved_elev);
     //return false;
   }

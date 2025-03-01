@@ -15,7 +15,7 @@ public class TravelPosition extends Command {
 
   private double elevatorPos = 0.1;
   private double diffExt = 100;
-  private double diffRot = 110;
+  private double diffRot = (110 - 40);
 
   private ElevatorSubsystem elevator;
   private DifferentialSubsystem diff;
@@ -44,7 +44,7 @@ public class TravelPosition extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (state.getCurrentState() != State.IntakePosition) {
+    if (state.getCurrentState() != State.IntakePosition && state.getCurrentState() != State.StartPosition) {
       diff.setRotationSetpoint(diffRot);
       if (diff.atRotationSetpoint() && moved_rot) {
         diff.setExtensionSetpoint(diffExt);
@@ -78,7 +78,6 @@ public class TravelPosition extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    System.out.println(moved_ext && moved_rot && moved_elev);
     return (moved_ext && moved_rot && moved_elev);
     //return false;
   }

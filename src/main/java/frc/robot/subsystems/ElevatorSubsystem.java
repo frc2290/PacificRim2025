@@ -40,7 +40,7 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     private double elevatorSetpoint = 0;
 
-    private SlewRateLimiter elevatorSlew = new SlewRateLimiter(1.5);
+    private SlewRateLimiter elevatorSlew = new SlewRateLimiter(2);
 
     //private ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0, 0.42, 0);
 
@@ -124,12 +124,12 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     @Override
     public void periodic() {
-        if (Constants.debugMode) {
-            double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
-            if (elevatorSetpoint != tempSetpoint) {
-                elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
-            }
-        }
+        // if (Constants.debugMode) {
+        //     double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
+        //     if (elevatorSetpoint != tempSetpoint) {
+        //         elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
+        //     }
+        // }
         elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
         elevatorDash.update(Constants.debugMode);
     }

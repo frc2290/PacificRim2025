@@ -14,7 +14,7 @@ import frc.robot.subsystems.StateSubsystem.State;
 public class IntakePosition extends Command {
   private double elevatorPos = 0.1;
   private double diffExt = 0;
-  private double diffRot = 20;
+  private double diffRot = 8;
 
   private ElevatorSubsystem elevator;
   private DifferentialSubsystem diff;
@@ -64,7 +64,6 @@ public class IntakePosition extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    System.out.println(moved_ext && moved_rot && moved_elev);
     return (moved_ext && moved_rot && moved_elev);
     //return false;
   }

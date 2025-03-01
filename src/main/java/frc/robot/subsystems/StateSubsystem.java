@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -37,6 +39,8 @@ public class StateSubsystem extends SubsystemBase {
 
   private boolean transitioning = false;
 
+  private DriverStation driverStation;
+
   private FlytLogger stateDash = new FlytLogger("State");
 
   /** Creates a new StateSubsystem. */
@@ -67,20 +71,26 @@ public class StateSubsystem extends SubsystemBase {
   }
 
   public void setCurrentState(State curState) {
+    transitioning = false;
     prevState = currentState;
     currentState = curState;
-    transitioning = false;
+    System.out.println("Current: " + currentState.toString() + " Prev: " + prevState.toString() + " Goal: " + goalState.toString());
   }
 
   public void setGoal(State newState) {
     goalState = newState;
+    System.out.println("New Goal: " + newState.toString());
     //currentState = newState;
+  }
+
+  public Command setGoalCommand(State newGoal) {
+    return this.runOnce(() -> goalState = newGoal);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (goalState != currentState && !isTransitioning()) {
+    if (goalState != currentState && !isTransitioning() && driverStation.isEnabled()) {
       switch(goalState) {
         case TravelPosition:
           new TravelPosition(diff, elevator, this).schedule();
@@ -93,28 +103,28 @@ public class StateSubsystem extends SubsystemBase {
           }
           break;
         case L1Position:
-          if (prevState == State.IntakePosition) {
+          if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
             new L1Position(diff, elevator, this).schedule();
           }
           break;
         case L2Position:
-          if (prevState == State.IntakePosition) {
+          if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
             new L2Position(diff, elevator, this).schedule();
           }
           break;
         case L3Position:
-          if (prevState == State.IntakePosition) {
+          if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
             new L3Position(diff, elevator, this).schedule();
           }
           break;
         case L4Position:
-          if (prevState == State.IntakePosition) {
+          if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
             new L4Position(diff, elevator, this).schedule();

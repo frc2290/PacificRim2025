@@ -62,7 +62,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     //private TrapezoidProfile extendTrap = new TrapezoidProfile(new Constraints(5, 5));
     //private TrapezoidProfile rotateTrap = new TrapezoidProfile(new Constraints(5, 5));
     private SlewRateLimiter extendSlew = new SlewRateLimiter(800);
-    private SlewRateLimiter rotateSlew = new SlewRateLimiter(360);
+    private SlewRateLimiter rotateSlew = new SlewRateLimiter(180);
 
    public DifferentialSubsystem(ManipulatorSubsystem m_endeffector){
         endeffector = m_endeffector;
@@ -196,16 +196,16 @@ public class DifferentialSubsystem extends SubsystemBase {
         //Position Extension PID Loop
         //setPosition(pid_extension.calculate(getExtensionPosition(), setExtension),pid_rotation.calculate(getRotationPosition(), setRotation));
         //GET ENCODER DISTANCE HAS TO BE FIGURED OUT LATER
-        if (Constants.debugMode) {
-            double tempSetpoint = differentialDash.getDouble("Ext Setpoint");
-            if (extensionSetpoint != tempSetpoint) {
-                extensionSetpoint = tempSetpoint;
-            }
-            double tempRot = differentialDash.getDouble("Rot Setpoint");
-            if (rotationSetpoint != tempRot) {
-                rotationSetpoint = tempRot;
-            }
-        }
+        // if (Constants.debugMode) {
+        //     double tempSetpoint = differentialDash.getDouble("Ext Setpoint");
+        //     if (extensionSetpoint != tempSetpoint) {
+        //         extensionSetpoint = tempSetpoint;
+        //     }
+        //     double tempRot = differentialDash.getDouble("Rot Setpoint");
+        //     if (rotationSetpoint != tempRot) {
+        //         rotationSetpoint = tempRot;
+        //     }
+        // }
         leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         differentialDash.update(Constants.debugMode);

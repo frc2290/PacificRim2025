@@ -5,55 +5,44 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.State;
+import frc.robot.subsystems.DriveSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class IntakeCoral extends Command {
-  private ManipulatorSubsystem manipulator;
-  private StateSubsystem state;
+public class Auto extends Command {
+
+  private DriveSubsystem drive;
+
   private int count = 0;
 
-  /** Creates a new IntakeOn. */
-  public IntakeCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
-    manipulator = m_manip;
-    state = m_state;
+  /** Creates a new Auto. */
+  public Auto(DriveSubsystem m_drive) {
+    drive = m_drive;
     // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(drive);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    state.setGoal(State.IntakePosition);
     count = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // if (count % 10 == 0) {
-    //   manipulator.intake(0);
-    // } else if (count % 9 == 0) {
-    //   manipulator.intake(-0.75);
-    // }
-    manipulator.intake(-0.75);
+    drive.drive(-1, 0, 0, false);
     count++;
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    manipulator.intake(0);
-    // if (manipulator.gotCoral()) {
-    //   state.setGoal(State.TravelPosition);
-    // }
+    drive.drive(0, 0, 0, false);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
-    //return manipulator.gotCoral();
+    return count > 50;
   }
 }
