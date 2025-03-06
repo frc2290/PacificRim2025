@@ -27,6 +27,7 @@ import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.RollEndeffector;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.WristRotate;
+import frc.robot.commands.Autos.Test;
 import frc.robot.commands.Positions.IntakePosition;
 import frc.robot.commands.Positions.L1Position;
 import frc.robot.commands.Positions.L2Position;
@@ -59,7 +60,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 public class RobotContainer {
 	// The robot's subsystems
 	private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  //private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+  private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
   private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
@@ -78,7 +79,8 @@ public class RobotContainer {
 		configureButtonBindings();
 
 		// Build an auto chooser. This will use Commands.none() as the default option.
-      auto_chooser.addOption("Drive", new Auto(m_robotDrive));
+      auto_chooser.addOption("Drive", new Test(m_poseEstimator));
+      auto_chooser.addOption("Driving", new Auto(m_robotDrive));
       SmartDashboard.putData(auto_chooser);
 
 		// Configure default commands

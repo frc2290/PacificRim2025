@@ -96,15 +96,15 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     photonNotifier2.setName("PhotonRunnable2");
     photonNotifier2.startPeriodic(0.02);
 
-    // try{
-    //   config = RobotConfig.fromGUISettings();
-    // } catch (Exception e) {
-    //   // Handle exception as needed
-    //   e.printStackTrace();
-    // }
+     try{
+       config = RobotConfig.fromGUISettings();
+     } catch (Exception e) {
+       // Handle exception as needed
+       e.printStackTrace();
+    }
 
     // Configure AutoBuilder last
-    /*AutoBuilder.configure(
+    AutoBuilder.configure(
             this::getCurrentPose, // Robot pose supplier
             this::setCurrentPose, // Method to reset odometry (will be called if your auto has a starting pose)
             this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
@@ -126,7 +126,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
               return false;
             },
             m_drive // Reference to this subsystem to set requirements
-    );*/
+    );
   }
 
   /**
