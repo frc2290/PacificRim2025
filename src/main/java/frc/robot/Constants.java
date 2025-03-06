@@ -153,13 +153,13 @@ public final class Constants {
   }
 
   public static final class VisionConstants {
-    public static final double CAMERA_HEIGHT_METERS = 0.161925;
-    public static final double CAMERA_PITCH_RADIANS = degreesToRadians(37.5);
+    public static final double CAMERA_HEIGHT_METERS = 0.9144;
+    public static final double CAMERA_PITCH_RADIANS = degreesToRadians(45);
     public static final double TARGET_HEIGHT_METERS = 1.4351;
     /** Physical location of the apriltag camera on the robot, relative to the center of the robot. */
     public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
-        new Translation3d(-0.32385, 0.1016, 0.161925),
-        new Rotation3d(0.0, degreesToRadians(37.5), degreesToRadians(5.0)));
+        new Translation3d(0.142875, -0.36, CAMERA_HEIGHT_METERS),
+        new Rotation3d(0.0, CAMERA_PITCH_RADIANS, degreesToRadians(206)));
 
     public static final double FIELD_LENGTH_METERS = 16.54175;
     public static final double FIELD_WIDTH_METERS = 8.0137;
