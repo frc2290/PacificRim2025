@@ -40,7 +40,7 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     private double elevatorSetpoint = 0;
 
-    private SlewRateLimiter elevatorSlew = new SlewRateLimiter(2);
+    private SlewRateLimiter elevatorSlew = new SlewRateLimiter(3);
 
     //private ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0, 0.42, 0);
 
@@ -119,7 +119,7 @@ public class ElevatorSubsystem extends SubsystemBase{
      * @return True if at setpoint
      */
     public boolean atPosition() {
-        return (elevatorSetpoint - 0.02) <= getPosition() && getPosition() <= (elevatorSetpoint + 0.02);
+        return (elevatorSetpoint - 0.04) <= getPosition() && getPosition() <= (elevatorSetpoint + 0.04);
     }
 
     @Override

@@ -6,6 +6,7 @@ package frc.robot.commands.Positions;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.State;
@@ -19,15 +20,17 @@ public class L2Position extends Command {
   private ElevatorSubsystem elevator;
   private DifferentialSubsystem diff;
   private StateSubsystem state;
+  private DriveSubsystem drive;
 
   private boolean moved_ext = false;
   private boolean moved_rot = false;
   private boolean moved_elev = false;
   /** Creates a new TravelPosition. */
-  public L2Position(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, StateSubsystem m_state) {
+  public L2Position(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, StateSubsystem m_state) {
     elevator = m_elevator;
     diff = m_diff;
     state = m_state;
+    drive = m_drive;
     // Use addRequirements() here to declare subsystem dependencies.
     //addRequirements(m_diff, m_elevator);
   }
@@ -38,6 +41,7 @@ public class L2Position extends Command {
     moved_ext = false;
     moved_rot = false;
     moved_elev = false;
+    drive.setSlowSpeed();
   }
 
   // Called every time the scheduler runs while the command is scheduled.

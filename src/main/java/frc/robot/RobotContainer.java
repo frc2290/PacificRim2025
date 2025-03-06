@@ -63,7 +63,7 @@ public class RobotContainer {
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
   private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
-  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator);
+  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive);
 
 	// The driver's controller
 	XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -127,7 +127,7 @@ public class RobotContainer {
         //.onTrue(new IntakeCoral(m_endeffector, m_state));
         //.whileTrue(new RollEndeffector(m_endeffector, 0.5)); //intake
     new JoystickButton(m_driverController, Button.kRightBumper.value)
-        .onTrue(new ScoreCoral(m_endeffector, m_state));
+        .onTrue(new ScoreCoral(m_endeffector, m_state, m_robotDrive));
         //.whileTrue(new RollEndeffector(m_endeffector, -0.5)); //outtake
 
     new POVButton(m_driverController, 0)

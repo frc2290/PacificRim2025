@@ -44,6 +44,8 @@ public class DriveSubsystem extends SubsystemBase {
   private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
   //private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
+  private double slowSpeed = 1.0;
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
     // Usage reporting for MAXSwerve template
@@ -54,6 +56,18 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Nothing
+  }
+
+  public void setSlowSpeed() {
+    slowSpeed = 0.5;
+  }
+
+  public void setRegularSpeed() {
+    slowSpeed = 1;
+  }
+
+  public boolean isSlowSpeed() {
+    return slowSpeed < 1;
   }
 
   /**
@@ -67,9 +81,9 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     // Convert the commanded speeds into the correct units for the drivetrain
-    double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
-    double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
-    double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
+    double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond * slowSpeed;
+    double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond * slowSpeed;
+    double rotDelivered = rot * DriveConstants.kMaxAngularSpeed * slowSpeed;
 
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative

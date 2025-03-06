@@ -21,6 +21,7 @@ public class StateSubsystem extends SubsystemBase {
 
   private ElevatorSubsystem elevator;
   private DifferentialSubsystem diff;
+  private DriveSubsystem drive;
 
   public enum State {
     TravelPosition,
@@ -44,9 +45,10 @@ public class StateSubsystem extends SubsystemBase {
   private FlytLogger stateDash = new FlytLogger("State");
 
   /** Creates a new StateSubsystem. */
-  public StateSubsystem(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator) {
+  public StateSubsystem(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive) {
     diff = m_diff;
     elevator = m_elevator;
+    drive = m_drive;
 
     stateDash.addStringPublisher("Current State", false, () -> getCurrentState().toString());
     stateDash.addStringPublisher("Prev State", false, () -> getPrevState().toString());
@@ -106,28 +108,28 @@ public class StateSubsystem extends SubsystemBase {
           if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
-            new L1Position(diff, elevator, this).schedule();
+            new L1Position(diff, elevator, drive, this).schedule();
           }
           break;
         case L2Position:
           if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
-            new L2Position(diff, elevator, this).schedule();
+            new L2Position(diff, elevator, drive, this).schedule();
           }
           break;
         case L3Position:
           if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
-            new L3Position(diff, elevator, this).schedule();
+            new L3Position(diff, elevator, drive, this).schedule();
           }
           break;
         case L4Position:
           if (currentState == State.IntakePosition) {
             new TravelPosition(diff, elevator, this).schedule();
           } else {
-            new L4Position(diff, elevator, this).schedule();
+            new L4Position(diff, elevator, drive, this).schedule();
           }
           break;
         case Transition:
