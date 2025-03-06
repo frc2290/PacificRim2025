@@ -17,13 +17,15 @@ import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 
 public class ManipulatorSubsystem extends SubsystemBase {
 
-    SparkMax manipulatorMotor;
-    SparkMaxConfig manipulatorConfig = new SparkMaxConfig();
+    private SparkMax manipulatorMotor;
+    private SparkMaxConfig manipulatorConfig = new SparkMaxConfig();
 
-    SparkAbsoluteEncoder manipulatorAbsEncoder;
-    RelativeEncoder relEncoder;
+    private SparkAbsoluteEncoder manipulatorAbsEncoder;
+    private RelativeEncoder relEncoder;
 
-    FlytLogger manipDash = new FlytLogger("Manipulator");
+    private boolean hasCoral = false;
+
+    private FlytLogger manipDash = new FlytLogger("Manipulator");
 
     public ManipulatorSubsystem (){
         manipulatorMotor = new SparkMax(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
@@ -61,9 +63,12 @@ public class ManipulatorSubsystem extends SubsystemBase {
         relEncoder.setPosition(0);
     }
 
-    public boolean gotCoral() {
-        return manipulatorAbsEncoder.getVelocity() < 10;
-        //return true;
+    public boolean hasCoral() {
+        return hasCoral;
+    }
+
+    public void setCoral(boolean coral) {
+        hasCoral = coral;
     }
 
     @Override

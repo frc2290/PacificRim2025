@@ -60,11 +60,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 public class RobotContainer {
 	// The robot's subsystems
 	private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
-  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
-  private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
-  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive);
+    private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+    private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+    private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
+    private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
+    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive);
 
 	// The driver's controller
 	XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);

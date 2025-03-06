@@ -10,6 +10,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -30,6 +32,9 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     //private FlytMotorController motor1; //flyt motor
     //private FlytMotorController motor2; //flyt motor
+
+    private ProfiledPIDController extensionPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
+    private ProfiledPIDController rotationPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
 
     private ManipulatorSubsystem endeffector;
 
@@ -86,6 +91,7 @@ public class DifferentialSubsystem extends SubsystemBase {
                     .idleMode(IdleMode.kBrake)
                     .encoder
                         .positionConversionFactor(60);
+                        .velocityConversionFactor(1);
             leftConfig.closedLoop
                         .p(DifferentialArm.v_kp)
                         .i(DifferentialArm.v_ki)
@@ -105,6 +111,9 @@ public class DifferentialSubsystem extends SubsystemBase {
 
         leftArm = leftMotor.getClosedLoopController();
         rightArm = rightMotor.getClosedLoopController();
+
+        extensionPid.reset(extensionSetpoint);
+        rotationPid.reset(rotationSetpoint);
 
         differentialDash.addDoublePublisher("Left POS", true, () -> getLeftPos());
         differentialDash.addDoublePublisher("Right POS", true, () -> getRightPos());
@@ -206,8 +215,12 @@ public class DifferentialSubsystem extends SubsystemBase {
         //         rotationSetpoint = tempRot;
         //     }
         // }
-        leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
-        rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
+        double extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
+        double rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
+        leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);
+        rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity);
+        //leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
+        //rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         differentialDash.update(Constants.debugMode);
     }
 }
