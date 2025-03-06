@@ -11,8 +11,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Elevator;
 import frc.robot.Constants;
@@ -20,11 +21,13 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 //import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 //import frc.utils.FLYTLib.FLYTMotorLib.SparkFlexController;
 
-public class ElevatorSubsystem extends SubsystemBase{
+public class ElevatorSubsystem extends SubsystemBase {
 
     //motor group
     //FlytMotorController leftMotor; 
     //FlytMotorController rightMotor;
+
+    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 0, new Constraints(2, 5));
 
     private SparkFlex leftMotor;
     private SparkFlex rightMotor;
@@ -40,9 +43,7 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     private double elevatorSetpoint = 0;
 
-    private SlewRateLimiter elevatorSlew = new SlewRateLimiter(3);
-
-    //private ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0, 0.42, 0);
+    //private SlewRateLimiter elevatorSlew = new SlewRateLimiter(3);
 
     public ElevatorSubsystem() {
         // leftMotor = new SparkFlexController(getName(), Elevator.kLeftElevatorMotorId, true, true, true); //motor construct
@@ -64,7 +65,8 @@ public class ElevatorSubsystem extends SubsystemBase{
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
                     .encoder
-                        .positionConversionFactor(Elevator.kPositionConversion);
+                        .positionConversionFactor(Elevator.kPositionConversion)
+                        .velocityConversionFactor(Elevator.kVelocityConversion);
             leftConfig.closedLoop
                         .p(Elevator.kP)
                         .i(Elevator.kI)
@@ -77,6 +79,8 @@ public class ElevatorSubsystem extends SubsystemBase{
                     .idleMode(IdleMode.kBrake);
 
         rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        traPidController.reset(elevatorSetpoint);
 
         elevatorDash.addDoublePublisher("Elevator POS", false, () -> getPosition());
         elevatorDash.addDoublePublisher("Elevator Setpoint", false, () -> getElevatorSetpoint());
@@ -130,7 +134,9 @@ public class ElevatorSubsystem extends SubsystemBase{
         //         elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
         //     }
         // }
-        elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
+        double velocity = traPidController.calculate(getPosition(), elevatorSetpoint);
+        elevator.setReference(velocity, ControlType.kVelocity);
+        //elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
         elevatorDash.update(Constants.debugMode);
     }
 }

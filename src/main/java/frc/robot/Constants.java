@@ -36,10 +36,11 @@ public final class Constants {
     public static final int kRightElevatorMotorId = 51;
 
     public static final double kPositionConversion = 0.01683762514; // ((7/34) * (15/31) * (0.0538 * Math.PI)); // Meters Position
+    public static final double kVelocityConversion = 0.00028062708; // ((7/34) * (15/31) * (0.0538 * Math.PI)); // Meters Position
 
-    public static final double kP = 1.75;
-    public static final double kI = 0.0001;
-    public static final double kD = 1;
+    public static final double kP = 0.125;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
     public static final double kKG = 0.0;
   }
 

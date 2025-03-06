@@ -49,6 +49,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     }
 
+    public double getOutputCurrent() {
+        return manipulatorMotor.getOutputCurrent();
+    }
+
     public double getMotorPos() {
         return relEncoder.getPosition();
     }

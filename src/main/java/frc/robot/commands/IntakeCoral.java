@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
@@ -13,6 +14,10 @@ import frc.robot.subsystems.StateSubsystem.State;
 public class IntakeCoral extends Command {
   private ManipulatorSubsystem manipulator;
   private StateSubsystem state;
+
+  private Timer currentTimer = new Timer();
+  private Timer delayTimer = new Timer();
+
   private int count = 0;
 
   /** Creates a new IntakeOn. */
@@ -25,35 +30,40 @@ public class IntakeCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    currentTimer.reset();
+    delayTimer.reset();
     state.setGoal(State.IntakePosition);
-    count = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // if (count % 10 == 0) {
-    //   manipulator.intake(0);
-    // } else if (count % 9 == 0) {
-    //   manipulator.intake(-0.75);
-    // }
     manipulator.intake(-0.75);
-    count++;
+    System.out.println(manipulator.getOutputCurrent());
+    if (manipulator.getOutputCurrent() > 30) {
+      if (!delayTimer.isRunning()) {
+        delayTimer.restart();
+      } else if(delayTimer.hasElapsed(0.5) && delayTimer.isRunning()) {
+        delayTimer.stop();
+        currentTimer.restart();
+      }
+    }
+    System.out.println("Delay: " + delayTimer.hasElapsed(0.5));
+    System.out.println("Current: " + currentTimer.hasElapsed(0.5));
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    currentTimer.stop();
+    delayTimer.stop();
     manipulator.intake(0);
-    // if (manipulator.gotCoral()) {
-    //   state.setGoal(State.TravelPosition);
-    // }
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return currentTimer.hasElapsed(0.5);
     //return manipulator.gotCoral();
   }
 }

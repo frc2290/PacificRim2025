@@ -125,7 +125,7 @@ public class RobotContainer {
         .onTrue(m_state.setGoalCommand(State.L4Position));
         //.onTrue(new L4Position(m_DiffArm, m_elevator));
     new JoystickButton(m_driverController, Button.kLeftBumper.value)
-        .whileTrue(new IntakeCoral(m_endeffector, m_state));
+        .onTrue(new IntakeCoral(m_endeffector, m_state));
         //.onTrue(new IntakeCoral(m_endeffector, m_state));
         //.whileTrue(new RollEndeffector(m_endeffector, 0.5)); //intake
     new JoystickButton(m_driverController, Button.kRightBumper.value)
