@@ -44,6 +44,7 @@ public class ScoreCoral extends Command {
   @Override
   public void end(boolean interrupted) {
     manipulator.intake(0);
+    manipulator.setCoral(false);
     state.setGoal(State.IntakePosition);
     drive.setRegularSpeed();
   }
