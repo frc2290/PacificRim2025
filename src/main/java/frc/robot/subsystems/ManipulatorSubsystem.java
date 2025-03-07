@@ -38,7 +38,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
         relEncoder = manipulatorMotor.getEncoder();
 
         manipDash.addDoublePublisher("Motor Pos", true, () -> getMotorPos());
-        manipDash.addBoolPublisher("Got Coral", false, () -> gotCoral());
+        manipDash.addBoolPublisher("Got Coral", false, () -> hasCoral());
         manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
     }
     

@@ -90,7 +90,7 @@ public class DifferentialSubsystem extends SubsystemBase {
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
                     .encoder
-                        .positionConversionFactor(60);
+                        .positionConversionFactor(60)
                         .velocityConversionFactor(1);
             leftConfig.closedLoop
                         .p(DifferentialArm.v_kp)

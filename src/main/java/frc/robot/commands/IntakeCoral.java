@@ -58,7 +58,7 @@ public class IntakeCoral extends Command {
     currentTimer.stop();
     delayTimer.stop();
     manipulator.intake(0);
-    manipulator.hasCoral(true);
+    manipulator.setCoral(true);
   }
 
   // Returns true when the command should end.

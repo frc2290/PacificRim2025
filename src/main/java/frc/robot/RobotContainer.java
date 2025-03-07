@@ -5,35 +5,15 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.Auto;
-import frc.robot.commands.ElevatorMove;
-import frc.robot.commands.ExtensionExtend;
 import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.RollEndeffector;
 import frc.robot.commands.ScoreCoral;
-import frc.robot.commands.WristRotate;
 import frc.robot.commands.Autos.Test;
-import frc.robot.commands.Positions.IntakePosition;
-import frc.robot.commands.Positions.L1Position;
-import frc.robot.commands.Positions.L2Position;
-import frc.robot.commands.Positions.L3Position;
-import frc.robot.commands.Positions.L4Position;
-import frc.robot.commands.Positions.TravelPosition;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -43,13 +23,8 @@ import frc.robot.subsystems.StateSubsystem.State;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-
-import java.util.List;
-
-import com.pathplanner.lib.auto.AutoBuilder;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
