@@ -69,7 +69,7 @@ public class AutomatedDrive extends Command {
             // Rotate to whichever coral station is closest
             rotTarget = poseEstimator.isClosestStationRight() ? VisionConstants.coralStationRightHeading : VisionConstants.coralStationLeftHeading;
             rotSpeed = rotPid.calculate(rotTarget);
-            
+
             drive.drive(xPower, yPower, rotSpeed, true);
         }
         // Reef state: Move robot to nearest branch for scoring
