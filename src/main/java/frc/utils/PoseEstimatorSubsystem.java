@@ -17,6 +17,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -36,210 +37,252 @@ import frc.robot.subsystems.DriveSubsystem;
  */
 public class PoseEstimatorSubsystem extends SubsystemBase {
 
-  // Kalman Filter Configuration. These can be "tuned-to-taste" based on how much
-  // you trust your various sensors. Smaller numbers will cause the filter to
-  // "trust" the estimate from that particular component more than the others. 
-  // This in turn means the particualr component will have a stronger influence
-  // on the final pose estimate.
+    // Kalman Filter Configuration. These can be "tuned-to-taste" based on how much
+    // you trust your various sensors. Smaller numbers will cause the filter to
+    // "trust" the estimate from that particular component more than the others.
+    // This in turn means the particualr component will have a stronger influence
+    // on the final pose estimate.
 
-  /**
-   * Standard deviations of model states. Increase these numbers to trust your model's state estimates less. This
-   * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then meters.
-   */
-  private static final Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+    /**
+     * Standard deviations of model states. Increase these numbers to trust your
+     * model's state estimates less. This
+     * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then
+     * meters.
+     */
+    private static final Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
 
-  /**
-   * Standard deviations of the vision measurements. Increase these numbers to trust global measurements from vision
-   * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians.
-   */
-  private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(2.0, 2.0, 2.0);
+    /**
+     * Standard deviations of the vision measurements. Increase these numbers to
+     * trust global measurements from vision
+     * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
+     * radians.
+     */
+    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(2.0, 2.0, 2.0);
 
-  private final Supplier<Rotation2d> rotationSupplier;
-  private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
-  private final Supplier<SwerveModuleState[]> moduleStateSupplier;
-  private final SwerveDrivePoseEstimator poseEstimator;
-  private final Field2d field2d = new Field2d();
-  private final PhotonRunnable photonEstimator;
-  private final PhotonRunnable photonEstimator2;
-  private final Notifier photonNotifier;
-  private final Notifier photonNotifier2;
+    private final Supplier<Rotation2d> rotationSupplier;
+    private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
+    private final Supplier<SwerveModuleState[]> moduleStateSupplier;
+    private final SwerveDrivePoseEstimator poseEstimator;
+    private final Field2d field2d = new Field2d();
+    private final PhotonRunnable photonEstimator;
+    private final PhotonRunnable photonEstimator2;
+    private final Notifier photonNotifier;
+    private final Notifier photonNotifier2;
 
-  private OriginPosition originPosition = kBlueAllianceWallRightSide;
-  private boolean sawTag = false;
-  
-  RobotConfig config;
+    private OriginPosition originPosition = kBlueAllianceWallRightSide;
+    private boolean sawTag = false;
 
-  public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
-    photonEstimator = new PhotonRunnable("ThriftyCamRight80");
-    photonEstimator2 = new PhotonRunnable("ThriftyCamLeft92");
+    RobotConfig config;
 
-    photonNotifier = new Notifier(photonEstimator);
-    photonNotifier2 = new Notifier(photonEstimator2);
+    public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
+        photonEstimator = new PhotonRunnable("ThriftyCamRight80");
+        photonEstimator2 = new PhotonRunnable("ThriftyCamLeft92");
 
-    this.rotationSupplier = m_drive::newHeading;
-    this.modulePositionSupplier = m_drive::getModulePositions;
-    this.moduleStateSupplier = m_drive::getModuleStates;
+        photonNotifier = new Notifier(photonEstimator);
+        photonNotifier2 = new Notifier(photonEstimator2);
 
-    poseEstimator =  new SwerveDrivePoseEstimator(
-        DriveConstants.kDriveKinematics,
-        rotationSupplier.get(),
-        modulePositionSupplier.get(),
-        new Pose2d(),
-        stateStdDevs,
-    visionMeasurementStdDevs);
+        this.rotationSupplier = m_drive::newHeading;
+        this.modulePositionSupplier = m_drive::getModulePositions;
+        this.moduleStateSupplier = m_drive::getModuleStates;
 
-    
-    
-    // Start PhotonVision thread
-    photonNotifier.setName("PhotonRunnable");
-    photonNotifier.startPeriodic(0.02);
-    photonNotifier2.setName("PhotonRunnable2");
-    photonNotifier2.startPeriodic(0.02);
+        poseEstimator = new SwerveDrivePoseEstimator(
+                DriveConstants.kDriveKinematics,
+                rotationSupplier.get(),
+                modulePositionSupplier.get(),
+                new Pose2d(),
+                stateStdDevs,
+                visionMeasurementStdDevs);
 
-     try{
-       config = RobotConfig.fromGUISettings();
-     } catch (Exception e) {
-       // Handle exception as needed
-       e.printStackTrace();
+        // Start PhotonVision thread
+        photonNotifier.setName("PhotonRunnable");
+        photonNotifier.startPeriodic(0.02);
+        photonNotifier2.setName("PhotonRunnable2");
+        photonNotifier2.startPeriodic(0.02);
+
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
+
+        // Configure AutoBuilder last
+        AutoBuilder.configure(
+                this::getCurrentPose, // Robot pose supplier
+                this::setCurrentPose, // Method to reset odometry (will be called if your auto has a starting pose)
+                this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                (ChassisSpeeds speeds) -> m_drive.driveChassisSpeeds(new ChassisSpeeds(speeds.vxMetersPerSecond,
+                        speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond)), // Method that will drive the robot
+                                                                                  // given ROBOT RELATIVE ChassisSpeeds
+                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
+                                                // holonomic drive trains
+                        new PIDConstants(8.0, 0.0, 0.0), // Translation PID constants
+                        new PIDConstants(2.0, 0.0, 0.0) // Rotation PID constants
+                ),
+                config, // The robot configuration
+                () -> {
+                    // Boolean supplier that controls when the path will be mirrored for the red
+                    // alliance
+                    // This will flip the path being followed to the red side of the field.
+                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                    var alliance = DriverStation.getAlliance();
+                    if (alliance.isPresent()) {
+                        return alliance.get() == DriverStation.Alliance.Red;
+                    }
+                    return false;
+                },
+                m_drive // Reference to this subsystem to set requirements
+        );
     }
 
-    // Configure AutoBuilder last
-    AutoBuilder.configure(
-            this::getCurrentPose, // Robot pose supplier
-            this::setCurrentPose, // Method to reset odometry (will be called if your auto has a starting pose)
-            this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (ChassisSpeeds speeds) -> m_drive.driveChassisSpeeds(new ChassisSpeeds(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond)), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                    new PIDConstants(8.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(2.0, 0.0, 0.0) // Rotation PID constants
-            ),
-            config, // The robot configuration
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+    /**
+     * Sets the alliance. This is used to configure the origin of the AprilTag map
+     * 
+     * @param alliance alliance
+     */
+    public void setAlliance(Alliance alliance) {
+        boolean allianceChanged = false;
+        switch (alliance) {
+            case Blue:
+                allianceChanged = (originPosition == kRedAllianceWallRightSide);
+                originPosition = kBlueAllianceWallRightSide;
+                break;
+            case Red:
+                allianceChanged = (originPosition == kBlueAllianceWallRightSide);
+                originPosition = kRedAllianceWallRightSide;
+                break;
+            default:
+                // No valid alliance data. Nothing we can do about it
+        }
 
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            m_drive // Reference to this subsystem to set requirements
-    );
-  }
-
-  /**
-   * Sets the alliance. This is used to configure the origin of the AprilTag map
-   * @param alliance alliance
-   */
-  public void setAlliance(Alliance alliance) {
-    boolean allianceChanged = false;
-    switch(alliance) {
-      case Blue:
-        allianceChanged = (originPosition == kRedAllianceWallRightSide);
-        originPosition = kBlueAllianceWallRightSide;
-        break;
-      case Red:
-        allianceChanged = (originPosition == kBlueAllianceWallRightSide);
-        originPosition = kRedAllianceWallRightSide;
-        break;
-      default:
-        // No valid alliance data. Nothing we can do about it
+        if (allianceChanged && sawTag) {
+            // The alliance changed, which changes the coordinate system.
+            // Since a tag was seen, and the tags are all relative to the coordinate system,
+            // the estimated pose
+            // needs to be transformed to the new coordinate system.
+            var newPose = flipAlliance(getCurrentPose());
+            poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
+        }
     }
 
-    if (allianceChanged && sawTag) {
-      // The alliance changed, which changes the coordinate system.
-      // Since a tag was seen, and the tags are all relative to the coordinate system, the estimated pose
-      // needs to be transformed to the new coordinate system.
-      var newPose = flipAlliance(getCurrentPose());
-      poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
+    @Override
+    public void periodic() {
+        // Update pose estimator with drivetrain sensors
+        poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
+
+        var visionPose = photonEstimator.grabLatestEstimatedPose();
+        if (visionPose != null) {
+            // New pose from vision
+            sawTag = true;
+            var pose2d = visionPose.estimatedPose.toPose2d();
+            if (originPosition != kBlueAllianceWallRightSide) {
+                pose2d = flipAlliance(pose2d);
+            }
+            poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+        }
+
+        var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
+        if (visionPose2 != null) {
+            // New pose from vision
+            sawTag = true;
+            var pose2d2 = visionPose2.estimatedPose.toPose2d();
+            if (originPosition != kBlueAllianceWallRightSide) {
+                pose2d2 = flipAlliance(pose2d2);
+            }
+            poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+        }
+
+        // Set the pose on the dashboard
+        var dashboardPose = poseEstimator.getEstimatedPosition();
+        if (originPosition == kRedAllianceWallRightSide) {
+            // Flip the pose when red, since the dashboard field photo cannot be rotated
+            dashboardPose = flipAlliance(dashboardPose);
+        }
+        field2d.setRobotPose(dashboardPose);
+        SmartDashboard.putData("Field", field2d);
     }
-  }
 
-  @Override
-  public void periodic() {
-    // Update pose estimator with drivetrain sensors
-    poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
-
-    var visionPose = photonEstimator.grabLatestEstimatedPose();
-    if (visionPose != null) {
-      // New pose from vision
-      sawTag = true;
-      var pose2d = visionPose.estimatedPose.toPose2d();
-      if (originPosition != kBlueAllianceWallRightSide) {
-        pose2d = flipAlliance(pose2d);
-      }
-      poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+    private String getFomattedPose() {
+        var pose = getCurrentPose();
+        return String.format("(%.3f, %.3f) %.2f degrees",
+                pose.getX(),
+                pose.getY(),
+                pose.getRotation().getDegrees());
     }
 
-    var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-    if (visionPose2 != null) {
-      // New pose from vision
-      sawTag = true;
-      var pose2d2 = visionPose2.estimatedPose.toPose2d();
-      if (originPosition != kBlueAllianceWallRightSide) {
-        pose2d2 = flipAlliance(pose2d2);
-      }
-      poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+    public boolean isClosestStationRight() {
+        if (poseEstimator.getEstimatedPosition().getY() > VisionConstants.halfwayAcrossFieldY) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
-
-    // Set the pose on the dashboard
-    var dashboardPose = poseEstimator.getEstimatedPosition();
-    if (originPosition == kRedAllianceWallRightSide) {
-      // Flip the pose when red, since the dashboard field photo cannot be rotated
-      dashboardPose = flipAlliance(dashboardPose);
+    public Pose2d getClosestBranch(boolean right) {
+        if (right) {
+            return poseEstimator.getEstimatedPosition().nearest(VisionConstants.rightBranches);
+        } else {
+            return poseEstimator.getEstimatedPosition().nearest(VisionConstants.leftBranches);
+        }
     }
-    field2d.setRobotPose(dashboardPose);
-    SmartDashboard.putData("Field", field2d);
-  }
 
-  private String getFomattedPose() {
-    var pose = getCurrentPose();
-    return String.format("(%.3f, %.3f) %.2f degrees", 
-        pose.getX(), 
-        pose.getY(),
-        pose.getRotation().getDegrees());
-  }
+    public double getAlignX(Translation2d target) {
+        return target.getX() - poseEstimator.getEstimatedPosition().getX();
+    }
 
-  public Pose2d getCurrentPose() {
-    return poseEstimator.getEstimatedPosition();
-  }
+    public double getAlignY(Translation2d target) {
+        return target.getY() - poseEstimator.getEstimatedPosition().getY();
+    }
 
-  public PhotonPipelineResult getLatestTag() {
-    return photonEstimator2.grabLatestTag();
-  }
+    public double turnToTarget(Translation2d target) {
+        double offsetX = target.getX() - poseEstimator.getEstimatedPosition().getX();
+        double offsetY = target.getY() - poseEstimator.getEstimatedPosition().getY();
+        return (360 -Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
+    }
 
-  public ChassisSpeeds getChassisSpeeds() {
-    return DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStateSupplier.get());
-  }
+    public Pose2d getCurrentPose() {
+        return poseEstimator.getEstimatedPosition();
+    }
 
-  /**
-   * Resets the current pose to the specified pose. This should ONLY be called
-   * when the robot's position on the field is known, like at the beginning of
-   * a match.
-   * @param newPose new pose
-   */
-  public void setCurrentPose(Pose2d newPose) {
-    poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
-  }
+    public PhotonPipelineResult getLatestTag() {
+        return photonEstimator2.grabLatestTag();
+    }
 
-  /**
-   * Resets the position on the field to 0,0 0-degrees, with forward being downfield. This resets
-   * what "forward" is for field oriented driving.
-   */
-  public void resetFieldPosition() {
-    setCurrentPose(new Pose2d());
-  }
+    public ChassisSpeeds getChassisSpeeds() {
+        return DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStateSupplier.get());
+    }
 
-  /**
-   * Transforms a pose to the opposite alliance's coordinate system. (0,0) is always on the right corner of your
-   * alliance wall, so for 2023, the field elements are at different coordinates for each alliance.
-   * @param poseToFlip pose to transform to the other alliance
-   * @return pose relative to the other alliance's coordinate system
-   */
-  private Pose2d flipAlliance(Pose2d poseToFlip) {
-    return poseToFlip.relativeTo(VisionConstants.FLIPPING_POSE);
-  }
+    /**
+     * Resets the current pose to the specified pose. This should ONLY be called
+     * when the robot's position on the field is known, like at the beginning of
+     * a match.
+     * 
+     * @param newPose new pose
+     */
+    public void setCurrentPose(Pose2d newPose) {
+        poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
+    }
+
+    /**
+     * Resets the position on the field to 0,0 0-degrees, with forward being
+     * downfield. This resets
+     * what "forward" is for field oriented driving.
+     */
+    public void resetFieldPosition() {
+        setCurrentPose(new Pose2d());
+    }
+
+    /**
+     * Transforms a pose to the opposite alliance's coordinate system. (0,0) is
+     * always on the right corner of your
+     * alliance wall, so for 2023, the field elements are at different coordinates
+     * for each alliance.
+     * 
+     * @param poseToFlip pose to transform to the other alliance
+     * @return pose relative to the other alliance's coordinate system
+     */
+    private Pose2d flipAlliance(Pose2d poseToFlip) {
+        return poseToFlip.relativeTo(VisionConstants.FLIPPING_POSE);
+    }
 }

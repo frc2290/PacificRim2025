@@ -18,8 +18,6 @@ public class IntakeCoral extends Command {
   private Timer currentTimer = new Timer();
   private Timer delayTimer = new Timer();
 
-  private int count = 0;
-
   /** Creates a new IntakeOn. */
   public IntakeCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
     manipulator = m_manip;
@@ -59,6 +57,7 @@ public class IntakeCoral extends Command {
     delayTimer.stop();
     manipulator.intake(0);
     manipulator.setCoral(true);
+    state.setGoal(State.TravelPosition);
   }
 
   // Returns true when the command should end.

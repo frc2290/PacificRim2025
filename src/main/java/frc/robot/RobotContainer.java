@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.Auto;
+import frc.robot.commands.AutomatedDrive;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.Autos.Test;
@@ -19,12 +20,14 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.State;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -33,94 +36,108 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
  * (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-	// The robot's subsystems
-	private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+    // The robot's subsystems
+    private final DriveSubsystem m_robotDrive = new DriveSubsystem();
     private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
     private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-    private final ManipulatorSubsystem m_endeffector = new ManipulatorSubsystem();
-    private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_endeffector);
-    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive);
+    private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
+    private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_manipulator);
+    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator);
 
-	// The driver's controller
-	XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
+    // The driver's controller
+    XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
-	// Auto Chooser for Dashboard
-	SendableChooser<Command> auto_chooser = new SendableChooser<>();
+    // Auto Chooser for Dashboard
+    SendableChooser<Command> auto_chooser = new SendableChooser<>();
 
-	/**
-	 * The container for the robot. Contains subsystems, OI devices, and commands.
-	 */
-	public RobotContainer() {// Configure the button bindings
-		configureButtonBindings();
+    /**
+     * The container for the robot. Contains subsystems, OI devices, and commands.
+     */
+    public RobotContainer() {// Configure the button bindings
+        configureButtonBindings();
 
-		// Build an auto chooser. This will use Commands.none() as the default option.
-      auto_chooser.addOption("Drive", new Test(m_poseEstimator));
-      auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-      SmartDashboard.putData(auto_chooser);
+        // Build an auto chooser. This will use Commands.none() as the default option.
+        auto_chooser.addOption("Drive", new Test(m_poseEstimator));
+        auto_chooser.addOption("Driving", new Auto(m_robotDrive));
+        SmartDashboard.putData(auto_chooser);
 
-		// Configure default commands
-		m_robotDrive.setDefaultCommand(
-			// The left stick controls translation of the robot.
-			// Turning is controlled by the X axis of the right stick.
-			new RunCommand(
-				() -> m_robotDrive.drive(
-					-MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
-					-MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
-					-MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-					true),
-				m_robotDrive));
+        // Configure default commands
+        // m_robotDrive.setDefaultCommand(
+        //         // The left stick controls translation of the robot.
+        //         // Turning is controlled by the X axis of the right stick.
+        //         new RunCommand(
+        //                 () -> m_robotDrive.drive(
+        //                         -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+        //                         -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+        //                         -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
+        //                         true),
+        //                 m_robotDrive));
+        m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_poseEstimator, m_driverController));
     }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be
-   * created by
-   * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
-   * subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
-   * passing it to a
-   * {@link JoystickButton}.
-   */
-  private void configureButtonBindings() {
-    // new JoystickButton(m_driverController, Button.kRightBumper.value)
-    //     .whileTrue(new RunCommand(
-    //         () -> m_robotDrive.setX(),
-    //         m_robotDrive));
-    // new JoystickButton(m_driverController, Button.kLeftBumper.value)
-    //     .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
-    new JoystickButton(m_driverController, Button.kA.value)
-        .onTrue(m_state.setGoalCommand(State.L1Position));
-        //.onTrue(new L1Position(m_DiffArm, m_elevator));
-    new JoystickButton(m_driverController, Button.kB.value)
-        .onTrue(m_state.setGoalCommand(State.L2Position));
-        //.onTrue(new L2Position(m_DiffArm, m_elevator));
-    new JoystickButton(m_driverController, Button.kY.value)
-        .onTrue(m_state.setGoalCommand(State.L3Position));
-        //.onTrue(new L3Position(m_DiffArm, m_elevator));
-    new JoystickButton(m_driverController, Button.kX.value)
-        .onTrue(m_state.setGoalCommand(State.L4Position));
-        //.onTrue(new L4Position(m_DiffArm, m_elevator));
-    new JoystickButton(m_driverController, Button.kLeftBumper.value)
-        .onTrue(new IntakeCoral(m_endeffector, m_state));
-        //.onTrue(new IntakeCoral(m_endeffector, m_state));
-        //.whileTrue(new RollEndeffector(m_endeffector, 0.5)); //intake
-    new JoystickButton(m_driverController, Button.kRightBumper.value)
-        .onTrue(new ScoreCoral(m_endeffector, m_state, m_robotDrive));
-        //.whileTrue(new RollEndeffector(m_endeffector, -0.5)); //outtake
+    /**
+     * Use this method to define your button->command mappings. Buttons can be
+     * created by
+     * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
+     * subclasses ({@link
+     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
+     * passing it to a
+     * {@link JoystickButton}.
+     */
+    private void configureButtonBindings() {
+        // new JoystickButton(m_driverController, Button.kRightBumper.value)
+        // .whileTrue(new RunCommand(
+        // () -> m_robotDrive.setX(),
+        // m_robotDrive));
+        // new JoystickButton(m_driverController, Button.kLeftBumper.value)
+        // .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
-    new POVButton(m_driverController, 0)
-        .onTrue(m_state.setGoalCommand(State.TravelPosition));
-        //.onTrue(new TravelPosition(m_DiffArm, m_elevator));
-    new POVButton(m_driverController, 180)
-        .onTrue(m_state.setGoalCommand(State.IntakePosition));
-        //.onTrue(new IntakePosition(m_DiffArm, m_elevator));
-  }
+        // Button definitions
+        JoystickButton a_button = new JoystickButton(m_driverController, Button.kA.value);
+        JoystickButton b_button = new JoystickButton(m_driverController, Button.kB.value);
+        JoystickButton y_button = new JoystickButton(m_driverController, Button.kY.value);
+        JoystickButton x_button = new JoystickButton(m_driverController, Button.kX.value);
+        JoystickButton left_bumper = new JoystickButton(m_driverController, Button.kLeftBumper.value);
+        JoystickButton right_bumper = new JoystickButton(m_driverController, Button.kRightBumper.value);
+        JoystickButton back_button = new JoystickButton(m_driverController, Button.kBack.value);
+        JoystickButton start_button = new JoystickButton(m_driverController, Button.kStart.value);
+        JoystickButton driver_stick = new JoystickButton(m_driverController, Button.kLeftStick.value);
+        Trigger right_trigger = new Trigger(() -> m_driverController.getRawAxis(0) > 50);
+        Trigger left_trigger = new Trigger(() -> m_driverController.getRawAxis(1) > 50);
+        POVButton dpad_up = new POVButton(m_driverController, 0);
+        POVButton dpad_down = new POVButton(m_driverController, 180);
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    return auto_chooser.getSelected();
-  }
+        // Automatic controls
+        a_button.onTrue(m_state.setGoalCommand(State.L1Position)); // Set to L1
+        b_button.onTrue(m_state.setGoalCommand(State.L2Position)); // Set to L2
+        y_button.onTrue(m_state.setGoalCommand(State.L3Position)); // Set to L3
+        x_button.onTrue(m_state.setGoalCommand(State.L4Position)); // Set to L3
+        //left_bumper.onTrue(new IntakeCoral(m_manipulator, m_state).andThen(m_state.setDriveStateCommand(DriveState.Teleop))); // Intake coral
+        //right_bumper.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.CoralStation))); // Score coral
+        left_bumper.onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
+        right_bumper.onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
+        back_button.onTrue(m_state.cancelCommand()); // Cancel current state
+        dpad_up.onTrue(m_state.setGoalCommand(State.TravelPosition)); // Set to Travel
+        dpad_down.onTrue(m_state.setGoalCommand(State.IntakePosition)); // Set to Intake
+        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.Teleop)));
+
+        // Manual controls
+        driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.05)); // Manual move elevator up
+        driver_stick.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.05)); // Manual move elevator down
+        driver_stick.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
+        driver_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
+        driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(2)); // Manual rotate diff arm out
+        driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-2)); // Manual rotate diff arm in
+        start_button.onTrue(m_state.toggleRotationLock());
+    }
+
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to run in autonomous
+     */
+    public Command getAutonomousCommand() {
+        return auto_chooser.getSelected();
+    }
 }

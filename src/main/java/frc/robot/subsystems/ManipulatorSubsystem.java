@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Manipulator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
-import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 
 public class ManipulatorSubsystem extends SubsystemBase {
 
@@ -24,6 +23,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     private RelativeEncoder relEncoder;
 
     private boolean hasCoral = false;
+    private boolean hasAlgae = false;
 
     private FlytLogger manipDash = new FlytLogger("Manipulator");
 
@@ -69,6 +69,14 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     public void setCoral(boolean coral) {
         hasCoral = coral;
+    }
+
+    public boolean hasAlgae() {
+        return hasAlgae;
+    }
+
+    public void setAlgae(boolean algae) {
+        hasAlgae = algae;
     }
 
     @Override

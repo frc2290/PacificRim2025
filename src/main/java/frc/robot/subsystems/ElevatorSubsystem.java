@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -12,8 +11,8 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Elevator;
 import frc.robot.Constants;
@@ -64,6 +63,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
+                    .smartCurrentLimit(60)
                     .encoder
                         .positionConversionFactor(Elevator.kPositionConversion)
                         .velocityConversionFactor(Elevator.kVelocityConversion);
@@ -96,6 +96,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void setElevatorSetpoint(double setpoint){
         //leftMotor.set(setpoint);
         elevatorSetpoint = setpoint;
+    }
+
+    public Command incrementElevatorSetpoint(double increment) {
+        return this.runOnce(() -> elevatorSetpoint += increment);
     }
 
     public double getElevatorSetpoint() {

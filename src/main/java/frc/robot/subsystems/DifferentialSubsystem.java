@@ -13,16 +13,12 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
-import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
-import frc.utils.FLYTLib.FLYTMotorLib.SparkMaxController;
 
 public class DifferentialSubsystem extends SubsystemBase {
 
@@ -37,15 +33,6 @@ public class DifferentialSubsystem extends SubsystemBase {
     private ProfiledPIDController rotationPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
 
     private ManipulatorSubsystem endeffector;
-
-    private PIDController pid_extension; //position loop extension
-    private PIDController pid_rotation; //position loop rotation
-
-    private double setExtension; //set extention position
-    private double setRotation; //set rotation position
-
-    private double extensionPos;
-    private double rotationPos;
 
     private SparkMax leftMotor;
     private SparkMax rightMotor;
@@ -64,8 +51,6 @@ public class DifferentialSubsystem extends SubsystemBase {
     private double extensionSetpoint = 0;
     private double rotationSetpoint = 0;
 
-    //private TrapezoidProfile extendTrap = new TrapezoidProfile(new Constraints(5, 5));
-    //private TrapezoidProfile rotateTrap = new TrapezoidProfile(new Constraints(5, 5));
     private SlewRateLimiter extendSlew = new SlewRateLimiter(800);
     private SlewRateLimiter rotateSlew = new SlewRateLimiter(180);
 
@@ -89,6 +74,7 @@ public class DifferentialSubsystem extends SubsystemBase {
 
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
+                    .smartCurrentLimit(60)
                     .encoder
                         .positionConversionFactor(60)
                         .velocityConversionFactor(1);
@@ -129,25 +115,13 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public void extend(double setpoint){
-        //motor2.setPower(setpoint);
-        //motor1.setPower(setpoint);
         leftMotor.set(setpoint);
         rightMotor.set(setpoint);
-        //setExtension = setpoint
     }
     
     public void rotate(double setpoint){
-        //motor2.setPower(-setpoint);
-        //motor1.setPower(setpoint);
         leftMotor.set(setpoint);
         rightMotor.set(-setpoint);
-        //setRotation = setpoint;
-    }
-
-
-    private void setPosition(double setPoint, double setOmega){
-        //motor1.set(setPoint-setOmega);
-        //motor2.set(setPoint+setOmega);
     }
 
     public void setExtensionSetpoint(double setpoint) {
@@ -164,6 +138,14 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     public double getRotationSetpoint() {
         return rotationSetpoint;
+    }
+
+    public Command incrementExtensionSetpoint(double increment) {
+        return this.runOnce(() -> extensionSetpoint += increment);
+    }
+
+    public Command incrementRotationSetpoint(double increment) {
+        return this.runOnce(() -> rotationSetpoint += increment);
     }
 
     public double getLeftPos() {
