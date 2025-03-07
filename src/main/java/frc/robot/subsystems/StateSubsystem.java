@@ -184,7 +184,7 @@ public class StateSubsystem extends SubsystemBase {
                     if (currentState != State.TravelPosition) {
                         currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
-                    currentCommand.andThen(new IntakeCoral(manipulator, this));
+                    currentCommand.andThen(new IntakeCoral(manipulator, this).andThen(setDriveStateCommand(DriveState.Teleop)));
                     break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, drive, this);

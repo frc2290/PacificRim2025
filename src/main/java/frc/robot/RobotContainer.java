@@ -120,7 +120,7 @@ public class RobotContainer {
         dpad_up.onTrue(m_state.setGoalCommand(State.TravelPosition)); // Set to Travel
         dpad_down.onTrue(m_state.setGoalCommand(State.IntakePosition)); // Set to Intake
         left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
-        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.Teleop)));
+        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.CoralStation)));
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.05)); // Manual move elevator up
