@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.State;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -58,6 +59,7 @@ public class IntakeCoral extends Command {
     manipulator.intake(0);
     manipulator.setCoral(true);
     state.setGoal(State.TravelPosition);
+    state.setDriveState(DriveState.Teleop);
   }
 
   // Returns true when the command should end.

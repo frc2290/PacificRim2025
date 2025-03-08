@@ -46,7 +46,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     private boolean rotLock = true;
-    private DriveState driveState = DriveState.NetScore;
+    private DriveState driveState = DriveState.Teleop;
 
     private boolean rightScore = false;
 
@@ -74,6 +74,7 @@ public class StateSubsystem extends SubsystemBase {
         stateDash.addBoolPublisher("At State", false, () -> atCurrentState());
         stateDash.addStringPublisher("Drive State", false, () -> getDriveState().toString());
         stateDash.addBoolPublisher("Rotation Lock", false, () -> getRotationLock());
+        stateDash.addBoolPublisher("Right Score", false, () -> getRightScore());
     }
 
     /** Robot State Section */
@@ -182,32 +183,32 @@ public class StateSubsystem extends SubsystemBase {
                 case IntakePosition:
                     currentCommand = new IntakePosition(diff, elevator, this);
                     if (currentState != State.TravelPosition) {
-                        currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
-                    currentCommand.andThen(new IntakeCoral(manipulator, this).andThen(setDriveStateCommand(DriveState.Teleop)));
-                    break;
+                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
+                    currentCommand = currentCommand.andThen(setDriveStateCommand(DriveState.Teleop));                    break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, drive, this);
                     if (currentState == State.IntakePosition) {
-                        currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L2Position:
                     currentCommand = new L2Position(diff, elevator, drive, this);
                     if (currentState == State.IntakePosition) {
-                        currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L3Position:
                     currentCommand = new L3Position(diff, elevator, drive, this);
                     if (currentState == State.IntakePosition) {
-                        currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L4Position:
                     currentCommand = new L4Position(diff, elevator, drive, this);
                     if (currentState == State.IntakePosition) {
-                        currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case StartPosition:

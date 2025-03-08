@@ -179,7 +179,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d = flipAlliance(pose2d);
             }
-            poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+            //poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
         }
 
         var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
@@ -190,7 +190,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d2 = flipAlliance(pose2d2);
             }
-            poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+            //poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
         }
 
         // Set the pose on the dashboard

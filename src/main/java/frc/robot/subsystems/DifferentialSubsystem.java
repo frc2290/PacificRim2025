@@ -29,8 +29,8 @@ public class DifferentialSubsystem extends SubsystemBase {
     //private FlytMotorController motor1; //flyt motor
     //private FlytMotorController motor2; //flyt motor
 
-    private ProfiledPIDController extensionPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
-    private ProfiledPIDController rotationPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
+    private ProfiledPIDController extensionPid = new ProfiledPIDController(400, 0, 0, new Constraints(5000, 10000));
+    private ProfiledPIDController rotationPid = new ProfiledPIDController(800, 0, 40, new Constraints(2000, 4000));
 
     private ManipulatorSubsystem endeffector;
 
@@ -74,7 +74,7 @@ public class DifferentialSubsystem extends SubsystemBase {
 
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
-                    .smartCurrentLimit(60)
+                    .smartCurrentLimit(50)
                     .encoder
                         .positionConversionFactor(60)
                         .velocityConversionFactor(1);
@@ -109,8 +109,10 @@ public class DifferentialSubsystem extends SubsystemBase {
         differentialDash.addBoolPublisher("At Rotation", false, () -> atRotationSetpoint());
         differentialDash.addDoublePublisher("Ext Setpoint", false, () -> getExtensionSetpoint());
         differentialDash.addDoublePublisher("Rot Setpoint", false, () -> getRotationSetpoint());
-        differentialDash.addDoublePublisher("Output", true, () -> leftMotor.getAppliedOutput());
-        differentialDash.addDoublePublisher("Output 2", true, () -> rightMotor.getAppliedOutput());
+        differentialDash.addDoublePublisher("Left Output", true, () -> leftMotor.getAppliedOutput());
+        differentialDash.addDoublePublisher("Left Current", true, () -> leftMotor.getOutputCurrent());
+        differentialDash.addDoublePublisher("Right Output", true, () -> rightMotor.getAppliedOutput());
+        differentialDash.addDoublePublisher("Right Current", true, () -> rightMotor.getOutputCurrent());
         differentialDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
     }
 

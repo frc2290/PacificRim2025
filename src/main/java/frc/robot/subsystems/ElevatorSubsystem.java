@@ -63,7 +63,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
-                    .smartCurrentLimit(60)
+                    .smartCurrentLimit(50)
                     .encoder
                         .positionConversionFactor(Elevator.kPositionConversion)
                         .velocityConversionFactor(Elevator.kVelocityConversion);

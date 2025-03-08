@@ -14,8 +14,8 @@ import frc.robot.subsystems.StateSubsystem.State;
 public class TravelPosition extends Command {
 
     private double elevatorPos = 0.1;
-    private double diffExt = 100;
-    private double diffRot = (110 - 40);
+    private double diffExt = 200; //100;
+    private double diffRot = 90;
 
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;

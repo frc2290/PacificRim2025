@@ -13,7 +13,7 @@ import frc.robot.subsystems.StateSubsystem.State;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class L3Position extends Command {
-    private double elevatorPos = 1.05;
+    private double elevatorPos = 1.0;
     private double diffExt = 25;
     private double diffRot = (220 - 40);
 

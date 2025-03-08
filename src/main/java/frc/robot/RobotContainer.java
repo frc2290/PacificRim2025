@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
     // The robot's subsystems
     private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-    private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+    //private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
     private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
     private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_manipulator);
@@ -57,22 +57,22 @@ public class RobotContainer {
         configureButtonBindings();
 
         // Build an auto chooser. This will use Commands.none() as the default option.
-        auto_chooser.addOption("Drive", new Test(m_poseEstimator));
+        //auto_chooser.addOption("Drive", new Test(m_poseEstimator));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
-        // m_robotDrive.setDefaultCommand(
-        //         // The left stick controls translation of the robot.
-        //         // Turning is controlled by the X axis of the right stick.
-        //         new RunCommand(
-        //                 () -> m_robotDrive.drive(
-        //                         -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
-        //                         -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
-        //                         -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-        //                         true),
-        //                 m_robotDrive));
-        m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_poseEstimator, m_driverController));
+        m_robotDrive.setDefaultCommand(
+                // The left stick controls translation of the robot.
+                // Turning is controlled by the X axis of the right stick.
+                new RunCommand(
+                        () -> m_robotDrive.drive(
+                                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+                                -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+                                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
+                                true),
+                        m_robotDrive));
+        //m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_poseEstimator, m_driverController));
     }
 
     /**
@@ -102,25 +102,28 @@ public class RobotContainer {
         JoystickButton back_button = new JoystickButton(m_driverController, Button.kBack.value);
         JoystickButton start_button = new JoystickButton(m_driverController, Button.kStart.value);
         JoystickButton driver_stick = new JoystickButton(m_driverController, Button.kLeftStick.value);
-        Trigger right_trigger = new Trigger(() -> m_driverController.getRawAxis(0) > 50);
-        Trigger left_trigger = new Trigger(() -> m_driverController.getRawAxis(1) > 50);
+        Trigger right_trigger = new Trigger(() -> m_driverController.getRightTriggerAxis() > 0.5);
+        Trigger left_trigger = new Trigger(() -> m_driverController.getLeftTriggerAxis() > 0.5);
         POVButton dpad_up = new POVButton(m_driverController, 0);
         POVButton dpad_down = new POVButton(m_driverController, 180);
 
+        Trigger not_driver_stick = driver_stick.negate();
+
         // Automatic controls
-        a_button.onTrue(m_state.setGoalCommand(State.L1Position)); // Set to L1
-        b_button.onTrue(m_state.setGoalCommand(State.L2Position)); // Set to L2
-        y_button.onTrue(m_state.setGoalCommand(State.L3Position)); // Set to L3
-        x_button.onTrue(m_state.setGoalCommand(State.L4Position)); // Set to L3
+        a_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L1Position)); // Set to L1
+        b_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L2Position)); // Set to L2
+        y_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L3Position)); // Set to L3
+        x_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L4Position)); // Set to L3
         //left_bumper.onTrue(new IntakeCoral(m_manipulator, m_state).andThen(m_state.setDriveStateCommand(DriveState.Teleop))); // Intake coral
         //right_bumper.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.CoralStation))); // Score coral
-        left_bumper.onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
-        right_bumper.onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
+        left_bumper.and(not_driver_stick).onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
+        right_bumper.and(not_driver_stick).onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
         dpad_up.onTrue(m_state.setGoalCommand(State.TravelPosition)); // Set to Travel
         dpad_down.onTrue(m_state.setGoalCommand(State.IntakePosition)); // Set to Intake
-        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
-        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.CoralStation)));
+        //left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
+        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive));
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.05)); // Manual move elevator up
