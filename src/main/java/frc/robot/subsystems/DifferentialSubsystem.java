@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.google.errorprone.annotations.Var;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
@@ -29,7 +30,15 @@ public class DifferentialSubsystem extends SubsystemBase {
     //private FlytMotorController motor1; //flyt motor
     //private FlytMotorController motor2; //flyt motor
 
-    private ProfiledPIDController extensionPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
+    //ODYSSEUS
+    private VarSync extkp = new VarSync("extKP", 0.1);
+    private VarSync extki = new VarSync("extKI", 0);
+    private VarSync extkd = new VarSync("extKD", 0);
+    private VarSync extmaxvel = new VarSync("extmaxvel", 10);
+    private VarSync extmaxacc = new VarSync("extmaxacc", 10);
+    private double kp,ki,kd,maxvel,maxacc;
+
+    private ProfiledPIDController extensionPid = new ProfiledPIDController(kp, ki, kd, new Constraints(maxvel, maxacc));
     private ProfiledPIDController rotationPid = new ProfiledPIDController(0.1, 0, 0, new Constraints(10, 10));
 
     private ManipulatorSubsystem endeffector;
@@ -204,5 +213,23 @@ public class DifferentialSubsystem extends SubsystemBase {
         //leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         //rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         differentialDash.update(Constants.debugMode);
+
+        //ODYSSEUS
+        extkp.loadPreferences();
+        extki.loadPreferences();
+        extkd.loadPreferences();
+        extmaxvel.loadPreferences();
+        extmaxacc.loadPreferences();
+
+        if(extkp.check(kp)||extki.check(ki)||extkd.check(kd)||extmaxvel.check(maxvel)||extmaxacc.check(maxacc)){
+            kp = extkp.getVar();
+            ki = extki.getVar();
+            kd = extkd.getVar();
+            maxvel = extmaxvel.getVar();
+            maxacc = extmaxacc.getVar();
+            extensionPid.setConstraints(new Constraints(maxvel,maxacc));
+            extensionPid.setPID(kp,ki,kd);
+            
+        }
     }
 }
