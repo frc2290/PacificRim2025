@@ -61,11 +61,16 @@ public final class Constants {
         public static final int currentStallLim = 0;
         public static final int currentFreeLim = 0;
 
-        // pid tune values Internal loop
-        public static final double v_kp = 0.000006;
-        public static final double v_ki = 0.000000005;
-        public static final double v_kd = 0.000001;
+        public static final double v_kp = 0.015;
+        public static final double v_ki = 0.00005;
+        public static final double v_kd = 0;
         public static final double v_KG = 0;
+
+        // pid tune values Internal loop
+        // public static final double v_kp = 0.000006;
+        // public static final double v_ki = 0.000000005;
+        // public static final double v_kd = 0.000001;
+        // public static final double v_KG = 0;
 
         // pid tune values external extension
         public static final double e_kp = 0;

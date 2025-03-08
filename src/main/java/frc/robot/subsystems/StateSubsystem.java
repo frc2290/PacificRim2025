@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.Manipulator;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.Positions.IntakePosition;
 import frc.robot.commands.Positions.L1Position;
@@ -25,6 +24,9 @@ public class StateSubsystem extends SubsystemBase {
     private DriveSubsystem drive;
     private ManipulatorSubsystem manipulator;
 
+    /**
+     * Robot State Options - Primarily for elevator and arm
+     */
     public enum State {
         TravelPosition,
         IntakePosition,
@@ -36,6 +38,9 @@ public class StateSubsystem extends SubsystemBase {
         Cancelled
     }
 
+    /**
+     * Robot Drive States
+     */
     public enum DriveState {
         ReefScore,
         NetScore,
@@ -45,17 +50,22 @@ public class StateSubsystem extends SubsystemBase {
         Teleop
     }
 
+    // Rotation lock and current drive state
     private boolean rotLock = true;
     private DriveState driveState = DriveState.Teleop;
 
+    // Boolean for if we want to score on the left or right branch
     private boolean rightScore = false;
 
+    // State storage
     private State prevState = State.StartPosition;
     private State currentState = State.StartPosition;
     private State goalState = State.TravelPosition;
 
+    // Boolean for if robot is currently transitioning states
     private boolean transitioning = false;
 
+    // Storage for current running command or sequence of commands
     private Command currentCommand = null;
 
     private FlytLogger stateDash = new FlytLogger("State");
@@ -79,26 +89,50 @@ public class StateSubsystem extends SubsystemBase {
 
     /** Robot State Section */
 
+    /**
+     * Get if robot is transitioning between states
+     * @return True if transitioning
+     */
     public boolean isTransitioning() {
         return transitioning;
     }
 
+    /**
+     * Get current state robot is in
+     * @return Current state of the robot
+     */
     public State getCurrentState() {
         return currentState;
     }
 
+    /**
+     * Get if robot is at current state based on all subsystems being at their setpoint
+     * @return True if at current state
+     */
     public boolean atCurrentState() {
         return elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint();
     }
 
+    /**
+     * Get previous state of the robot
+     * @return Previous state of the robot
+     */
     public State getPrevState() {
         return prevState;
     }
 
+    /**
+     * Get goal state of the robot
+     * @return Goal state of the robot
+     */
     public State getGoalState() {
         return goalState;
     }
 
+    /**
+     * Set the current state of the robot. Also sets the previous state to where it was before
+     * @param curState State the robot is currently at
+     */
     public void setCurrentState(State curState) {
         transitioning = false;
         prevState = currentState;
@@ -107,12 +141,19 @@ public class StateSubsystem extends SubsystemBase {
                 + goalState.toString());
     }
 
+    /**
+     * Set the goal state for the robot i.e. where we want it to go
+     * @param newState Goal state for the robot to go to
+     */
     public void setGoal(State newState) {
         goalState = newState;
         System.out.println("New Goal: " + newState.toString());
         // currentState = newState;
     }
 
+    /**
+     * Cancels current running command or sequence of commands. Also sets current state to cancelled and sets the subsystems to their current position
+     */
     public void cancelCurrentCommand() {
         currentCommand.cancel();
         setCurrentState(State.Cancelled);
@@ -122,59 +163,123 @@ public class StateSubsystem extends SubsystemBase {
         diff.setRotationSetpoint(diff.getRotationPosition());
     }
 
+    /**
+     * Cancels current running command or sequence of commands. Also sets current state to cancelled and sets the subsystems to their current position
+     * @return Instant command to cancel current running command
+     */
     public Command cancelCommand() {
         return this.runOnce(() -> cancelCurrentCommand());
     }
 
+    /**
+     * Set the goal state for the robot i.e. where we want it to go
+     * @param newGoal Goal state for the robot to go to
+     * @return Instant command to set goal state
+     */
     public Command setGoalCommand(State newGoal) {
-        return this.runOnce(() -> goalState = newGoal);
+        return this.runOnce(() -> setGoal(newGoal));
     }
 
+    /**
+     * Get if robot wants to score on right branch
+     * @return True if right branch
+     */
     public boolean getRightScore() {
         return rightScore;
     }
 
+    /**
+     * Set if robot wants to score on right branch
+     * @param right True if right branch
+     */
     public void setRightScore(boolean right) {
         rightScore = right;
     }
 
+    /**
+     * Set if robot wants to score on right branch
+     * @param right True if right branch
+     * @return Instant command to set right branch
+     */
     public Command setRightScoreCommand(boolean right) {
-        return this.runOnce(() -> rightScore = right);
+        return this.runOnce(() -> setRightScore(right));
     }
 
+    /**
+     * Get if robot has coral
+     * @return True if has coral
+     */
     public boolean hasCoral() {
         return manipulator.hasCoral();
     }
 
+    /**
+     * Check if elevator is at a safe height to move
+     * @return True if elevator is at a safe height
+     */
+    public boolean safeToMove() {
+        return elevator.getPosition() < 1;
+    }
+
     /** Drive State Section */
     
+    /**
+     * Get if robot drive is rotation locked
+     * @return True if rotation locked
+     */
     public boolean getRotationLock() {
         return rotLock;
     }
 
+    /**
+     * Set robot drive rotation lock
+     * @param lock True if locked
+     */
     public void setRotationLock(boolean lock) {
         rotLock = lock;
     }
 
+    /**
+     * Get current robot drive state
+     * @return Current robot drive state
+     */
     public DriveState getDriveState() {
         return driveState;
     }
 
+    /**
+     * Set current robot drive state
+     * @param newState New robot drive state
+     */
     public void setDriveState(DriveState newState) {
         driveState = newState;
     }
 
+    /**
+     * Set current robot drive state
+     * @param newState New robot drive state
+     * @return Instant command to set robot drive state
+     */
     public Command setDriveStateCommand(DriveState newState) {
         return this.runOnce(() -> driveState = newState);
     }
 
+    /**
+     * Toggle robot drive rotation lock
+     * @return Instant command to toggle rotation lock
+     */
     public Command toggleRotationLock() {
         return this.runOnce(() -> rotLock = !rotLock);
     }
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
+        /**
+         * State management system
+         * Check if its at the goal, otherwise run the command needed to reach the goal
+         * Inside each case for each state is specific controls to add moves in case it needs to go somewhere else first
+         * Finally schedules command(s) at the bottom to be executed
+         */
         if (goalState != currentState && !isTransitioning() && atCurrentState() && DriverStation.isEnabled()) {
             switch (goalState) {
                 case TravelPosition:
@@ -186,7 +291,7 @@ public class StateSubsystem extends SubsystemBase {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
-                    currentCommand = currentCommand.andThen(setDriveStateCommand(DriveState.Teleop));                    break;
+                    break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, drive, this);
                     if (currentState == State.IntakePosition) {

@@ -201,10 +201,10 @@ public class DifferentialSubsystem extends SubsystemBase {
         // }
         double extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
         double rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
-        leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);
-        rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity);
-        //leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
-        //rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
+        //leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);
+        //rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity);
+        leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
+        rightArm.setReference(extendSlew.calculate(extensionSetpoint) + degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         differentialDash.update(Constants.debugMode);
     }
 }

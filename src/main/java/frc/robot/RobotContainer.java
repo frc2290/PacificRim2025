@@ -14,6 +14,7 @@ import frc.robot.commands.Auto;
 import frc.robot.commands.AutomatedDrive;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
+import frc.robot.commands.Autos.Right1Coral;
 import frc.robot.commands.Autos.Test;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -44,6 +45,9 @@ public class RobotContainer {
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_manipulator);
     private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator);
 
+    // Storing score command to re-use easier in autos
+    private Command scoreCommand = new ScoreCoral(m_manipulator, m_state, m_robotDrive);
+
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
@@ -59,6 +63,7 @@ public class RobotContainer {
         // Build an auto chooser. This will use Commands.none() as the default option.
         //auto_chooser.addOption("Drive", new Test(m_poseEstimator));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
+        auto_chooser.addOption("Right1Coral", new Right1Coral(null, m_state, scoreCommand));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
@@ -107,7 +112,7 @@ public class RobotContainer {
         POVButton dpad_up = new POVButton(m_driverController, 0);
         POVButton dpad_down = new POVButton(m_driverController, 180);
 
-        Trigger not_driver_stick = driver_stick.negate();
+        Trigger not_driver_stick = driver_stick.negate(); // Trigger to check if driver stick is not pressed in
 
         // Automatic controls
         a_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L1Position)); // Set to L1
@@ -123,7 +128,7 @@ public class RobotContainer {
         dpad_down.onTrue(m_state.setGoalCommand(State.IntakePosition)); // Set to Intake
         //left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
-        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive));
+        right_trigger.onTrue(scoreCommand); // Score coral
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.05)); // Manual move elevator up
@@ -132,7 +137,7 @@ public class RobotContainer {
         driver_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
         driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(2)); // Manual rotate diff arm out
         driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-2)); // Manual rotate diff arm in
-        start_button.onTrue(m_state.toggleRotationLock());
+        start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 
     /**
