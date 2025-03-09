@@ -178,7 +178,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
 
         var visionPose = photonEstimator.grabLatestEstimatedPose();
-        if (visionPose != null) {
+        if (visionPose != null && (!DriverStation.isAutonomous() || visionPose.estimatedPose.toPose2d().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
             // New pose from vision
             sawTag = true;
             var pose2d = visionPose.estimatedPose.toPose2d();
@@ -189,7 +189,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         }
 
         var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-        if (visionPose2 != null) {
+        if (visionPose2 != null && (!DriverStation.isAutonomous() || visionPose.estimatedPose.toPose2d().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
             // New pose from vision
             sawTag = true;
             var pose2d2 = visionPose2.estimatedPose.toPose2d();

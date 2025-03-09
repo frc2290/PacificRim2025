@@ -22,7 +22,9 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.State;
+import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.utils.LEDStrip;
+import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -37,13 +39,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+    private final LEDUtility m_ledUtility = new LEDUtility(0);
     // The robot's subsystems
     private final DriveSubsystem m_robotDrive = new DriveSubsystem();
     private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
     private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
     private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_manipulator);
-    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator);
+    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_ledUtility);
 
     // Storing score command to re-use easier in autos
     private Command scoreCommand = new ScoreCoral(m_manipulator, m_state, m_robotDrive);
@@ -57,8 +60,13 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer() {// Configure the button bindings
+    public RobotContainer() {
+        // Configure the button bindings
         configureButtonBindings();
+
+        m_ledUtility.addStrip(new LEDStrip(0, 19));
+        m_ledUtility.addStrip(new LEDStrip(20, 29));
+        m_ledUtility.setDefault();
 
         // Build an auto chooser. This will use Commands.none() as the default option.
         //auto_chooser.addOption("Drive", new Test(m_poseEstimator));
@@ -115,18 +123,18 @@ public class RobotContainer {
         Trigger not_driver_stick = driver_stick.negate(); // Trigger to check if driver stick is not pressed in
 
         // Automatic controls
-        a_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L1Position)); // Set to L1
-        b_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L2Position)); // Set to L2
-        y_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L3Position)); // Set to L3
-        x_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(State.L4Position)); // Set to L3
+        a_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(PositionState.L1Position)); // Set to L1
+        b_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(PositionState.L2Position)); // Set to L2
+        y_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(PositionState.L3Position)); // Set to L3
+        x_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(PositionState.L4Position)); // Set to L3
         //left_bumper.onTrue(new IntakeCoral(m_manipulator, m_state).andThen(m_state.setDriveStateCommand(DriveState.Teleop))); // Intake coral
         //right_bumper.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive).andThen(m_state.setDriveStateCommand(DriveState.CoralStation))); // Score coral
         left_bumper.and(not_driver_stick).onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
         right_bumper.and(not_driver_stick).onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
-        dpad_up.onTrue(m_state.setGoalCommand(State.TravelPosition)); // Set to Travel
-        dpad_down.onTrue(m_state.setGoalCommand(State.IntakePosition)); // Set to Intake
-        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        dpad_up.onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
+        dpad_down.onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
+        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive)); // Score coral
 

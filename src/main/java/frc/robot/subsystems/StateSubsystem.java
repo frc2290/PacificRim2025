@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -15,7 +17,10 @@ import frc.robot.commands.Positions.L2Position;
 import frc.robot.commands.Positions.L3Position;
 import frc.robot.commands.Positions.L4Position;
 import frc.robot.commands.Positions.TravelPosition;
+import frc.utils.LEDEffects;
+import frc.utils.LEDUtility;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
+import frc.utils.LEDEffects.LEDEffect;
 
 public class StateSubsystem extends SubsystemBase {
 
@@ -23,11 +28,12 @@ public class StateSubsystem extends SubsystemBase {
     private DifferentialSubsystem diff;
     private DriveSubsystem drive;
     private ManipulatorSubsystem manipulator;
+    private LEDUtility ledUtility;
 
     /**
      * Robot State Options - Primarily for elevator and arm
      */
-    public enum State {
+    public enum PositionState {
         TravelPosition,
         IntakePosition,
         L1Position,
@@ -42,12 +48,25 @@ public class StateSubsystem extends SubsystemBase {
      * Robot Drive States
      */
     public enum DriveState {
+        ReefScoreMove,
         ReefScore,
         NetScore,
         ProcessorScore,
         CoralStation,
         Climb,
         Teleop
+    }
+
+    /**
+     * Manipulator Score States
+     */
+    public enum ManipulatorState {
+        CoralIntake,
+        AlgaeIntake,
+        HasCoral,
+        HasAlgae,
+        ScoringCoral,
+        ScoringAlgae
     }
 
     // Rotation lock and current drive state
@@ -58,9 +77,9 @@ public class StateSubsystem extends SubsystemBase {
     private boolean rightScore = false;
 
     // State storage
-    private State prevState = State.StartPosition;
-    private State currentState = State.StartPosition;
-    private State goalState = State.TravelPosition;
+    private PositionState prevState = PositionState.StartPosition;
+    private PositionState currentState = PositionState.StartPosition;
+    private PositionState goalState = PositionState.TravelPosition;
 
     // Boolean for if robot is currently transitioning states
     private boolean transitioning = false;
@@ -71,11 +90,12 @@ public class StateSubsystem extends SubsystemBase {
     private FlytLogger stateDash = new FlytLogger("State");
 
     /** Creates a new StateSubsystem. */
-    public StateSubsystem(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manip) {
+    public StateSubsystem(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manip, LEDUtility m_ledUtility) {
         diff = m_diff;
         elevator = m_elevator;
         drive = m_drive;
         manipulator = m_manip;
+        ledUtility = m_ledUtility;
 
         stateDash.addStringPublisher("Current State", false, () -> getCurrentState().toString());
         stateDash.addStringPublisher("Prev State", false, () -> getPrevState().toString());
@@ -101,7 +121,7 @@ public class StateSubsystem extends SubsystemBase {
      * Get current state robot is in
      * @return Current state of the robot
      */
-    public State getCurrentState() {
+    public PositionState getCurrentState() {
         return currentState;
     }
 
@@ -117,7 +137,7 @@ public class StateSubsystem extends SubsystemBase {
      * Get previous state of the robot
      * @return Previous state of the robot
      */
-    public State getPrevState() {
+    public PositionState getPrevState() {
         return prevState;
     }
 
@@ -125,7 +145,7 @@ public class StateSubsystem extends SubsystemBase {
      * Get goal state of the robot
      * @return Goal state of the robot
      */
-    public State getGoalState() {
+    public PositionState getGoalState() {
         return goalState;
     }
 
@@ -133,7 +153,7 @@ public class StateSubsystem extends SubsystemBase {
      * Set the current state of the robot. Also sets the previous state to where it was before
      * @param curState State the robot is currently at
      */
-    public void setCurrentState(State curState) {
+    public void setCurrentState(PositionState curState) {
         transitioning = false;
         prevState = currentState;
         currentState = curState;
@@ -145,7 +165,7 @@ public class StateSubsystem extends SubsystemBase {
      * Set the goal state for the robot i.e. where we want it to go
      * @param newState Goal state for the robot to go to
      */
-    public void setGoal(State newState) {
+    public void setGoal(PositionState newState) {
         goalState = newState;
         System.out.println("New Goal: " + newState.toString());
         // currentState = newState;
@@ -156,8 +176,8 @@ public class StateSubsystem extends SubsystemBase {
      */
     public void cancelCurrentCommand() {
         currentCommand.cancel();
-        setCurrentState(State.Cancelled);
-        setGoal(State.Cancelled);
+        setCurrentState(PositionState.Cancelled);
+        setGoal(PositionState.Cancelled);
         elevator.setElevatorSetpoint(elevator.getPosition());
         diff.setExtensionSetpoint(diff.getExtensionPosition());
         diff.setRotationSetpoint(diff.getRotationPosition());
@@ -176,7 +196,7 @@ public class StateSubsystem extends SubsystemBase {
      * @param newGoal Goal state for the robot to go to
      * @return Instant command to set goal state
      */
-    public Command setGoalCommand(State newGoal) {
+    public Command setGoalCommand(PositionState newGoal) {
         return this.runOnce(() -> setGoal(newGoal));
     }
 
@@ -221,7 +241,7 @@ public class StateSubsystem extends SubsystemBase {
         return elevator.getPosition() < 1;
     }
 
-    /** Drive State Section */
+    /** ----- Drive State Section ----- */
     
     /**
      * Get if robot drive is rotation locked
@@ -287,32 +307,32 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case IntakePosition:
                     currentCommand = new IntakePosition(diff, elevator, this);
-                    if (currentState != State.TravelPosition) {
+                    if (currentState != PositionState.TravelPosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
-                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
+                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this, ledUtility));
                     break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, drive, this);
-                    if (currentState == State.IntakePosition) {
+                    if (currentState == PositionState.IntakePosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L2Position:
                     currentCommand = new L2Position(diff, elevator, drive, this);
-                    if (currentState == State.IntakePosition) {
+                    if (currentState == PositionState.IntakePosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L3Position:
                     currentCommand = new L3Position(diff, elevator, drive, this);
-                    if (currentState == State.IntakePosition) {
+                    if (currentState == PositionState.IntakePosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L4Position:
                     currentCommand = new L4Position(diff, elevator, drive, this);
-                    if (currentState == State.IntakePosition) {
+                    if (currentState == PositionState.IntakePosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
@@ -326,6 +346,22 @@ public class StateSubsystem extends SubsystemBase {
             currentCommand.schedule();
             transitioning = true;
         }
+
+        // LED Management?
+        if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral()) {
+            ledUtility.setAll(LEDEffect.FLASH, Color.kGreen);
+        } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral()) {
+            ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+        } else if (!getRotationLock()) {
+            ledUtility.setAll(LEDEffect.SOLID, Color.kRed);
+        } else if (getDriveState() == DriveState.Teleop) {
+            ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
+        } else if (getDriveState() == DriveState.ReefScoreMove) {
+            ledUtility.setAll(LEDEffect.FLASH, LEDEffects.flytBlue);
+        } else if (getDriveState() == DriveState.ReefScore) {
+            ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+        }
+
         stateDash.update(Constants.debugMode);
     }
 }

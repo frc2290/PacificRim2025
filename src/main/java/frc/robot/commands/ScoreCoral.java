@@ -9,7 +9,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.State;
+import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ScoreCoral extends Command {
@@ -46,7 +46,7 @@ public class ScoreCoral extends Command {
   public void end(boolean interrupted) {
     manipulator.intake(0);
     manipulator.setCoral(false);
-    state.setGoal(State.IntakePosition);
+    state.setGoal(PositionState.IntakePosition);
     state.setDriveState(DriveState.CoralStation);
     drive.setRegularSpeed();
   }

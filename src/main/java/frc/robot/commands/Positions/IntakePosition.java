@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.State;
+import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakePosition extends Command {
@@ -57,7 +57,7 @@ public class IntakePosition extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        state.setCurrentState(State.IntakePosition);
+        state.setCurrentState(PositionState.IntakePosition);
     }
 
     // Returns true when the command should end.

@@ -9,7 +9,7 @@ import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.State;
+import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class L3Position extends Command {
@@ -63,7 +63,7 @@ public class L3Position extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        state.setCurrentState(State.L3Position);
+        state.setCurrentState(PositionState.L3Position);
     }
 
     // Returns true when the command should end.

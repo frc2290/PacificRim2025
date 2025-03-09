@@ -10,13 +10,17 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
+import frc.utils.LEDEffects;
+import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
+import frc.utils.LEDEffects.LEDEffect;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AutomatedDrive extends Command {
@@ -60,7 +64,7 @@ public class AutomatedDrive extends Command {
         double yPower = -MathUtil.applyDeadband(driverController.getLeftX(), OIConstants.kDriveDeadband);
         double rotPower = -MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
 
-        // If driver rotation stick is moved, let driver move robot
+        // If driver rotation stick is moved or rotation lock is off, let driver move robot
         if (rotPower != 0 || !stateSubsystem.getRotationLock()) {
             drive.drive(
                 xPower,
@@ -77,17 +81,20 @@ public class AutomatedDrive extends Command {
             drive.drive(xPower, yPower, rotSpeed, true);
         }
         // Reef state: Move robot to nearest branch for scoring
-        else if (stateSubsystem.getDriveState() == DriveState.ReefScore) {
+        else if (stateSubsystem.getDriveState() == DriveState.ReefScore || stateSubsystem.getDriveState() == DriveState.ReefScoreMove) {
             targetPose = poseEstimator.getClosestBranch(stateSubsystem.getRightScore());
 
             rotTarget = targetPose.getRotation().getDegrees();
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
-            //xPower = xPower * 0.5 + (x_p * poseEstimator.getAlignX(targetPose.getTranslation()));
             xPower = xPower * 0.5 + xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
-            //yPower = yPower * 0.5 + (y_p * poseEstimator.getAlignY(targetPose.getTranslation()));
             yPower = yPower * 0.5 + yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
 
             drive.drive(xPower, yPower, rotSpeed, true);
+
+            // LED Setting
+            if (poseEstimator.getAlignX(targetPose.getTranslation()) < 0.01 && poseEstimator.getAlignY(targetPose.getTranslation()) < 0.01 && stateSubsystem.atCurrentState()) {
+                stateSubsystem.setDriveState(DriveState.ReefScore);
+            }
         }
         // Teleop state: If we have a coral, point robot towards center of reef
         else if (stateSubsystem.getDriveState() == DriveState.Teleop) {
