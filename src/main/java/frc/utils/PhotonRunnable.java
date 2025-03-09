@@ -17,6 +17,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 
 /**
  * Runnable that gets AprilTag data from PhotonVision.
@@ -31,7 +32,7 @@ public class PhotonRunnable implements Runnable {
   private AprilTagFieldLayout layout;
   private String cameraName;
 
-  public PhotonRunnable(String cam_name) {
+  public PhotonRunnable(String cam_name, Transform3d cameraToRobot) {
     cameraName = cam_name;
     this.photonCamera = new PhotonCamera(cameraName);;
     PhotonPoseEstimator photonPoseEstimator = null;
@@ -41,7 +42,7 @@ public class PhotonRunnable implements Runnable {
       layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
       if (photonCamera != null) {
         photonPoseEstimator = new PhotonPoseEstimator(
-            layout, PoseStrategy.AVERAGE_BEST_TARGETS, APRILTAG_CAMERA_TO_ROBOT.inverse());
+            layout, PoseStrategy.AVERAGE_BEST_TARGETS, cameraToRobot);
       }
     //} catch(IOException e) {
     //  DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());

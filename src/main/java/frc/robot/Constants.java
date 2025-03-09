@@ -171,7 +171,11 @@ public final class Constants {
          */
         public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
                 new Translation3d(0.142875, -0.36, CAMERA_HEIGHT_METERS),
-                new Rotation3d(0.0, CAMERA_PITCH_RADIANS, degreesToRadians(206)));
+                new Rotation3d(0.0, CAMERA_PITCH_RADIANS, degreesToRadians(20)));
+
+        public static final Transform3d APRILTAG_CAMERA2_TO_ROBOT = new Transform3d(
+            new Translation3d((0.142875-0.152), -0.36, CAMERA_HEIGHT_METERS),
+            new Rotation3d(0.0, 0, degreesToRadians(160)));
 
         public static final double FIELD_LENGTH_METERS = 16.54175;
         public static final double FIELD_WIDTH_METERS = 8.0137;
@@ -202,19 +206,19 @@ public final class Constants {
 
         // All Variables in Blue coordinate system
         public static final List<Pose2d> leftBranches = List.of(
-                new Pose2d(3.19, 4.12, new Rotation2d(Math.toRadians(180))), // front
-                new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(300))), // back left
-                new Pose2d(5.05, 2.84, new Rotation2d(Math.toRadians(60))), // back right
-                new Pose2d(3.75, 2.95, new Rotation2d(Math.toRadians(120))), // front right
-                new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(240))), // front left
-                new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(0))));// back
+                new Pose2d(3.15, 4.47, new Rotation2d(Math.toRadians(-5))), // front
+                new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left
+                new Pose2d(5.05, 2.84, new Rotation2d(Math.toRadians(120))), // back right
+                new Pose2d(3.75, 2.95, new Rotation2d(Math.toRadians(60))), // front right
+                new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left
+                new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back
         public static final List<Pose2d> rightBranches = List.of(
-                new Pose2d(3.20, 3.80, new Rotation2d(Math.toRadians(180))), // front
-                new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(300))), // back left
-                new Pose2d(5.35, 3.03, new Rotation2d(Math.toRadians(60))), // back right
-                new Pose2d(4.05, 2.79, new Rotation2d(Math.toRadians(120))), // front right
-                new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(240))), // front left
-                new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(0))));// back
+                new Pose2d(3.13, 4.14, new Rotation2d(Math.toRadians(-5))), // front
+                new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left
+                new Pose2d(5.35, 3.03, new Rotation2d(Math.toRadians(120))), // back right
+                new Pose2d(4.05, 2.79, new Rotation2d(Math.toRadians(60))), // front right
+                new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left
+                new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back
         public static final List<Pose2d> rightBranchL1 = List.of(
                 new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
                 new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
@@ -232,8 +236,8 @@ public final class Constants {
 
         public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
         public static final double halfwayAcrossFieldY = (317 / 2) * inToM;
-        public static final double coralStationLeftHeading = 235;
-        public static final double coralStationRightHeading = 125;
+        public static final double coralStationLeftHeading = -50;
+        public static final double coralStationRightHeading = 50;
 
         // X value of the translation is irrelevant
         public static final Translation2d netScore = new Translation2d(295 * inToM, 295 * inToM);

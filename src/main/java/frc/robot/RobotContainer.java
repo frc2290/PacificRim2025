@@ -39,7 +39,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
     // The robot's subsystems
     private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-    //private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+    private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
     private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
     private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem(m_manipulator);
@@ -67,17 +67,17 @@ public class RobotContainer {
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
-        m_robotDrive.setDefaultCommand(
-                // The left stick controls translation of the robot.
-                // Turning is controlled by the X axis of the right stick.
-                new RunCommand(
-                        () -> m_robotDrive.drive(
-                                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
-                                -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
-                                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-                                true),
-                        m_robotDrive));
-        //m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_poseEstimator, m_driverController));
+        // m_robotDrive.setDefaultCommand(
+        //         // The left stick controls translation of the robot.
+        //         // Turning is controlled by the X axis of the right stick.
+        //         new RunCommand(
+        //                 () -> m_robotDrive.drive(
+        //                         -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+        //                         -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+        //                         -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
+        //                         true),
+        //                 m_robotDrive));
+        m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_poseEstimator, m_driverController));
     }
 
     /**
@@ -126,17 +126,17 @@ public class RobotContainer {
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
         dpad_up.onTrue(m_state.setGoalCommand(State.TravelPosition)); // Set to Travel
         dpad_down.onTrue(m_state.setGoalCommand(State.IntakePosition)); // Set to Intake
-        //left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
-        left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
-        right_trigger.onTrue(scoreCommand); // Score coral
+        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScore)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
+        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive)); // Score coral
 
         // Manual controls
-        driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.05)); // Manual move elevator up
-        driver_stick.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.05)); // Manual move elevator down
+        driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
+        driver_stick.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
         driver_stick.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
         driver_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
-        driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(2)); // Manual rotate diff arm out
-        driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-2)); // Manual rotate diff arm in
+        driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
+        driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
         start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 

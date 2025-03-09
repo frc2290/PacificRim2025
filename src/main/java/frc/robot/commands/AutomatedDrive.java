@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import javax.sql.rowset.RowSetProvider;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,9 +26,9 @@ public class AutomatedDrive extends Command {
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    private PIDController rotPid = new PIDController(1, 0, 0);
-    private PIDController xPid = new PIDController(1, 0, 0);
-    private PIDController yPid = new PIDController(1, 0, 0);
+    private PIDController rotPid = new PIDController(0.01, 0.001, 0.001);
+    private PIDController xPid = new PIDController(0.6, 0.0075, 0.1);
+    private PIDController yPid = new PIDController(0.6, 0.0075, 0.1);
     
     private double rotTarget = 0;
     private double rotSpeed = 0;
@@ -38,6 +40,8 @@ public class AutomatedDrive extends Command {
         drive = m_drive;
         poseEstimator = m_pose;
         driverController = m_driverController;
+
+        rotPid.enableContinuousInput(0, 360);
 
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(drive);
@@ -57,7 +61,7 @@ public class AutomatedDrive extends Command {
         double rotPower = -MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
 
         // If driver rotation stick is moved, let driver move robot
-        if (rotPower != 0) {
+        if (rotPower != 0 || !stateSubsystem.getRotationLock()) {
             drive.drive(
                 xPower,
                 yPower,
@@ -65,28 +69,30 @@ public class AutomatedDrive extends Command {
                 true);
         }
         // Coral station state: Rotate rear of robot to face whichever coral station is closest
-        if (stateSubsystem.getDriveState() == DriveState.CoralStation) {
+        else if (stateSubsystem.getDriveState() == DriveState.CoralStation) {
             // Rotate to whichever coral station is closest
             rotTarget = poseEstimator.isClosestStationRight() ? VisionConstants.coralStationRightHeading : VisionConstants.coralStationLeftHeading;
-            rotSpeed = rotPid.calculate(rotTarget);
+            rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
 
             drive.drive(xPower, yPower, rotSpeed, true);
         }
         // Reef state: Move robot to nearest branch for scoring
-        if (stateSubsystem.getDriveState() == DriveState.ReefScore) {
+        else if (stateSubsystem.getDriveState() == DriveState.ReefScore) {
             targetPose = poseEstimator.getClosestBranch(stateSubsystem.getRightScore());
 
             rotTarget = targetPose.getRotation().getDegrees();
-            rotSpeed = rotPid.calculate(rotTarget);
-            xPower = xPower * 0.5 + xPid.calculate(poseEstimator.getAlignX(targetPose.getTranslation()));
-            yPower = yPower * 0.5 + yPid.calculate(poseEstimator.getAlignY(targetPose.getTranslation()));
+            rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
+            //xPower = xPower * 0.5 + (x_p * poseEstimator.getAlignX(targetPose.getTranslation()));
+            xPower = xPower * 0.5 + xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
+            //yPower = yPower * 0.5 + (y_p * poseEstimator.getAlignY(targetPose.getTranslation()));
+            yPower = yPower * 0.5 + yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
 
             drive.drive(xPower, yPower, rotSpeed, true);
         }
         // Teleop state: If we have a coral, point robot towards center of reef
-        if (stateSubsystem.getDriveState() == DriveState.Teleop) {
+        else if (stateSubsystem.getDriveState() == DriveState.Teleop) {
             rotTarget = poseEstimator.turnToTarget(VisionConstants.reefCenter);
-            rotSpeed = rotPid.calculate(rotTarget);
+            rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
 
             drive.drive(xPower, yPower, rotSpeed, true);
         }

@@ -87,6 +87,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorDash.addBoolPublisher("At Position", false, () -> atPosition());
         elevatorDash.addDoublePublisher("Duty Cycle", true, () -> leftMotor.getAppliedOutput());
         elevatorDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
+        elevatorDash.addDoublePublisher("Current", false, () -> leftMotor.getOutputCurrent());
     }
 
     /**

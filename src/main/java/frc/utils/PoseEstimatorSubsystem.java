@@ -28,9 +28,11 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 /**
  * Pose estimator that uses odometry and AprilTags with PhotonVision.
@@ -57,7 +59,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
      * radians.
      */
-    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(2.0, 2.0, 2.0);
+    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(1.0, 1.0, 1.0);
 
     private final Supplier<Rotation2d> rotationSupplier;
     private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
@@ -74,9 +76,11 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     RobotConfig config;
 
+    private FlytLogger poseDash = new FlytLogger("Pose");
+
     public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
-        photonEstimator = new PhotonRunnable("ThriftyCamRight80");
-        photonEstimator2 = new PhotonRunnable("ThriftyCamLeft92");
+        photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT);
+        photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT);
 
         photonNotifier = new Notifier(photonEstimator);
         photonNotifier2 = new Notifier(photonEstimator2);
@@ -95,9 +99,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
         // Start PhotonVision thread
         photonNotifier.setName("PhotonRunnable");
-        photonNotifier.startPeriodic(0.02);
+        photonNotifier.startPeriodic(0.01);
         photonNotifier2.setName("PhotonRunnable2");
-        photonNotifier2.startPeriodic(0.02);
+        photonNotifier2.startPeriodic(0.01);
 
         try {
             config = RobotConfig.fromGUISettings();
@@ -134,6 +138,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                 },
                 m_drive // Reference to this subsystem to set requirements
         );
+
+        poseDash.addStringPublisher("Pose", false, () -> getCurrentPose().toString());
     }
 
     /**
@@ -179,7 +185,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d = flipAlliance(pose2d);
             }
-            //poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+            poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
         }
 
         var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
@@ -190,7 +196,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d2 = flipAlliance(pose2d2);
             }
-            //poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+            poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
         }
 
         // Set the pose on the dashboard
@@ -201,6 +207,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         }
         field2d.setRobotPose(dashboardPose);
         SmartDashboard.putData("Field", field2d);
+        poseDash.update(Constants.debugMode);
     }
 
     private String getFomattedPose() {
@@ -238,7 +245,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     public double turnToTarget(Translation2d target) {
         double offsetX = target.getX() - poseEstimator.getEstimatedPosition().getX();
         double offsetY = target.getY() - poseEstimator.getEstimatedPosition().getY();
-        return (360 -Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
+        //return (360 - Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
+        return (Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
+    }
+
+    public double getDegrees() {
+        return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
     }
 
     public Pose2d getCurrentPose() {
