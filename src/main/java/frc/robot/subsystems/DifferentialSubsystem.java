@@ -130,8 +130,16 @@ public class DifferentialSubsystem extends SubsystemBase {
         extensionSetpoint = setpoint;
     }
 
+    public Command setExtensionSetpointCommand(double setpoint) {
+        return this.run(() -> setExtensionSetpoint(setpoint)).until(() -> atExtenstionSetpoint());
+    }
+
     public void setRotationSetpoint(double setpoint) {
         rotationSetpoint = setpoint;
+    }
+
+    public Command setRotationSetpointCommand(double setpoint) {
+        return this.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
     }
 
     public double getExtensionSetpoint() {

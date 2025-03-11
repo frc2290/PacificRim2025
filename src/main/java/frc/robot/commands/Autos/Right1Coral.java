@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.PoseEstimatorSubsystem;
@@ -30,6 +31,7 @@ public class Right1Coral extends SequentialCommandGroup {
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingDifferentialPose()));
             // Create a command to go to level 4 score position
             Command goToL4 = stateSubsystem.setGoalCommand(PositionState.L4Position);
+            //goToL4.onlyWhile(() -> poseEst.getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3);
             // Create a parallel group to move to the reef and get in scoring position at the same time
             Command moveToReef = new ParallelCommandGroup(AutoBuilder.followPath(startToReef), goToL4);
 

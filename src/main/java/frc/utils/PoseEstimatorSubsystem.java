@@ -5,6 +5,7 @@ import static edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition.kRedAlli
 
 import java.util.function.Supplier;
 
+import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
@@ -185,7 +187,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d = flipAlliance(pose2d);
             }
-            poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+            if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator.grabLatestResult()) < 3) {
+                poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+            }
         }
 
         var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
@@ -196,7 +200,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d2 = flipAlliance(pose2d2);
             }
-            poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+            if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
+                poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+            }
         }
 
         // Set the pose on the dashboard

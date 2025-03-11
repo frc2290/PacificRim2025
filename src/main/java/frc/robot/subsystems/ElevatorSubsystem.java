@@ -99,6 +99,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorSetpoint = setpoint;
     }
 
+    public Command setElevatorSetpointCommand(double setpoint) {
+        return this.run(() -> setElevatorSetpoint(setpoint)).until(() -> atPosition());
+    }
+
     public Command incrementElevatorSetpoint(double increment) {
         return this.runOnce(() -> elevatorSetpoint += increment);
     }
