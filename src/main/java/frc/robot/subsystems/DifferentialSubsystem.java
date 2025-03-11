@@ -51,8 +51,8 @@ public class DifferentialSubsystem extends SubsystemBase {
     private double extensionSetpoint = 0;
     private double rotationSetpoint = 0;
 
-    private SlewRateLimiter extendSlew = new SlewRateLimiter(800);
-    private SlewRateLimiter rotateSlew = new SlewRateLimiter(180);
+    private SlewRateLimiter extendSlew = new SlewRateLimiter(700);
+    private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
 
    public DifferentialSubsystem(ManipulatorSubsystem m_endeffector){
         endeffector = m_endeffector;

@@ -19,6 +19,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 
 import frc.robot.Configs;
+import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 public class MAXSwerveModule {
   private final SparkFlex m_drivingSpark;
@@ -32,6 +33,8 @@ public class MAXSwerveModule {
 
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
+
+  private FlytLogger test = new FlytLogger("Swerve");
 
   /**
    * Constructs a MAXSwerveModule and configures the driving and turning motor,
@@ -60,6 +63,11 @@ public class MAXSwerveModule {
     m_chassisAngularOffset = chassisAngularOffset;
     m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
     m_drivingEncoder.setPosition(0);
+
+    test.addDoublePublisher("Drive Velocity " + drivingCANId, false, () -> m_drivingEncoder.getVelocity());
+    test.addDoublePublisher("Turn Position " + turningCANId, false, () -> m_turningEncoder.getPosition());
+    test.addDoublePublisher("Drive Command " + m_drivingSpark.getDeviceId(), false, () -> getState().speedMetersPerSecond);
+    test.addStringPublisher("Turn Command " + m_turningSpark.getDeviceId(), false, () -> getState().angle.toString());
   }
 
   /**
@@ -106,6 +114,8 @@ public class MAXSwerveModule {
     m_turningClosedLoopController.setReference(correctedDesiredState.angle.getRadians(), ControlType.kPosition);
 
     m_desiredState = desiredState;
+
+    test.update(true);
   }
 
   /** Zeroes all the SwerveModule encoders. */

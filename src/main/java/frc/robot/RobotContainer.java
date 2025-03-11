@@ -134,7 +134,8 @@ public class RobotContainer {
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
         dpad_up.onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
         dpad_down.onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
-        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state, m_ledUtility));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_robotDrive)); // Score coral
 

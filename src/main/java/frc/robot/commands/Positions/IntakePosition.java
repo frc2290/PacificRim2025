@@ -14,6 +14,7 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 public class IntakePosition extends Command {
     private double elevatorPos = 0.1;
     private double diffExt = 0;
+    private double diffExt2 = 70;
     private double diffRot = 8;
 
     private ElevatorSubsystem elevator;
@@ -21,6 +22,7 @@ public class IntakePosition extends Command {
     private StateSubsystem state;
 
     private boolean moved_ext = false;
+    private boolean moved_ext2 = false;
     private boolean moved_rot = false;
     private boolean moved_elev = false;
 
@@ -39,19 +41,34 @@ public class IntakePosition extends Command {
         moved_ext = false;
         moved_rot = false;
         moved_elev = false;
+        moved_ext2 = false;
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        elevator.setElevatorSetpoint(elevatorPos);
-        diff.setRotationSetpoint(diffRot);
-        diff.setExtensionSetpoint(diffExt);
-        if (elevator.atPosition() && diff.atRotationSetpoint() && diff.atExtenstionSetpoint()) {
-            moved_elev = true;                
-            moved_ext = true;
+        if (!moved_ext2) diff.setExtensionSetpoint(diffExt2);
+        if (diff.atExtenstionSetpoint() && moved_ext2) {
+            diff.setRotationSetpoint(diffRot);
+            if (diff.atRotationSetpoint() && moved_rot) {
+                diff.setExtensionSetpoint(diffExt);
+                elevator.setElevatorSetpoint(elevatorPos);
+                if (diff.atExtenstionSetpoint() && elevator.atPosition()) {
+                    moved_elev = true;
+                    moved_ext = true;
+                }
+            }
             moved_rot = true;
         }
+        moved_ext2 = true;
+        // elevator.setElevatorSetpoint(elevatorPos);
+        // diff.setRotationSetpoint(diffRot);
+        // diff.setExtensionSetpoint(diffExt);
+        // if (elevator.atPosition() && diff.atRotationSetpoint() && diff.atExtenstionSetpoint()) {
+        //     moved_elev = true;                
+        //     moved_ext = true;
+        //     moved_rot = true;
+        // }
     }
 
     // Called once the command ends or is interrupted.

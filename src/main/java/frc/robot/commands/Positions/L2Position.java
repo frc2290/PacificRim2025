@@ -13,9 +13,9 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class L2Position extends Command {
-    private double elevatorPos = 0.65;
-    private double diffExt = 25;
-    private double diffRot = (220 - 40);
+    private double elevatorPos = 0.725;
+    private double diffExt = 80;
+    private double diffRot = -155;
 
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;

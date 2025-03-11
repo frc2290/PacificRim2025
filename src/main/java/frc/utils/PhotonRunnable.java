@@ -42,7 +42,7 @@ public class PhotonRunnable implements Runnable {
       layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
       if (photonCamera != null) {
         photonPoseEstimator = new PhotonPoseEstimator(
-            layout, PoseStrategy.AVERAGE_BEST_TARGETS, cameraToRobot);
+            layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, cameraToRobot);
       }
     //} catch(IOException e) {
     //  DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());

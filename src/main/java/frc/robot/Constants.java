@@ -128,7 +128,7 @@ public final class Constants {
 
         // Calculations required for driving motor conversion factors and feed forward
         public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
-        public static final double kWheelDiameterMeters = 0.0762;
+        public static final double kWheelDiameterMeters = 0.0755;
         public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
         // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
         // teeth on the bevel pinion
@@ -206,14 +206,14 @@ public final class Constants {
 
         // All Variables in Blue coordinate system
         public static final List<Pose2d> leftBranches = List.of(
-                new Pose2d(3.15, 4.47, new Rotation2d(Math.toRadians(-5))), // front
+                new Pose2d(3.12, 4.47, new Rotation2d(Math.toRadians(-2.75))), // front
                 new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left
                 new Pose2d(5.05, 2.84, new Rotation2d(Math.toRadians(120))), // back right
                 new Pose2d(3.75, 2.95, new Rotation2d(Math.toRadians(60))), // front right
                 new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left
                 new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back
         public static final List<Pose2d> rightBranches = List.of(
-                new Pose2d(3.13, 4.14, new Rotation2d(Math.toRadians(-5))), // front
+                new Pose2d(3.11, 4.10, new Rotation2d(Math.toRadians(-2.75))), // front
                 new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left
                 new Pose2d(5.35, 3.03, new Rotation2d(Math.toRadians(120))), // back right
                 new Pose2d(4.05, 2.79, new Rotation2d(Math.toRadians(60))), // front right

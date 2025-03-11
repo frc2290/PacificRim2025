@@ -25,7 +25,7 @@ public class LEDEffects {
 
     // Team Green
     public static Color rrGreen = new Color("#7CF205");
-    public static Color flytBlue = new Color("0081B3");
+    public static Color flytBlue = new Color("#0081B3");
 
     public static void setSolidColor(LEDStrip _strip) {
         AddressableLEDBuffer output = new AddressableLEDBuffer(_strip.getLength());

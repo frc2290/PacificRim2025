@@ -17,6 +17,12 @@ public class TravelPosition extends Command {
     private double diffExt = 100;
     private double diffRot = 90;
 
+    private double diffExt1 = 240;
+    private double diffRot1 = -30;
+    private double elevatorPos1 = 0.375;
+    private double diffRot2 = -125;
+    private double diffExt2 = 20;
+
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;
     private StateSubsystem state;
@@ -24,6 +30,8 @@ public class TravelPosition extends Command {
     private boolean moved_ext = false;
     private boolean moved_rot = false;
     private boolean moved_elev = false;
+    private boolean moved_ext2 = false;
+    private boolean moved_rot2 = false;
 
     /** Creates a new TravelPosition. */
     public TravelPosition(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, StateSubsystem m_state) {
@@ -40,35 +48,59 @@ public class TravelPosition extends Command {
         moved_ext = false;
         moved_rot = false;
         moved_elev = false;
+        moved_ext2 = false;
+        moved_rot2 = false;
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
         if (state.getCurrentState() != PositionState.IntakePosition && state.getCurrentState() != PositionState.StartPosition) {
-            diff.setRotationSetpoint(diffRot);
-            diff.setExtensionSetpoint(diffExt);
+            diff.setRotationSetpoint(diffRot2);
+            diff.setExtensionSetpoint(diffExt2);
             if (diff.atExtenstionSetpoint() && moved_ext && diff.atRotationSetpoint() && moved_rot) {
-                elevator.setElevatorSetpoint(elevatorPos);
+                elevator.setElevatorSetpoint(elevatorPos1);
                 if (elevator.atPosition()) {
                     moved_elev = true;
                 }
             }
             moved_ext = true;
             moved_rot = true;
+            moved_ext2 = true;
+            moved_rot2 = true;
         } else {
-            diff.setExtensionSetpoint(diffExt);
-            if (diff.atExtenstionSetpoint() && moved_ext) {
-                diff.setRotationSetpoint(diffRot);
-                if (diff.atRotationSetpoint() && moved_rot) {
-                    elevator.setElevatorSetpoint(elevatorPos);
-                    if (elevator.atPosition()) {
-                        moved_elev = true;
+            // diff.setExtensionSetpoint(diffExt);
+            // if (diff.atExtenstionSetpoint() && moved_ext) {
+            //     diff.setRotationSetpoint(diffRot);
+            //     if (diff.atRotationSetpoint() && moved_rot) {
+            //         elevator.setElevatorSetpoint(elevatorPos);
+            //         if (elevator.atPosition()) {
+            //             moved_elev = true;
+            //         }
+            //     }
+            //     moved_rot = true;
+            // }
+            // moved_ext = true;
+            if (!moved_ext2) diff.setExtensionSetpoint(diffExt1);
+            if (diff.atExtenstionSetpoint() && moved_ext2) {
+                if (!moved_rot2) diff.setRotationSetpoint(diffRot1);
+                if (diff.atRotationSetpoint() && moved_rot2) {
+                    elevator.setElevatorSetpoint(elevatorPos1);
+                    if (elevator.atPosition() && moved_elev) {
+                        if (!moved_rot) diff.setRotationSetpoint(diffRot2);
+                        if (diff.atRotationSetpoint() && moved_rot) {
+                            diff.setExtensionSetpoint(diffExt2);
+                            if (diff.atExtenstionSetpoint()) {
+                                moved_ext = true;
+                            }
+                        }
+                        moved_rot = true;
                     }
+                    moved_elev = true;
                 }
-                moved_rot = true;
+                moved_rot2 = true;
             }
-            moved_ext = true;
+            moved_ext2 = true;
         }
     }
 
@@ -81,7 +113,7 @@ public class TravelPosition extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return (moved_ext && moved_rot && moved_elev);
+        return (moved_ext && moved_rot && moved_elev && moved_ext2 && moved_rot2);
         // return false;
     }
 }

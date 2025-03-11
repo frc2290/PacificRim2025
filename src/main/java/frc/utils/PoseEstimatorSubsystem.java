@@ -51,7 +51,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then
      * meters.
      */
-    private static final Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+    private static final Vector<N3> stateStdDevs = VecBuilder.fill(1.0, 1.0, 1.0); //VecBuilder.fill(0.1, 0.1, 0.1);
 
     /**
      * Standard deviations of the vision measurements. Increase these numbers to
@@ -59,7 +59,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
      * radians.
      */
-    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(1.0, 1.0, 1.0);
+    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, 0.3); //VecBuilder.fill(1.0, 1.0, 1.0);
 
     private final Supplier<Rotation2d> rotationSupplier;
     private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
@@ -178,7 +178,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
 
         var visionPose = photonEstimator.grabLatestEstimatedPose();
-        if (visionPose != null && (!DriverStation.isAutonomous() || visionPose.estimatedPose.toPose2d().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
+        if (visionPose != null && (!DriverStation.isAutonomous() || getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
             // New pose from vision
             sawTag = true;
             var pose2d = visionPose.estimatedPose.toPose2d();
@@ -189,7 +189,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         }
 
         var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-        if (visionPose2 != null && (!DriverStation.isAutonomous() || visionPose.estimatedPose.toPose2d().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
+        if (visionPose2 != null && (!DriverStation.isAutonomous() || getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
             // New pose from vision
             sawTag = true;
             var pose2d2 = visionPose2.estimatedPose.toPose2d();

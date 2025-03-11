@@ -30,9 +30,9 @@ public class AutomatedDrive extends Command {
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    private PIDController rotPid = new PIDController(0.01, 0.001, 0.001);
-    private PIDController xPid = new PIDController(0.6, 0.0075, 0.1);
-    private PIDController yPid = new PIDController(0.6, 0.0075, 0.1);
+    private PIDController rotPid = new PIDController(0.02, 0.001, 0.001);
+    private PIDController xPid = new PIDController(0.8, 0.008, 0.1);
+    private PIDController yPid = new PIDController(0.8, 0.008, 0.1);
     
     private double rotTarget = 0;
     private double rotSpeed = 0;
