@@ -62,7 +62,7 @@ public class IntakeCoral extends Command {
     public void end(boolean interrupted) {
         currentTimer.stop();
         delayTimer.stop();
-        manipulator.intake(0);
+        manipulator.intake(0.1);
         manipulator.setCoral(true);
         ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
         state.setGoal(PositionState.TravelPosition);

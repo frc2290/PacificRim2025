@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -29,16 +30,20 @@ public class Right1Coral extends SequentialCommandGroup {
             PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingDifferentialPose()));
+            // Set drive to auto (have to do this for every auto)
+            Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
             // Create a command to go to level 4 score position
-            Command goToL4 = stateSubsystem.setGoalCommandTest(PositionState.L4Position);
+            Command goToL4 = stateSubsystem.setGoalCommand(PositionState.L4Position, true);
             //goToL4.onlyWhile(() -> poseEst.getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3);
             // Create a parallel group to move to the reef and get in scoring position at the same time
             Command moveToReef = new ParallelCommandGroup(AutoBuilder.followPath(startToReef), goToL4);
+            // Set drive to teleop (have to do this for every auto)
+            Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
 
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
             // First reset position, move to reef and get in score position, lastly score the coral
-            addCommands(resetPose, moveToReef, scoreCommand);
+            addCommands(resetPose, driveSetAuto, moveToReef, scoreCommand, driveSetTeleop);
         } catch (Exception e) {
             DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
             Commands.none();

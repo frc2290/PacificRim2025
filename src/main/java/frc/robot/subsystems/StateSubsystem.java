@@ -12,11 +12,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.Positions.IntakePosition;
+import frc.robot.commands.Positions.IntakePositionNew;
 import frc.robot.commands.Positions.L1Position;
+import frc.robot.commands.Positions.L1PositionNew;
 import frc.robot.commands.Positions.L2Position;
+import frc.robot.commands.Positions.L2PositionNew;
 import frc.robot.commands.Positions.L3Position;
+import frc.robot.commands.Positions.L3PositionNew;
 import frc.robot.commands.Positions.L4Position;
-import frc.robot.commands.Positions.Test;
+import frc.robot.commands.Positions.L4PositionNew;
+import frc.robot.commands.Positions.TravelPositionNew;
 import frc.robot.commands.Positions.TravelPosition;
 import frc.utils.LEDEffects;
 import frc.utils.LEDUtility;
@@ -55,7 +60,8 @@ public class StateSubsystem extends SubsystemBase {
         ProcessorScore,
         CoralStation,
         Climb,
-        Teleop
+        Teleop,
+        Auto
     }
 
     /**
@@ -162,6 +168,12 @@ public class StateSubsystem extends SubsystemBase {
                 + goalState.toString());
     }
 
+    public Command setCurrentStateCommand(PositionState curState) {
+        return this.runOnce(() -> {
+            setCurrentState(curState);
+        });
+    }
+
     /**
      * Set the goal state for the robot i.e. where we want it to go
      * @param newState Goal state for the robot to go to
@@ -205,8 +217,18 @@ public class StateSubsystem extends SubsystemBase {
         return this.runOnce(() -> setGoal(newGoal));
     }
 
-    public Command setGoalCommandTest(PositionState newGoal) {
-        return this.run(() -> setGoal(newGoal)).until(() -> atGoal());
+    /**
+     * Set the goal state for the robot i.e. where we want it to go
+     * @param newGoal Goal state for the robot to go to
+     * @param wait Boolean to determine if we want to wait for it to finish (True will wait)
+     * @return Instant command to set goal state or command with a wait until at goal
+     */
+    public Command setGoalCommand(PositionState newGoal, boolean wait) {
+        if (wait) {
+            return this.run(() -> setGoal(newGoal)).until(() -> atGoal());
+        } else {
+            return setGoalCommand(newGoal);
+        }
     }
 
     /**
@@ -312,42 +334,41 @@ public class StateSubsystem extends SubsystemBase {
         if (goalState != currentState && !isTransitioning() && atCurrentState() && DriverStation.isEnabled()) {
             switch (goalState) {
                 case TravelPosition:
-                    currentCommand = new TravelPosition(diff, elevator, this);
-                    //currentCommand = new Test(elevator, diff, this);
+                    currentCommand = new TravelPositionNew(diff, elevator, this);
                     break;
                 case IntakePosition:
-                    currentCommand = new IntakePosition(diff, elevator, this);
+                    currentCommand = new IntakePositionNew(diff, elevator, this);
                     if (currentState != PositionState.TravelPosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
                     currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this, ledUtility));
                     break;
                 case L1Position:
-                    currentCommand = new L1Position(diff, elevator, drive, this);
+                    currentCommand = new L1PositionNew(diff, elevator, this);
                     if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
                     break;
                 case L2Position:
-                    currentCommand = new L2Position(diff, elevator, drive, this);
+                    currentCommand = new L2PositionNew(diff, elevator, this);
                     if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
                     break;
                 case L3Position:
-                    currentCommand = new L3Position(diff, elevator, drive, this);
+                    currentCommand = new L3PositionNew(diff, elevator, this);
                     if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
                     break;
                 case L4Position:
-                    currentCommand = new L4Position(diff, elevator, drive, this);
+                    currentCommand = new L4PositionNew(diff, elevator, this);
                     if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
                     break;
                 case StartPosition:
-                    currentCommand = new TravelPosition(diff, elevator, this);
+                    currentCommand = new TravelPositionNew(diff, elevator, this);
                     break;
                 default:
                     System.out.println("Unknown State!!!!!!!!!!");

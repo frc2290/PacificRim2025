@@ -46,6 +46,9 @@ public final class Constants {
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double kKG = 0.0;
+
+        public static final double transportSetpoint = 0.375;
+        public static final double intakeSetpoint = 0.1;
     }
 
     public static final class Manipulator {
@@ -65,6 +68,11 @@ public final class Constants {
         public static final double v_ki = 0.00005;
         public static final double v_kd = 0;
         public static final double v_KG = 0;
+
+        public static final double transportExtensionSetpoint = 20;
+        public static final double transportRotationSetpoint = -125;
+        public static final double intakeExtensionSetpoint = 0;
+        public static final double intakeRotationSetpoint = 8;
 
         // pid tune values Internal loop
         // public static final double v_kp = 0.000006;
