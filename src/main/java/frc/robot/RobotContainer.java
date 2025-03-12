@@ -71,7 +71,7 @@ public class RobotContainer {
         // Build an auto chooser. This will use Commands.none() as the default option.
         //auto_chooser.addOption("Drive", new Test(m_poseEstimator));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        auto_chooser.addOption("Right1Coral", new Right1Coral(null, m_state, scoreCommand));
+        auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, scoreCommand));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands

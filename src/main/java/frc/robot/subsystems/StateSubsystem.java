@@ -16,6 +16,7 @@ import frc.robot.commands.Positions.L1Position;
 import frc.robot.commands.Positions.L2Position;
 import frc.robot.commands.Positions.L3Position;
 import frc.robot.commands.Positions.L4Position;
+import frc.robot.commands.Positions.Test;
 import frc.robot.commands.Positions.TravelPosition;
 import frc.utils.LEDEffects;
 import frc.utils.LEDUtility;
@@ -171,6 +172,10 @@ public class StateSubsystem extends SubsystemBase {
         // currentState = newState;
     }
 
+    public boolean atGoal() {
+        return goalState == currentState;
+    }
+
     /**
      * Cancels current running command or sequence of commands. Also sets current state to cancelled and sets the subsystems to their current position
      */
@@ -198,6 +203,10 @@ public class StateSubsystem extends SubsystemBase {
      */
     public Command setGoalCommand(PositionState newGoal) {
         return this.runOnce(() -> setGoal(newGoal));
+    }
+
+    public Command setGoalCommandTest(PositionState newGoal) {
+        return this.run(() -> setGoal(newGoal)).until(() -> atGoal());
     }
 
     /**
@@ -304,6 +313,7 @@ public class StateSubsystem extends SubsystemBase {
             switch (goalState) {
                 case TravelPosition:
                     currentCommand = new TravelPosition(diff, elevator, this);
+                    //currentCommand = new Test(elevator, diff, this);
                     break;
                 case IntakePosition:
                     currentCommand = new IntakePosition(diff, elevator, this);

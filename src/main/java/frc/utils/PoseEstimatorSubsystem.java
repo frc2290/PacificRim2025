@@ -180,29 +180,29 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
 
         var visionPose = photonEstimator.grabLatestEstimatedPose();
-        if (visionPose != null && (!DriverStation.isAutonomous() || getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
+        if (visionPose != null) {
             // New pose from vision
             sawTag = true;
             var pose2d = visionPose.estimatedPose.toPose2d();
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d = flipAlliance(pose2d);
             }
-            if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator.grabLatestResult()) < 3) {
+            //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator.grabLatestResult()) < 3) {
                 poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
-            }
+            //}
         }
 
         var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-        if (visionPose2 != null && (!DriverStation.isAutonomous() || getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
+        if (visionPose2 != null) {
             // New pose from vision
             sawTag = true;
             var pose2d2 = visionPose2.estimatedPose.toPose2d();
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d2 = flipAlliance(pose2d2);
             }
-            if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
+            //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
                 poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
-            }
+            //}
         }
 
         // Set the pose on the dashboard

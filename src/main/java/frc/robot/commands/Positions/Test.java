@@ -26,7 +26,7 @@ public class Test extends SequentialCommandGroup {
         Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
         Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
         Command moveElevator = elevator.setElevatorSetpointCommand(elevatorPos1);
-        Command moveRotStep2 = diffArm.setExtensionSetpointCommand(diffRot2);
+        Command moveRotStep2 = diffArm.setRotationSetpointCommand(diffRot2);
         Command moveExtStep2 = diffArm.setExtensionSetpointCommand(diffExt2);
         // Add your commands in the addCommands() call, e.g.
         // addCommands(new FooCommand(), new BarCommand());

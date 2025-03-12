@@ -18,6 +18,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /**
  * Runnable that gets AprilTag data from PhotonVision.
@@ -40,6 +42,9 @@ public class PhotonRunnable implements Runnable {
       layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
       // PV estimates will always be blue, they'll get flipped by robot thread
       layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
+      if (DriverStation.getAlliance().get() == Alliance.Red) {
+        layout.setOrigin(OriginPosition.kRedAllianceWallRightSide);
+      }
       if (photonCamera != null) {
         photonPoseEstimator = new PhotonPoseEstimator(
             layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, cameraToRobot);

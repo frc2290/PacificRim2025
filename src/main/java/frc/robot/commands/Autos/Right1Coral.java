@@ -30,7 +30,7 @@ public class Right1Coral extends SequentialCommandGroup {
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingDifferentialPose()));
             // Create a command to go to level 4 score position
-            Command goToL4 = stateSubsystem.setGoalCommand(PositionState.L4Position);
+            Command goToL4 = stateSubsystem.setGoalCommandTest(PositionState.L4Position);
             //goToL4.onlyWhile(() -> poseEst.getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3);
             // Create a parallel group to move to the reef and get in scoring position at the same time
             Command moveToReef = new ParallelCommandGroup(AutoBuilder.followPath(startToReef), goToL4);

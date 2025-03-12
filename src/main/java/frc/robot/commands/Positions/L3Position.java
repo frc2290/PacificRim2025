@@ -15,7 +15,7 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 public class L3Position extends Command {
     private double elevatorPos = 1.125;
     private double diffExt = 80;
-    private double diffRot = -155;
+    private double diffRot = -160;
 
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;
