@@ -122,8 +122,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                                                                                   // given ROBOT RELATIVE ChassisSpeeds
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
                                                 // holonomic drive trains
-                        new PIDConstants(8.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(2.0, 0.0, 0.0) // Rotation PID constants
+                        new PIDConstants(18.0, 0.0, 0.18), // Translation PID constants
+                        new PIDConstants(14.0, 0.0, 0.18) // Rotation PID constants
                 ),
                 config, // The robot configuration
                 () -> {
