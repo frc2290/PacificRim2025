@@ -84,6 +84,7 @@ public class SwerveAutoAlign extends Command {
     @Override
     public void end(boolean interrupted) {
         timer.stop();
+        pose.setTargetPose(trajectory.getEndState().pose);
     }
 
     // Returns true when the command should end.
