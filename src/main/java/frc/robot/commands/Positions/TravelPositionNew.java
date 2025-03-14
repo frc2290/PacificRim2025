@@ -37,10 +37,8 @@ public class TravelPositionNew extends SequentialCommandGroup {
             Command moveExtStep2 = diffArm.setExtensionSetpointCommand(DifferentialArm.transportExtensionSetpoint);
             result = new SequentialCommandGroup(moveExtStep1, moveRotStep1, moveElevator, moveRotStep2, moveExtStep2);
         } else {
-            Command moveRot = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint);
-            Command moveExt = diffArm.setExtensionSetpointCommand(DifferentialArm.transportExtensionSetpoint);
+            Command moveAndRot = diffArm.setRotAndExtSetpointCommand(DifferentialArm.transportExtensionSetpoint, DifferentialArm.transportRotationSetpoint);
             Command moveElev = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);
-            ParallelCommandGroup moveAndRot = new ParallelCommandGroup(moveRot, moveExt);
             result = new SequentialCommandGroup(moveAndRot, moveElev);
         }
         addCommands(result, stateSubsystem.setCurrentStateCommand(PositionState.TravelPosition));

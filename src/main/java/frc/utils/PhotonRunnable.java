@@ -48,6 +48,7 @@ public class PhotonRunnable implements Runnable {
       if (photonCamera != null) {
         photonPoseEstimator = new PhotonPoseEstimator(
             layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, cameraToRobot);
+        photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
       }
     //} catch(IOException e) {
     //  DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());

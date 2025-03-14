@@ -51,7 +51,7 @@ public class DriveSubsystem extends SubsystemBase {
     public DriveSubsystem() {
         // Usage reporting for MAXSwerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
-        m_gyro.setAngleAdjustment(0);
+        m_gyro.setAngleAdjustment(180);
     }
 
     @Override
@@ -191,6 +191,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Rotation2d newHeading() {
-        return Rotation2d.fromDegrees(-m_gyro.getAngle());
+        return m_gyro.getRotation2d();
+        //return Rotation2d.fromDegrees(-m_gyro.getAngle());
     }
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
@@ -32,19 +33,19 @@ public class Right1Coral extends SequentialCommandGroup {
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
             // Set drive to auto (have to do this for every auto)
-            //Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
+            Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
             // Create a command to go to level 4 score position
             Command goToL4 = stateSubsystem.setGoalCommand(PositionState.L4Position, true);
-            //goToL4.onlyWhile(() -> poseEst.getCurrentPose().getTranslation().getDistance(VisionConstants.reefCenter) < 3);
             // Create a parallel group to move to the reef and get in scoring position at the same time
-            //Command moveToReef = new ParallelCommandGroup(AutoBuilder.followPath(startToReef), goToL4);
+            Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
+            Command moveToReef = new ParallelCommandGroup(followPath1, goToL4);
             // Set drive to teleop (have to do this for every auto)
-            //Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
+            Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
 
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
             // First reset position, move to reef and get in score position, lastly score the coral
-            addCommands(resetPose, AutoBuilder.followPath(startToReef), goToL4, scoreCommand);
+            addCommands(resetPose, driveSetAuto, moveToReef, scoreCommand);
         } catch (Exception e) {
             DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
             Commands.none();

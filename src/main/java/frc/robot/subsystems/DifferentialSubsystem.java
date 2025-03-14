@@ -12,7 +12,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,7 +31,6 @@ public class DifferentialSubsystem extends SubsystemBase {
     private ProfiledPIDController extensionPid = new ProfiledPIDController(400, 0, 0, new Constraints(5000, 10000));
     private ProfiledPIDController rotationPid = new ProfiledPIDController(800, 0, 40, new Constraints(2000, 4000));
 
-    private ManipulatorSubsystem endeffector;
 
     private SparkMax leftMotor;
     private SparkMax rightMotor;
@@ -54,8 +52,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     private SlewRateLimiter extendSlew = new SlewRateLimiter(700);
     private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
 
-   public DifferentialSubsystem(ManipulatorSubsystem m_endeffector){
-        endeffector = m_endeffector;
+   public DifferentialSubsystem(){
         // motor1 = new SparkMaxController(getName(), DifferentialArm.kLeftMotorId, true, true, false);
         // motor2 = new SparkMaxController(getName(), DifferentialArm.kRightMotorId, true, true, false);
         // //motor1.advanceControl(Constants.DifferentialArm.voltageComp, Constants.DifferentialArm.currentStallLim, Constants.DifferentialArm.currentFreeLim, 0);
@@ -142,6 +139,15 @@ public class DifferentialSubsystem extends SubsystemBase {
         return this.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
     }
 
+    public Command setRotAndExtSetpointCommand(double ext, double rot) {
+        return this.run(() -> {
+            setExtensionSetpoint(ext);
+            setRotationSetpoint(rot);  
+        }).until(() -> {
+            return atRotationSetpoint() && atExtenstionSetpoint();
+        });
+    }
+
     public double getExtensionSetpoint() {
         return extensionSetpoint;
     }
@@ -207,8 +213,8 @@ public class DifferentialSubsystem extends SubsystemBase {
         //         rotationSetpoint = tempRot;
         //     }
         // }
-        double extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
-        double rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
+        //double extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
+        //double rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
         //leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);
         //rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity);
         leftArm.setReference(extendSlew.calculate(extensionSetpoint) - degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);

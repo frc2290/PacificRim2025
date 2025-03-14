@@ -18,27 +18,19 @@ import frc.utils.PoseEstimatorSubsystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class Test extends SequentialCommandGroup{
+public class Test extends SequentialCommandGroup {
   /** Creates a new SPSourceSide. */
   public Test(PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem) {
-
-
-    
-    
-    try{
-
+    try {
       PathPlannerPath path = PathPlannerPath.fromPathFile("RightCoral1");
-      stateSubsystem.setRotationLock(false);
+      // stateSubsystem.setRotationLock(false);
 
       Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(path.getStartingHolonomicPose().get()));
       // Load the path you want to follow using its name in the GUI
       addCommands(resetPose, AutoBuilder.followPath(path));
-  } catch (Exception e) {
+    } catch (Exception e) {
       DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
       Commands.none();
-  }
-
-    
-  
+    }
   }
 }

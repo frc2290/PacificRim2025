@@ -17,6 +17,8 @@ import static edu.wpi.first.math.util.Units.degreesToRadians;
 
 import java.util.List;
 
+import com.pathplanner.lib.path.PathConstraints;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean
@@ -155,6 +157,10 @@ public final class Constants {
         public static final double kMaxAccelerationMetersPerSecondSquared = 3;
         public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
         public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+        public static final PathConstraints kPathConstraints = new PathConstraints(kMaxSpeedMetersPerSecond, 
+                                                                                    kMaxAccelerationMetersPerSecondSquared,
+                                                                                    kMaxAngularSpeedRadiansPerSecond, 
+                                                                                    kMaxAngularSpeedRadiansPerSecondSquared);
 
         public static final double kPXController = 1;
         public static final double kPYController = 1;

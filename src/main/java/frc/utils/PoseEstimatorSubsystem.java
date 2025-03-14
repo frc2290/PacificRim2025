@@ -76,7 +76,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     private OriginPosition originPosition = kBlueAllianceWallRightSide;
     private boolean sawTag = false;
 
-    RobotConfig config;
+    private RobotConfig config;
+
+    private Pose2d targetPose = new Pose2d();
 
     private FlytLogger poseDash = new FlytLogger("Pose");
 
@@ -269,6 +271,22 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public ChassisSpeeds getChassisSpeeds() {
         return DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStateSupplier.get());
+    }
+
+    public Rotation2d getCurrentRotation() {
+        return poseEstimator.getEstimatedPosition().getRotation();
+    }
+
+    public RobotConfig getRobotConfig() {
+        return config;
+    }
+
+    public Pose2d getTargetPose() {
+        return targetPose;
+    }
+
+    public void setTargetPose(Pose2d newTarget) {
+        targetPose = newTarget;
     }
 
     /**

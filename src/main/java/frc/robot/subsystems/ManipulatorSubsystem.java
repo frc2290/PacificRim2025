@@ -22,7 +22,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     private SparkAbsoluteEncoder manipulatorAbsEncoder;
     private RelativeEncoder relEncoder;
 
-    private boolean hasCoral = false;
+    private boolean hasCoral = true;
     private boolean hasAlgae = false;
 
     private FlytLogger manipDash = new FlytLogger("Manipulator");

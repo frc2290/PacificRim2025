@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -78,7 +77,7 @@ public class StateSubsystem extends SubsystemBase {
 
     // Rotation lock and current drive state
     private boolean rotLock = true;
-    private DriveState driveState = DriveState.Teleop;
+    private DriveState driveState = DriveState.Auto;
 
     // Boolean for if we want to score on the left or right branch
     private boolean rightScore = false;
