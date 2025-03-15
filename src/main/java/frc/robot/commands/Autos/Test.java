@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.utils.PoseEstimatorSubsystem;
@@ -27,7 +28,7 @@ public class Test extends SequentialCommandGroup {
 
       Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(path.getStartingHolonomicPose().get()));
       // Load the path you want to follow using its name in the GUI
-      addCommands(resetPose, AutoBuilder.followPath(path));
+      addCommands(stateSubsystem.setDriveStateCommand(DriveState.Auto), resetPose, new SwerveAutoStep(path, poseEst));
     } catch (Exception e) {
       DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
       Commands.none();

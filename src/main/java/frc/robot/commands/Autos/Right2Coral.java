@@ -4,9 +4,6 @@
 
 package frc.robot.commands.Autos;
 
-import static edu.wpi.first.units.Units.Foot;
-
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -15,8 +12,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants.VisionConstants;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoStep;
+import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
@@ -25,13 +24,15 @@ import frc.utils.PoseEstimatorSubsystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class Right1Coral extends SequentialCommandGroup {
-    /** Creates a new Right1Coral. */
-    public Right1Coral(PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, Command scoreCommand) {
+public class Right2Coral extends SequentialCommandGroup {
+  /** Creates a new Right2Coral. */
+  public Right2Coral(PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
         try {
             //stateSubsystem.setRotationLock(false);
             // Pull in path from start location to reef
             PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
+            PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("RightCoral1ToFeeder");
+            PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToRightCoral2");
             
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
@@ -44,7 +45,12 @@ public class Right1Coral extends SequentialCommandGroup {
             
             // Create a parallel group to move to the reef and get in scoring position at the same time
             Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
-            Command moveToReef = new ParallelCommandGroup(followPath1, goToL4);
+            Command moveToReef = new ParallelCommandGroup(followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+
+            Command followPath2 = new SwerveAutoStep(reefToFeed, poseEst);
+
+            Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
+            Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
             
             // Set drive to teleop (have to do this for every auto)
             Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
@@ -52,7 +58,17 @@ public class Right1Coral extends SequentialCommandGroup {
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
             // First reset position, move to reef and get in score position, lastly score the coral
-            addCommands(resetPose, driveSetAuto, moveToReef, scoreCommand, driveSetTeleop);
+            addCommands(resetPose, 
+                        driveSetAuto, 
+                        moveToReef, 
+                        new WaitCommand(0.5), 
+                        new ScoreCoral(manipulator, stateSubsystem), 
+                        followPath2, 
+                        new WaitCommand(2), 
+                        moveToReef2, 
+                        new WaitCommand(0.5), 
+                        new ScoreCoral(manipulator, stateSubsystem), 
+                        driveSetTeleop);
         } catch (Exception e) {
             System.out.println("BROKENNNNNNNNNNNNNNNNN");
             DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());

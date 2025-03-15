@@ -24,7 +24,7 @@ public class AutomatedDrive extends Command {
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    private PIDController rotPid = new PIDController(0.02, 0.001, 0.001);
+    private PIDController rotPid = new PIDController(0.03, 0.001, 0.001);
     private PIDController xPid = new PIDController(0.8, 0.008, 0.1);
     private PIDController yPid = new PIDController(0.8, 0.008, 0.1);
     
@@ -107,6 +107,8 @@ public class AutomatedDrive extends Command {
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
             xPower = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
             yPower = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+
+            drive.drive(xPower, yPower, rotSpeed, true);
         }
     }
 

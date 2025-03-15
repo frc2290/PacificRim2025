@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
@@ -77,7 +78,7 @@ public class StateSubsystem extends SubsystemBase {
 
     // Rotation lock and current drive state
     private boolean rotLock = true;
-    private DriveState driveState = DriveState.Auto;
+    private DriveState driveState = DriveState.Teleop;
 
     // Boolean for if we want to score on the left or right branch
     private boolean rightScore = false;
@@ -168,7 +169,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     public Command setCurrentStateCommand(PositionState curState) {
-        return this.runOnce(() -> {
+        return Commands.runOnce(() -> {
             setCurrentState(curState);
         });
     }
@@ -204,7 +205,7 @@ public class StateSubsystem extends SubsystemBase {
      * @return Instant command to cancel current running command
      */
     public Command cancelCommand() {
-        return this.runOnce(() -> cancelCurrentCommand());
+        return Commands.runOnce(() -> cancelCurrentCommand());
     }
 
     /**
@@ -213,7 +214,7 @@ public class StateSubsystem extends SubsystemBase {
      * @return Instant command to set goal state
      */
     public Command setGoalCommand(PositionState newGoal) {
-        return this.runOnce(() -> setGoal(newGoal));
+        return Commands.runOnce(() -> setGoal(newGoal));
     }
 
     /**
@@ -224,7 +225,7 @@ public class StateSubsystem extends SubsystemBase {
      */
     public Command setGoalCommand(PositionState newGoal, boolean wait) {
         if (wait) {
-            return this.run(() -> setGoal(newGoal)).until(() -> atGoal());
+            return Commands.run(() -> setGoal(newGoal)).until(() -> atGoal());
         } else {
             return setGoalCommand(newGoal);
         }
@@ -252,7 +253,7 @@ public class StateSubsystem extends SubsystemBase {
      * @return Instant command to set right branch
      */
     public Command setRightScoreCommand(boolean right) {
-        return this.runOnce(() -> setRightScore(right));
+        return Commands.runOnce(() -> setRightScore(right));
     }
 
     /**
@@ -303,6 +304,7 @@ public class StateSubsystem extends SubsystemBase {
      */
     public void setDriveState(DriveState newState) {
         driveState = newState;
+        System.out.println("Set new drive state: " + newState.toString());
     }
 
     /**
@@ -311,7 +313,7 @@ public class StateSubsystem extends SubsystemBase {
      * @return Instant command to set robot drive state
      */
     public Command setDriveStateCommand(DriveState newState) {
-        return this.runOnce(() -> driveState = newState);
+        return Commands.runOnce(() -> setDriveState(newState));
     }
 
     /**
@@ -319,7 +321,7 @@ public class StateSubsystem extends SubsystemBase {
      * @return Instant command to toggle rotation lock
      */
     public Command toggleRotationLock() {
-        return this.runOnce(() -> rotLock = !rotLock);
+        return Commands.runOnce(() -> rotLock = !rotLock);
     }
 
     @Override
@@ -340,7 +342,7 @@ public class StateSubsystem extends SubsystemBase {
                     if (currentState != PositionState.TravelPosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
-                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this, ledUtility));
+                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
                     break;
                 case L1Position:
                     currentCommand = new L1PositionNew(diff, elevator, this);
@@ -378,18 +380,20 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         // LED Management?
-        if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral()) {
-            ledUtility.setAll(LEDEffect.FLASH, Color.kGreen);
-        } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral()) {
-            ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
-        } else if (!getRotationLock()) {
-            ledUtility.setAll(LEDEffect.SOLID, Color.kRed);
-        } else if (getDriveState() == DriveState.Teleop) {
-            ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
-        } else if (getDriveState() == DriveState.ReefScoreMove) {
-            ledUtility.setAll(LEDEffect.FLASH, LEDEffects.flytBlue);
-        } else if (getDriveState() == DriveState.ReefScore) {
-            ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+        if (atCurrentState()) {
+            if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral()) {
+                ledUtility.setAll(LEDEffect.FLASH, Color.kGreen);
+            } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral()) {
+                ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+            } else if (!getRotationLock()) {
+                ledUtility.setAll(LEDEffect.SOLID, Color.kRed);
+            } else if (getDriveState() == DriveState.Teleop) {
+                ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
+            } else if (getDriveState() == DriveState.ReefScoreMove) {
+                ledUtility.setAll(LEDEffect.FLASH, LEDEffects.flytBlue);
+            } else if (getDriveState() == DriveState.ReefScore) {
+                ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+            }
         }
 
         stateDash.update(Constants.debugMode);

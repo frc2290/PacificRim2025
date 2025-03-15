@@ -19,7 +19,7 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 public class L2PositionNew extends SequentialCommandGroup {
   private double elevatorPos = 0.725;
   private double diffExt = 80;
-  private double diffRot = -160;
+  private double diffRot = -155;
 
   /** Creates a new L1PositionNew. */
   public L2PositionNew(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {

@@ -5,29 +5,24 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
-import frc.utils.LEDUtility;
-import frc.utils.LEDEffects.LEDEffect;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCoral extends Command {
     private ManipulatorSubsystem manipulator;
     private StateSubsystem state;
-    private LEDUtility ledUtility;
 
     private Timer currentTimer = new Timer();
     private Timer delayTimer = new Timer();
 
     /** Creates a new IntakeOn. */
-    public IntakeCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state, LEDUtility m_ledUtility) {
+    public IntakeCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
         manipulator = m_manip;
         state = m_state;
-        ledUtility = m_ledUtility;
         // Use addRequirements() here to declare subsystem dependencies.
     }
 
@@ -37,7 +32,6 @@ public class IntakeCoral extends Command {
         currentTimer.reset();
         delayTimer.reset();
         state.setGoal(PositionState.IntakePosition);
-        ledUtility.setAll(LEDEffect.FLASH, Color.kGreen);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -62,11 +56,10 @@ public class IntakeCoral extends Command {
     public void end(boolean interrupted) {
         currentTimer.stop();
         delayTimer.stop();
-        manipulator.intake(0.1);
+        manipulator.intake(-0.05);
         manipulator.setCoral(true);
-        ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
         state.setGoal(PositionState.TravelPosition);
-        state.setDriveState(DriveState.Teleop);
+        //state.setDriveState(DriveState.Teleop);
     }
 
     // Returns true when the command should end.

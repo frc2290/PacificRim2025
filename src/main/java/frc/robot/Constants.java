@@ -172,7 +172,7 @@ public final class Constants {
     }
 
     public static final class NeoMotorConstants {
-        public static final double kFreeSpeedRpm = 5676;
+        public static final double kFreeSpeedRpm = 6784;
     }
 
     public static final class VisionConstants {
@@ -220,16 +220,16 @@ public final class Constants {
 
         // All Variables in Blue coordinate system
         public static final List<Pose2d> leftBranches = List.of(
-                new Pose2d(3.12, 4.47, new Rotation2d(Math.toRadians(-2.75))), // front
+                new Pose2d(3.18, 4.48, new Rotation2d(Math.toRadians(-2.75))), // front
                 new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left
-                new Pose2d(5.05, 2.84, new Rotation2d(Math.toRadians(120))), // back right
-                new Pose2d(3.75, 2.95, new Rotation2d(Math.toRadians(60))), // front right
+                new Pose2d(4.73, 2.66, new Rotation2d(Math.toRadians(113))), // back right
+                new Pose2d(3.44, 3.12, new Rotation2d(Math.toRadians(55))), // front right
                 new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left
                 new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back
         public static final List<Pose2d> rightBranches = List.of(
-                new Pose2d(3.11, 4.10, new Rotation2d(Math.toRadians(-2.75))), // front
+                new Pose2d(3.15, 4.11, new Rotation2d(Math.toRadians(-2.75))), // front
                 new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left
-                new Pose2d(5.35, 3.03, new Rotation2d(Math.toRadians(120))), // back right
+                new Pose2d(5.04, 2.82, new Rotation2d(Math.toRadians(114))), // back right
                 new Pose2d(4.05, 2.79, new Rotation2d(Math.toRadians(60))), // front right
                 new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left
                 new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back
@@ -237,7 +237,7 @@ public final class Constants {
                 new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
                 new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
                 new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
-                new Pose2d(4.08, 2.58, new Rotation2d(Math.toRadians(133))), // front right
+                new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
                 new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
                 new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
         public static final List<Pose2d> leftBranchL1 = List.of(

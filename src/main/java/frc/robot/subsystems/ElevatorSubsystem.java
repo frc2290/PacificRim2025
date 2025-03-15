@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Elevator;
 import frc.robot.Constants;
@@ -100,11 +101,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command setElevatorSetpointCommand(double setpoint) {
-        return this.run(() -> setElevatorSetpoint(setpoint)).until(() -> atPosition());
+        return Commands.run(() -> setElevatorSetpoint(setpoint)).until(() -> atPosition());
     }
 
     public Command incrementElevatorSetpoint(double increment) {
-        return this.runOnce(() -> elevatorSetpoint += increment);
+        return Commands.runOnce(() -> elevatorSetpoint += increment);
     }
 
     public double getElevatorSetpoint() {

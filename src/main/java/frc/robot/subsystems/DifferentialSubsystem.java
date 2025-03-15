@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
@@ -73,8 +74,8 @@ public class DifferentialSubsystem extends SubsystemBase {
                     .idleMode(IdleMode.kBrake)
                     .smartCurrentLimit(50)
                     .encoder
-                        .positionConversionFactor(60)
-                        .velocityConversionFactor(1);
+                        .positionConversionFactor(34.2857)
+                        .velocityConversionFactor(0.5714);
             leftConfig.closedLoop
                         .p(DifferentialArm.v_kp)
                         .i(DifferentialArm.v_ki)
@@ -128,7 +129,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public Command setExtensionSetpointCommand(double setpoint) {
-        return this.run(() -> setExtensionSetpoint(setpoint)).until(() -> atExtenstionSetpoint());
+        return Commands.run(() -> setExtensionSetpoint(setpoint)).until(() -> atExtenstionSetpoint());
     }
 
     public void setRotationSetpoint(double setpoint) {
@@ -136,11 +137,11 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public Command setRotationSetpointCommand(double setpoint) {
-        return this.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
+        return Commands.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
     }
 
     public Command setRotAndExtSetpointCommand(double ext, double rot) {
-        return this.run(() -> {
+        return Commands.run(() -> {
             setExtensionSetpoint(ext);
             setRotationSetpoint(rot);  
         }).until(() -> {
@@ -157,11 +158,11 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public Command incrementExtensionSetpoint(double increment) {
-        return this.runOnce(() -> extensionSetpoint += increment);
+        return Commands.runOnce(() -> extensionSetpoint += increment);
     }
 
     public Command incrementRotationSetpoint(double increment) {
-        return this.runOnce(() -> rotationSetpoint += increment);
+        return Commands.runOnce(() -> rotationSetpoint += increment);
     }
 
     public double getLeftPos() {

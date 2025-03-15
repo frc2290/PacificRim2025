@@ -53,7 +53,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then
      * meters.
      */
-    private static final Vector<N3> stateStdDevs = VecBuilder.fill(1.0, 1.0, 1.0); //VecBuilder.fill(0.1, 0.1, 0.1);
+    private static final Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.01); //VecBuilder.fill(0.1, 0.1, 0.1);
 
     /**
      * Standard deviations of the vision measurements. Increase these numbers to
@@ -61,7 +61,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
      * radians.
      */
-    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(0.1, 0.1, 0.3); //VecBuilder.fill(1.0, 1.0, 1.0);
+    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(0.25, 0.25, 1); //VecBuilder.fill(1.0, 1.0, 1.0);
 
     private final Supplier<Rotation2d> rotationSupplier;
     private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
@@ -104,8 +104,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         // Start PhotonVision thread
         photonNotifier.setName("PhotonRunnable");
         photonNotifier.startPeriodic(0.01);
-        photonNotifier2.setName("PhotonRunnable2");
-        photonNotifier2.startPeriodic(0.01);
+        //photonNotifier2.setName("PhotonRunnable2");
+        //photonNotifier2.startPeriodic(0.01);
 
         try {
             config = RobotConfig.fromGUISettings();
@@ -194,18 +194,18 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             //}
         }
 
-        var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-        if (visionPose2 != null) {
-            // New pose from vision
-            sawTag = true;
-            var pose2d2 = visionPose2.estimatedPose.toPose2d();
-            if (originPosition != kBlueAllianceWallRightSide) {
-                pose2d2 = flipAlliance(pose2d2);
-            }
-            //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
-                poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
-            //}
-        }
+        // var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
+        // if (visionPose2 != null) {
+        //     // New pose from vision
+        //     sawTag = true;
+        //     var pose2d2 = visionPose2.estimatedPose.toPose2d();
+        //     if (originPosition != kBlueAllianceWallRightSide) {
+        //         pose2d2 = flipAlliance(pose2d2);
+        //     }
+        //     //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
+        //         poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+        //     //}
+        // }
 
         // Set the pose on the dashboard
         var dashboardPose = poseEstimator.getEstimatedPosition();

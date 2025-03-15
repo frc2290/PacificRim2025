@@ -25,7 +25,6 @@ public class SwerveAutoStep extends Command {
     public SwerveAutoStep(PathPlannerPath _path, PoseEstimatorSubsystem _pose) {
         path = _path;
         pose = _pose;
-        trajectory = path.generateTrajectory(pose.getChassisSpeeds(), pose.getCurrentRotation(), pose.getRobotConfig());
         timer = new Timer();
         // Use addRequirements() here to declare subsystem dependencies.
     }
@@ -33,6 +32,7 @@ public class SwerveAutoStep extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        trajectory = path.generateTrajectory(pose.getChassisSpeeds(), pose.getCurrentRotation(), pose.getRobotConfig());
         timer.restart();
     }
 

@@ -16,6 +16,7 @@ import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoAlign;
 import frc.robot.commands.Autos.Right1Coral;
+import frc.robot.commands.Autos.Right2Coral;
 import frc.robot.commands.Autos.Test;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -28,6 +29,7 @@ import frc.utils.LEDStrip;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -72,7 +74,8 @@ public class RobotContainer {
         // Build an auto chooser. This will use Commands.none() as the default option.
         auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, scoreCommand));
+        auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, new ScoreCoral(m_manipulator, m_state)));
+        auto_chooser.addOption("RightCoral2", new Right2Coral(m_poseEstimator, m_state, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
@@ -120,6 +123,7 @@ public class RobotContainer {
         Trigger left_trigger = new Trigger(() -> m_driverController.getLeftTriggerAxis() > 0.5);
         POVButton dpad_up = new POVButton(m_driverController, 0);
         POVButton dpad_down = new POVButton(m_driverController, 180);
+        POVButton dpad_left = new POVButton(m_driverController, 270);
 
         Trigger not_driver_stick = driver_stick.negate(); // Trigger to check if driver stick is not pressed in
 
@@ -135,11 +139,12 @@ public class RobotContainer {
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
         dpad_up.onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
         dpad_down.onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
+        dpad_left.onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
         //left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation)
                     .whileTrue(new SwerveAutoAlign(m_poseEstimator, m_state))
                     .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
-        left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state, m_ledUtility));
+        left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state)); // Score coral
 
