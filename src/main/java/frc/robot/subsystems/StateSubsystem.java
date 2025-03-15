@@ -137,7 +137,7 @@ public class StateSubsystem extends SubsystemBase {
      * @return True if at current state
      */
     public boolean atCurrentState() {
-        return elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint();
+        return elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && !isTransitioning();
     }
 
     /**
@@ -342,7 +342,9 @@ public class StateSubsystem extends SubsystemBase {
                     if (currentState != PositionState.TravelPosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     }
-                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
+                    if (getDriveState() != DriveState.Auto) {
+                        currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
+                    }
                     break;
                 case L1Position:
                     currentCommand = new L1PositionNew(diff, elevator, this);

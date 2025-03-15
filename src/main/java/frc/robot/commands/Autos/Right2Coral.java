@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.ManipulatorSubsystem;
@@ -48,6 +49,7 @@ public class Right2Coral extends SequentialCommandGroup {
             Command moveToReef = new ParallelCommandGroup(followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
 
             Command followPath2 = new SwerveAutoStep(reefToFeed, poseEst);
+            Command moveToFeeder = new ParallelCommandGroup(followPath2, new IntakeCoral(manipulator, stateSubsystem));
 
             Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
             Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
@@ -61,13 +63,12 @@ public class Right2Coral extends SequentialCommandGroup {
             addCommands(resetPose, 
                         driveSetAuto, 
                         moveToReef, 
-                        new WaitCommand(0.5), 
-                        new ScoreCoral(manipulator, stateSubsystem), 
-                        followPath2, 
-                        new WaitCommand(2), 
+                        //new WaitCommand(0.5), 
+                        new ScoreCoral(manipulator, stateSubsystem, poseEst), 
+                        moveToFeeder, 
                         moveToReef2, 
-                        new WaitCommand(0.5), 
-                        new ScoreCoral(manipulator, stateSubsystem), 
+                        //new WaitCommand(0.5), 
+                        new ScoreCoral(manipulator, stateSubsystem, poseEst), 
                         driveSetTeleop);
         } catch (Exception e) {
             System.out.println("BROKENNNNNNNNNNNNNNNNN");

@@ -144,6 +144,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         );
 
         poseDash.addStringPublisher("Pose", false, () -> getCurrentPose().toString());
+        poseDash.addBoolPublisher("At Target Pose", false, () -> atTargetPose());
     }
 
     /**
@@ -189,9 +190,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d = flipAlliance(pose2d);
             }
-            //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator.grabLatestResult()) < 3) {
+            if (photonEstimator.grabLatestEstimatedPose().estimatedPose.toPose2d().getTranslation().getDistance(VisionConstants.reefCenter) < 3) {
                 poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
-            //}
+            }
         }
 
         // var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
@@ -287,6 +288,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public void setTargetPose(Pose2d newTarget) {
         targetPose = newTarget;
+    }
+
+    public boolean atTargetPose() {
+        return Math.abs(getAlignX(targetPose.getTranslation())) < 0.01 
+                && Math.abs(getAlignY(targetPose.getTranslation())) < 0.01
+                && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 1;
     }
 
     /**

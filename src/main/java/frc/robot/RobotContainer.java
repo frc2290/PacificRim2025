@@ -51,9 +51,6 @@ public class RobotContainer {
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
     private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_ledUtility);
 
-    // Storing score command to re-use easier in autos
-    private Command scoreCommand = new ScoreCoral(m_manipulator, m_state);
-
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
@@ -74,7 +71,7 @@ public class RobotContainer {
         // Build an auto chooser. This will use Commands.none() as the default option.
         auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, new ScoreCoral(m_manipulator, m_state)));
+        auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, m_manipulator));
         auto_chooser.addOption("RightCoral2", new Right2Coral(m_poseEstimator, m_state, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
@@ -146,7 +143,7 @@ public class RobotContainer {
                     .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
         left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
-        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state)); // Score coral
+        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_poseEstimator)); // Score coral
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up

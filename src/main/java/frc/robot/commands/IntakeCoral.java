@@ -47,8 +47,6 @@ public class IntakeCoral extends Command {
                 currentTimer.restart();
             }
         }
-        System.out.println("Delay: " + delayTimer.hasElapsed(0.5));
-        System.out.println("Current: " + currentTimer.hasElapsed(0.5));
     }
 
     // Called once the command ends or is interrupted.
@@ -59,7 +57,6 @@ public class IntakeCoral extends Command {
         manipulator.intake(-0.05);
         manipulator.setCoral(true);
         state.setGoal(PositionState.TravelPosition);
-        //state.setDriveState(DriveState.Teleop);
     }
 
     // Returns true when the command should end.
