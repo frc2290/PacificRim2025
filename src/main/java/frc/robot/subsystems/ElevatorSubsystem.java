@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -10,6 +11,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,6 +30,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     //FlytMotorController rightMotor;
 
     private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 0, new Constraints(2, 5));
+    private ElevatorFeedforward feedforward = new ElevatorFeedforward(Elevator.kS, Elevator.kG, Elevator.kV, Elevator.kA);
 
     private SparkFlex leftMotor;
     private SparkFlex rightMotor;
@@ -69,9 +72,9 @@ public class ElevatorSubsystem extends SubsystemBase {
                         .positionConversionFactor(Elevator.kPositionConversion)
                         .velocityConversionFactor(Elevator.kVelocityConversion);
             leftConfig.closedLoop
-                        .p(Elevator.kP)
-                        .i(Elevator.kI)
-                        .d(Elevator.kD)
+                        .p(Elevator.kP, ClosedLoopSlot.kSlot0)
+                        .i(Elevator.kI, ClosedLoopSlot.kSlot0)
+                        .d(Elevator.kD, ClosedLoopSlot.kSlot0)
                         .outputRange(-1, 1);
 
         leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -145,7 +148,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         //     }
         // }
         double velocity = traPidController.calculate(getPosition(), elevatorSetpoint);
-        elevator.setReference(velocity, ControlType.kVelocity);
+        double elevFeed = feedforward.calculate(velocity);
+        elevator.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);//, elevFeed);
         //elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
         elevatorDash.update(Constants.debugMode);
     }

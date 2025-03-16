@@ -38,7 +38,6 @@ public class IntakeCoral extends Command {
     @Override
     public void execute() {
         manipulator.intake(-0.75);
-        System.out.println(manipulator.getOutputCurrent());
         if (manipulator.getOutputCurrent() > 30) {
             if (!delayTimer.isRunning()) {
                 delayTimer.restart();
@@ -56,13 +55,13 @@ public class IntakeCoral extends Command {
         delayTimer.stop();
         manipulator.intake(-0.05);
         manipulator.setCoral(true);
-        state.setGoal(PositionState.TravelPosition);
+        //state.setGoal(PositionState.TravelPosition);
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return currentTimer.hasElapsed(0.5);
+        return currentTimer.hasElapsed(0.3);
         // return manipulator.gotCoral();
     }
 }

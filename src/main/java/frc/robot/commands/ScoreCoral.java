@@ -17,8 +17,6 @@ public class ScoreCoral extends Command {
     private StateSubsystem state;
     private PoseEstimatorSubsystem pose;
 
-    private int count = 0;
-
     /** Creates a new ScoreCoral. */
     public ScoreCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
         manipulator = m_manip;
@@ -30,16 +28,14 @@ public class ScoreCoral extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        count = 0;
         manipulator.resetMotorPos();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        if ((pose.atTargetPose() && state.atCurrentState()) || state.getRotationLock()) {
+        if ((pose.atTargetPose() && state.atCurrentState()) || !state.getRotationLock()) {
             manipulator.intake(0.75);
-            count++;
         }
     }
 
@@ -55,6 +51,6 @@ public class ScoreCoral extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return count > 20 && manipulator.getMotorPos() > 50;
+        return manipulator.getMotorPos() > 25;
     }
 }

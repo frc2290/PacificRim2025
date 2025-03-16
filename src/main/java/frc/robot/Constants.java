@@ -49,7 +49,12 @@ public final class Constants {
         public static final double kD = 0.0;
         public static final double kKG = 0.0;
 
-        public static final double transportSetpoint = 0.375;
+        public static final double kS = 0.8842;
+        public static final double kV = 5.8979;
+        public static final double kA = 0.1156;
+        public static final double kG = 0.1987;
+
+        public static final double transportSetpoint = 0.3;
         public static final double intakeSetpoint = 0.1;
     }
 
@@ -66,8 +71,8 @@ public final class Constants {
         public static final int currentStallLim = 0;
         public static final int currentFreeLim = 0;
 
-        public static final double v_kp = 0.015;
-        public static final double v_ki = 0.00005;
+        public static final double v_kp = 0.00009;
+        public static final double v_ki = (0.002 * v_kp);
         public static final double v_kd = 0;
         public static final double v_KG = 0;
 
@@ -83,14 +88,16 @@ public final class Constants {
         // public static final double v_KG = 0;
 
         // pid tune values external extension
-        public static final double e_kp = 0;
-        public static final double e_ki = 0;
-        public static final double e_kd = 0;
+        public static final double e_kS = 0;
+        public static final double e_kV = 0;
+        public static final double e_kA = 0;
+        public static final double e_kG = 0; //0.176;
 
         // pid tune values external rotation
-        public static final double r_kp = 0;
-        public static final double r_ki = 0;
-        public static final double r_kd = 0;
+        public static final double r_kS = 0;
+        public static final double r_kV = 0;
+        public static final double r_kA = 0;
+        public static final double r_kG = 0; //0.092;
     }
 
     public static final class DriveConstants {
@@ -220,17 +227,17 @@ public final class Constants {
 
         // All Variables in Blue coordinate system
         public static final List<Pose2d> leftBranches = List.of(
-                new Pose2d(3.18, 4.48, new Rotation2d(Math.toRadians(-2.75))), // front
+                new Pose2d(3.15, 4.47, new Rotation2d(Math.toRadians(-4.75))), // front
                 new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left
-                new Pose2d(4.73, 2.66, new Rotation2d(Math.toRadians(113))), // back right
-                new Pose2d(3.44, 3.12, new Rotation2d(Math.toRadians(55))), // front right
+                new Pose2d(4.75, 2.64, new Rotation2d(Math.toRadians(114.5))), // back right
+                new Pose2d(3.42, 3.11, new Rotation2d(Math.toRadians(55))), // front right
                 new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left
                 new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back
         public static final List<Pose2d> rightBranches = List.of(
-                new Pose2d(3.15, 4.11, new Rotation2d(Math.toRadians(-2.75))), // front
+                new Pose2d(3.15, 4.13, new Rotation2d(Math.toRadians(-5.25))), // front
                 new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left
                 new Pose2d(5.04, 2.82, new Rotation2d(Math.toRadians(114))), // back right
-                new Pose2d(4.05, 2.79, new Rotation2d(Math.toRadians(60))), // front right
+                new Pose2d(3.71, 2.94, new Rotation2d(Math.toRadians(55))), // front right
                 new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left
                 new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back
         public static final List<Pose2d> rightBranchL1 = List.of(

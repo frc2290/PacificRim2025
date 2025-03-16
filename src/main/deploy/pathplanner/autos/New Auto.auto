@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightCoral1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightCoral1ToFeeder"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FeederToRightCoral2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightCoral2ToFeeder"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FeederToRightCoral3"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

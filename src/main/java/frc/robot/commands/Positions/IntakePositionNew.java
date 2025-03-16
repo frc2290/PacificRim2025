@@ -20,13 +20,13 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 public class IntakePositionNew extends SequentialCommandGroup {
   /** Creates a new IntakePositionNew. */
   public IntakePositionNew(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
-    Command moveExt1 = diffArm.setExtensionSetpointCommand(70);
-    Command moveRot = diffArm.setRotationSetpointCommand(DifferentialArm.intakeRotationSetpoint);
-    Command moveExt2 = diffArm.setExtensionSetpointCommand(DifferentialArm.intakeExtensionSetpoint);
+    //Command moveExt1 = diffArm.setExtensionSetpointCommand(70);
+    Command moveRotAndExt = diffArm.setRotAndExtSetpointCommand(115, 55);
     Command moveElev = elevator.setElevatorSetpointCommand(Elevator.intakeSetpoint);
-    ParallelCommandGroup moveElevAndArm = new ParallelCommandGroup(moveExt2, moveElev);
+    ParallelCommandGroup moveElevAndArm = new ParallelCommandGroup(moveRotAndExt, moveElev);
+    Command moveRotAndExt2 = diffArm.setRotAndExtSetpointCommand(DifferentialArm.intakeExtensionSetpoint, DifferentialArm.intakeRotationSetpoint);
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(moveExt1, moveRot, moveElevAndArm, stateSubsystem.setCurrentStateCommand(PositionState.IntakePosition));
+    addCommands(moveElevAndArm, moveRotAndExt2, stateSubsystem.setCurrentStateCommand(PositionState.IntakePosition));
   }
 }

@@ -77,7 +77,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     // Rotation lock and current drive state
-    private boolean rotLock = true;
+    private boolean rotLock = true; // TURN BACK TO TRUE
     private DriveState driveState = DriveState.Teleop;
 
     // Boolean for if we want to score on the left or right branch
@@ -86,7 +86,7 @@ public class StateSubsystem extends SubsystemBase {
     // State storage
     private PositionState prevState = PositionState.StartPosition;
     private PositionState currentState = PositionState.StartPosition;
-    private PositionState goalState = PositionState.TravelPosition;
+    private PositionState goalState = PositionState.L4Position;
 
     // Boolean for if robot is currently transitioning states
     private boolean transitioning = false;
@@ -339,12 +339,12 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case IntakePosition:
                     currentCommand = new IntakePositionNew(diff, elevator, this);
-                    if (currentState != PositionState.TravelPosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    }
-                    if (getDriveState() != DriveState.Auto) {
+                    //if (currentState != PositionState.TravelPosition) {
+                        //currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
+                    //}
+                    //if (getDriveState() != DriveState.Auto) {
                         currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
-                    }
+                    //}
                     break;
                 case L1Position:
                     currentCommand = new L1PositionNew(diff, elevator, this);
@@ -366,9 +366,9 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case L4Position:
                     currentCommand = new L4PositionNew(diff, elevator, this);
-                    if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    }
+                    //if (currentState == PositionState.IntakePosition) {
+                    //    currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
+                    //}
                     break;
                 case StartPosition:
                     currentCommand = new TravelPositionNew(diff, elevator, this);

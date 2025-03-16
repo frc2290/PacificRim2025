@@ -6,9 +6,11 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -25,8 +27,10 @@ public class AutomatedDrive extends Command {
     private XboxController driverController;
 
     private PIDController rotPid = new PIDController(0.03, 0.001, 0.001);
-    private PIDController xPid = new PIDController(0.8, 0.008, 0.1);
-    private PIDController yPid = new PIDController(0.8, 0.008, 0.1);
+    private PIDController xPid = new PIDController(0.95, 0.008, 0.185);
+    private PIDController yPid = new PIDController(0.95, 0.008, 0.185);
+
+    private SlewRateLimiter slewLimiter = new SlewRateLimiter(100);
     
     private double rotTarget = 0;
     private double rotSpeed = 0;
@@ -81,8 +85,17 @@ public class AutomatedDrive extends Command {
 
             rotTarget = targetPose.getRotation().getDegrees();
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
-            xPower = xPower * 0.5 + xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
-            yPower = yPower * 0.5 + yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+            double xPowerPid = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
+            double yPowerPid = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+
+            yPowerPid = yPowerPid - (rotSpeed * 0.7);
+
+            double vCmd = Math.sqrt(Math.pow(xPowerPid, 2) + Math.pow(yPowerPid, 2));
+            double heading = Math.atan2(yPowerPid, xPowerPid);
+            double modifier = slewLimiter.calculate(heading);
+
+            xPower = xPower * 0.5 + (vCmd * Math.cos(modifier));
+            yPower = yPower * 0.5 + (vCmd * Math.sin(modifier));
 
             drive.drive(xPower, yPower, rotSpeed, true);
 
@@ -107,6 +120,13 @@ public class AutomatedDrive extends Command {
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
             xPower = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
             yPower = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+
+            double vCmd = Math.sqrt(Math.pow(xPower, 2) + Math.pow(yPower, 2));
+            double heading = Math.atan2(yPower, xPower);
+            double modifier = slewLimiter.calculate(heading);
+
+            xPower = vCmd * Math.cos(modifier);
+            yPower = vCmd * Math.sin(modifier);
 
             drive.drive(xPower, yPower, rotSpeed, true);
         }

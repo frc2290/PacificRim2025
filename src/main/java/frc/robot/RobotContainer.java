@@ -17,6 +17,7 @@ import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoAlign;
 import frc.robot.commands.Autos.Right1Coral;
 import frc.robot.commands.Autos.Right2Coral;
+import frc.robot.commands.Autos.Right3Coral;
 import frc.robot.commands.Autos.Test;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -73,6 +74,7 @@ public class RobotContainer {
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
         auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, m_manipulator));
         auto_chooser.addOption("RightCoral2", new Right2Coral(m_poseEstimator, m_state, m_manipulator));
+        auto_chooser.addOption("RightCoral3", new Right3Coral(m_poseEstimator, m_state, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
@@ -150,8 +152,8 @@ public class RobotContainer {
         driver_stick.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
         driver_stick.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
         driver_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
-        driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
-        driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
+        driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(30)); // Manual rotate diff arm out
+        driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-30)); // Manual rotate diff arm in
         start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 

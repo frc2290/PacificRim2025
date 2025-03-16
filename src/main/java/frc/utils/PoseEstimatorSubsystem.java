@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -61,13 +62,14 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
      * radians.
      */
-    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(0.25, 0.25, 1); //VecBuilder.fill(1.0, 1.0, 1.0);
+    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(0.25, 0.25, 0.1); //VecBuilder.fill(1.0, 1.0, 1.0);
 
     private final Supplier<Rotation2d> rotationSupplier;
     private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
     private final Supplier<SwerveModuleState[]> moduleStateSupplier;
     private final SwerveDrivePoseEstimator poseEstimator;
     private final Field2d field2d = new Field2d();
+    private final FieldObject2d target2d = field2d.getObject("Target");
     private final PhotonRunnable photonEstimator;
     private final PhotonRunnable photonEstimator2;
     private final Notifier photonNotifier;
@@ -190,9 +192,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             if (originPosition != kBlueAllianceWallRightSide) {
                 pose2d = flipAlliance(pose2d);
             }
-            if (photonEstimator.grabLatestEstimatedPose().estimatedPose.toPose2d().getTranslation().getDistance(VisionConstants.reefCenter) < 3) {
+            //if (!DriverStation.isAutonomous() || (poseEstimator.getEstimatedPosition().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
                 poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
-            }
+            //}
         }
 
         // var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
@@ -215,6 +217,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             dashboardPose = flipAlliance(dashboardPose);
         }
         field2d.setRobotPose(dashboardPose);
+        target2d.setPose(targetPose);
         SmartDashboard.putData("Field", field2d);
         poseDash.update(Constants.debugMode);
     }
@@ -291,9 +294,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     }
 
     public boolean atTargetPose() {
-        return Math.abs(getAlignX(targetPose.getTranslation())) < 0.01 
-                && Math.abs(getAlignY(targetPose.getTranslation())) < 0.01
-                && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 1;
+        return Math.abs(getAlignX(targetPose.getTranslation())) < 0.03
+                && Math.abs(getAlignY(targetPose.getTranslation())) < 0.03
+                && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 2;
     }
 
     /**
