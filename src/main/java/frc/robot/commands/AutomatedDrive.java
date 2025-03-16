@@ -28,7 +28,7 @@ public class AutomatedDrive extends Command {
 
     private PIDController rotPid = new PIDController(0.03, 0.001, 0.001);
     private PIDController xPid = new PIDController(0.95, 0.008, 0.185);
-    private PIDController yPid = new PIDController(0.95, 0.008, 0.185);
+    private PIDController yPid = new PIDController(0.95, 0.008, 0.18);
 
     private SlewRateLimiter slewLimiter = new SlewRateLimiter(100);
     
