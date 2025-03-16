@@ -86,7 +86,7 @@ public class StateSubsystem extends SubsystemBase {
     // State storage
     private PositionState prevState = PositionState.StartPosition;
     private PositionState currentState = PositionState.StartPosition;
-    private PositionState goalState = PositionState.L4Position;
+    private PositionState goalState = PositionState.TravelPosition;
 
     // Boolean for if robot is currently transitioning states
     private boolean transitioning = false;
@@ -354,15 +354,15 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case L2Position:
                     currentCommand = new L2PositionNew(diff, elevator, this);
-                    if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    }
+                    // if (currentState == PositionState.IntakePosition) {
+                    //     currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
+                    // }
                     break;
                 case L3Position:
                     currentCommand = new L3PositionNew(diff, elevator, this);
-                    if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    }
+                    //if (currentState == PositionState.IntakePosition) {
+                    //    currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
+                    //}
                     break;
                 case L4Position:
                     currentCommand = new L4PositionNew(diff, elevator, this);

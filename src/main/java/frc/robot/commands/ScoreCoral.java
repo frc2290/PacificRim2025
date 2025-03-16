@@ -4,6 +4,9 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
@@ -16,6 +19,8 @@ public class ScoreCoral extends Command {
     private ManipulatorSubsystem manipulator;
     private StateSubsystem state;
     private PoseEstimatorSubsystem pose;
+
+    private Timer timer = new Timer();
 
     /** Creates a new ScoreCoral. */
     public ScoreCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
@@ -36,21 +41,26 @@ public class ScoreCoral extends Command {
     public void execute() {
         if ((pose.atTargetPose() && state.atCurrentState()) || !state.getRotationLock()) {
             manipulator.intake(0.75);
+            timer.restart();
         }
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
+        timer.stop();
+        System.out.println("Time to score: " + timer.get());
         manipulator.intake(0);
         manipulator.setCoral(false);
         state.setGoal(PositionState.IntakePosition);
-        // state.setDriveState(DriveState.CoralStation);
+        if (!DriverStation.isAutonomous()){
+            state.setDriveState(DriveState.CoralStation);
+        }
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return manipulator.getMotorPos() > 25;
+        return manipulator.getMotorPos() > 15;
     }
 }

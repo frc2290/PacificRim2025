@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -31,7 +32,7 @@ public class Right3Coral extends SequentialCommandGroup {
   /** Creates a new Right3Coral. */
   public Right3Coral(PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
         try {
-            //stateSubsystem.setRotationLock(false);
+            Timer timer = new Timer();
             // Pull in path from start location to reef
             PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
             PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("RightCoral1ToFeeder");
@@ -67,7 +68,8 @@ public class Right3Coral extends SequentialCommandGroup {
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
             // First reset position, move to reef and get in score position, lastly score the coral
-            addCommands(resetPose, 
+            addCommands(Commands.runOnce(() -> timer.restart()),
+                        resetPose, 
                         driveSetAuto, 
                         moveToReef, 
                         new ScoreCoral(manipulator, stateSubsystem, poseEst), 
@@ -79,7 +81,11 @@ public class Right3Coral extends SequentialCommandGroup {
                         new WaitCommand(0.25),
                         moveToReef3,
                         new ScoreCoral(manipulator, stateSubsystem, poseEst),
-                        driveSetTeleop);
+                        driveSetTeleop,
+                        Commands.runOnce(() -> {
+                          timer.stop();
+                          System.out.println("Right3Coral Time: " + timer.get());
+                        }));
         } catch (Exception e) {
             System.out.println("BROKENNNNNNNNNNNNNNNNN");
             DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());

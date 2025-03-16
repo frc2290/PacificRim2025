@@ -47,6 +47,7 @@ public class SwerveAutoStep extends Command {
     @Override
     public void end(boolean interrupted) {
         timer.stop();
+        System.out.println("Time for " + path.name + ": " + timer.get());
         pose.setTargetPose(trajectory.getEndState().pose);
     }
 
