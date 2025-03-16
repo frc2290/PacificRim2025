@@ -33,6 +33,12 @@
           "data": {
             "pathName": "FeederToRightCoral3"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightCoral3ToFeeder"
+          }
         }
       ]
     }

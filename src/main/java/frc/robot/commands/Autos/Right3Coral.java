@@ -39,6 +39,7 @@ public class Right3Coral extends SequentialCommandGroup {
             PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToRightCoral2");
             PathPlannerPath reef2toFeed = PathPlannerPath.fromPathFile("RightCoral2ToFeeder");
             PathPlannerPath feedToReef3 = PathPlannerPath.fromPathFile("FeederToRightCoral3");
+            PathPlannerPath reef3ToFeed = PathPlannerPath.fromPathFile("RightCoral3ToFeeder");
             
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
@@ -61,6 +62,8 @@ public class Right3Coral extends SequentialCommandGroup {
 
             Command followPath5 = new SwerveAutoStep(feedToReef3, poseEst);
             Command moveToReef3 = new ParallelCommandGroup(followPath5, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+
+            Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
             
             // Set drive to teleop (have to do this for every auto)
             Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
@@ -81,7 +84,8 @@ public class Right3Coral extends SequentialCommandGroup {
                         new WaitCommand(0.25),
                         moveToReef3,
                         new ScoreCoral(manipulator, stateSubsystem, poseEst),
-                        driveSetTeleop,
+                        followPath6,
+                        //driveSetTeleop,
                         Commands.runOnce(() -> {
                           timer.stop();
                           System.out.println("Right3Coral Time: " + timer.get());
