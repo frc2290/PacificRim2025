@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -19,6 +18,7 @@ import frc.robot.commands.Autos.Right1Coral;
 import frc.robot.commands.Autos.Right2Coral;
 import frc.robot.commands.Autos.Right3Coral;
 import frc.robot.commands.Autos.Test;
+import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -31,7 +31,6 @@ import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -50,6 +49,7 @@ public class RobotContainer {
     private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
     private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
+    //private final ClimbSubsystem m_climber = new ClimbSubsystem();
     private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_ledUtility);
 
     // The driver's controller

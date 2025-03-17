@@ -4,8 +4,6 @@
 
 package frc.robot.commands.Autos;
 
-import java.nio.file.Path;
-
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -16,8 +14,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.ScoreCoral;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.commands.SwerveAutoScore;
 import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
@@ -50,18 +48,21 @@ public class Right3Coral extends SequentialCommandGroup {
             // Create a parallel group to move to the reef and get in scoring position at the same time
             Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
             Command moveToReef = new ParallelCommandGroup(followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+            Command scoreCoral1 = new SwerveAutoScore(VisionConstants.leftBranches.get(2), manipulator, stateSubsystem, poseEst);
 
             Command followPath2 = new SwerveAutoStep(reefToFeed, poseEst);
             Command moveToFeeder = new ParallelCommandGroup(followPath2);
 
             Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
             Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+            Command scoreCoral2 = new SwerveAutoScore(VisionConstants.rightBranches.get(3), manipulator, stateSubsystem, poseEst);
 
             Command followPath4 = new SwerveAutoStep(reef2toFeed, poseEst);
             Command moveToFeeder2 = new ParallelCommandGroup(followPath4);
 
             Command followPath5 = new SwerveAutoStep(feedToReef3, poseEst);
             Command moveToReef3 = new ParallelCommandGroup(followPath5, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+            Command scoreCoral3 = new SwerveAutoScore(VisionConstants.leftBranches.get(3), manipulator, stateSubsystem, poseEst);
 
             Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
             
@@ -75,15 +76,15 @@ public class Right3Coral extends SequentialCommandGroup {
                         resetPose, 
                         driveSetAuto, 
                         moveToReef, 
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst), 
+                        scoreCoral1, 
                         moveToFeeder,
                         new WaitCommand(0.25),
                         moveToReef2, 
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst),
+                        scoreCoral2,
                         moveToFeeder2,
                         new WaitCommand(0.25),
                         moveToReef3,
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst),
+                        scoreCoral3,
                         followPath6,
                         //driveSetTeleop,
                         Commands.runOnce(() -> {

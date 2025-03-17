@@ -35,6 +35,23 @@ public final class Constants {
 
     public static final boolean debugMode = true;
 
+    public static final class Climber {
+        public static final int kLeftClimberMotorId = 80;
+        public static final int kRightClimberMotorId = 81;
+
+        public static final double kPositionConversion = 0.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
+                                                                        // Meters Position
+        public static final double kVelocityConversion = 0.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
+                                                                        // Meters Position
+
+        public static final double kP = 0.0;
+        public static final double kI = 0.0;
+        public static final double kD = 0.0;
+        public static final double kKG = 0.0;
+
+        public static final double transportSetpoint = 0;
+    }
+
     public static final class Elevator {
         public static final int kLeftElevatorMotorId = 50;
         public static final int kRightElevatorMotorId = 51;

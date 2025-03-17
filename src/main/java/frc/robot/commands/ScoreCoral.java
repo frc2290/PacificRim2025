@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
@@ -40,7 +39,11 @@ public class ScoreCoral extends Command {
     @Override
     public void execute() {
         if ((pose.atTargetPose() && state.atCurrentState()) || !state.getRotationLock()) {
-            manipulator.intake(0.75);
+            if (state.getCurrentState() == PositionState.L1Position) {
+                manipulator.intake(0.25);
+            } else {
+                manipulator.intake(0.75);
+            }
             timer.restart();
         }
     }

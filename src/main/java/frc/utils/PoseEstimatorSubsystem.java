@@ -5,7 +5,6 @@ import static edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition.kRedAlli
 
 import java.util.function.Supplier;
 
-import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -30,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
@@ -291,6 +291,10 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public void setTargetPose(Pose2d newTarget) {
         targetPose = newTarget;
+    }
+
+    public Command setTargetPoseCommand(Pose2d newTarget) {
+        return Commands.runOnce(() -> setTargetPose(newTarget));
     }
 
     public boolean atTargetPose() {

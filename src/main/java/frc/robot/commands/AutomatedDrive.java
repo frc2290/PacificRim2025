@@ -10,7 +10,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -129,6 +128,10 @@ public class AutomatedDrive extends Command {
             yPower = vCmd * Math.sin(modifier);
 
             drive.drive(xPower, yPower, rotSpeed, true);
+        } 
+        // Climb state: Implement
+        else if (stateSubsystem.getDriveState() == DriveState.Climb) {
+            // Implement
         }
     }
 

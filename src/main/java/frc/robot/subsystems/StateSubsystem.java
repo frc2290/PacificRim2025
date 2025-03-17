@@ -12,16 +12,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.Positions.IntakePosition;
-import frc.robot.commands.Positions.IntakePositionNew;
 import frc.robot.commands.Positions.L1Position;
-import frc.robot.commands.Positions.L1PositionNew;
 import frc.robot.commands.Positions.L2Position;
-import frc.robot.commands.Positions.L2PositionNew;
 import frc.robot.commands.Positions.L3Position;
-import frc.robot.commands.Positions.L3PositionNew;
 import frc.robot.commands.Positions.L4Position;
-import frc.robot.commands.Positions.L4PositionNew;
-import frc.robot.commands.Positions.TravelPositionNew;
 import frc.robot.commands.Positions.TravelPosition;
 import frc.utils.LEDEffects;
 import frc.utils.LEDUtility;
@@ -47,6 +41,8 @@ public class StateSubsystem extends SubsystemBase {
         L3Position,
         L4Position,
         StartPosition,
+        ClimbPosition,
+        AlgaeRemovalPosition,
         Cancelled
     }
 
@@ -329,16 +325,16 @@ public class StateSubsystem extends SubsystemBase {
         /**
          * State management system
          * Check if its at the goal, otherwise run the command needed to reach the goal
-         * Inside each case for each state is specific controls to add moves in case it needs to go somewhere else first
+         * Inside each case for each state is specific controls to add moves in case it needs to go somewhere else first (Mostly been moved to individual commands)
          * Finally schedules command(s) at the bottom to be executed
          */
         if (goalState != currentState && !isTransitioning() && atCurrentState() && DriverStation.isEnabled()) {
             switch (goalState) {
                 case TravelPosition:
-                    currentCommand = new TravelPositionNew(diff, elevator, this);
+                    currentCommand = new TravelPosition(diff, elevator, this);
                     break;
                 case IntakePosition:
-                    currentCommand = new IntakePositionNew(diff, elevator, this);
+                    currentCommand = new IntakePosition(diff, elevator, this);
                     //if (currentState != PositionState.TravelPosition) {
                         //currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     //}
@@ -347,31 +343,34 @@ public class StateSubsystem extends SubsystemBase {
                     //}
                     break;
                 case L1Position:
-                    currentCommand = new L1PositionNew(diff, elevator, this);
+                    currentCommand = new L1Position(diff, elevator, this);
                     if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case L2Position:
-                    currentCommand = new L2PositionNew(diff, elevator, this);
+                    currentCommand = new L2Position(diff, elevator, this);
                     // if (currentState == PositionState.IntakePosition) {
                     //     currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     // }
                     break;
                 case L3Position:
-                    currentCommand = new L3PositionNew(diff, elevator, this);
+                    currentCommand = new L3Position(diff, elevator, this);
                     //if (currentState == PositionState.IntakePosition) {
                     //    currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     //}
                     break;
                 case L4Position:
-                    currentCommand = new L4PositionNew(diff, elevator, this);
+                    currentCommand = new L4Position(diff, elevator, this);
                     //if (currentState == PositionState.IntakePosition) {
                     //    currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
                     //}
                     break;
+                case ClimbPosition:
+                    // Implement
+                    break;
                 case StartPosition:
-                    currentCommand = new TravelPositionNew(diff, elevator, this);
+                    currentCommand = new TravelPosition(diff, elevator, this);
                     break;
                 default:
                     System.out.println("Unknown State!!!!!!!!!!");
