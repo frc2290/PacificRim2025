@@ -54,6 +54,10 @@ public class DriveSubsystem extends SubsystemBase {
         m_gyro.setAngleAdjustment(180);
     }
 
+    public void setGyroAdjustment(double adjustment) {
+        m_gyro.setAngleAdjustment(adjustment);
+    }
+
     @Override
     public void periodic() {
         // Nothing

@@ -29,7 +29,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     //FlytMotorController leftMotor; 
     //FlytMotorController rightMotor;
 
-    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 0, new Constraints(2, 5));
+    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 1, new Constraints(2.5, 6));
     private ElevatorFeedforward feedforward = new ElevatorFeedforward(Elevator.kS, Elevator.kG, Elevator.kV, Elevator.kA);
 
     private SparkFlex leftMotor;

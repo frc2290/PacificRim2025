@@ -26,10 +26,10 @@ public class AutomatedDrive extends Command {
     private XboxController driverController;
 
     private PIDController rotPid = new PIDController(0.03, 0.001, 0.001);
-    private PIDController xPid = new PIDController(0.95, 0.008, 0.185);
-    private PIDController yPid = new PIDController(0.95, 0.008, 0.18);
+    private PIDController xPid = new PIDController(0.8, 0.008, 0.15);
+    private PIDController yPid = new PIDController(0.8, 0.008, 0.15);
 
-    private SlewRateLimiter slewLimiter = new SlewRateLimiter(100);
+    private SlewRateLimiter slewLimiter = new SlewRateLimiter(150);
     
     private double rotTarget = 0;
     private double rotSpeed = 0;
@@ -86,6 +86,8 @@ public class AutomatedDrive extends Command {
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
             double xPowerPid = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
             double yPowerPid = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+            //xPower = xPower * 0.5 + xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
+            //yPower = yPower * 0.5 + yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
 
             yPowerPid = yPowerPid - (rotSpeed * 0.7);
 
@@ -99,7 +101,7 @@ public class AutomatedDrive extends Command {
             drive.drive(xPower, yPower, rotSpeed, true);
 
             // LED Setting
-            if (poseEstimator.getAlignX(targetPose.getTranslation()) < 0.01 && poseEstimator.getAlignY(targetPose.getTranslation()) < 0.01 && stateSubsystem.atCurrentState()) {
+            if (poseEstimator.atTargetPose() && stateSubsystem.atCurrentState()) {
                 stateSubsystem.setDriveState(DriveState.ReefScore);
             } else {
                 stateSubsystem.setDriveState(DriveState.ReefScoreMove);

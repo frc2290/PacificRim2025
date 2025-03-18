@@ -82,9 +82,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     private Pose2d targetPose = new Pose2d();
 
+    private DriveSubsystem drive;
+
     private FlytLogger poseDash = new FlytLogger("Pose");
 
     public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
+        drive = m_drive;
         photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT);
         photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT);
 
@@ -298,9 +301,13 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     }
 
     public boolean atTargetPose() {
-        return Math.abs(getAlignX(targetPose.getTranslation())) < 0.03
-                && Math.abs(getAlignY(targetPose.getTranslation())) < 0.03
-                && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 2;
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return Math.abs(relative.getX()) < 0.0254
+                && Math.abs(relative.getY()) < 0.0254
+                && Math.abs(relative.getRotation().getDegrees()) < 2;
+        //return Math.abs(getAlignX(targetPose.getTranslation())) < 0.03
+         //       && Math.abs(getAlignY(targetPose.getTranslation())) < 0.03
+         //       && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 2;
     }
 
     /**
@@ -312,6 +319,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      */
     public void setCurrentPose(Pose2d newPose) {
         poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
+        //drive.setGyroAdjustment(newPose.getRotation().getDegrees());
     }
 
     /**
