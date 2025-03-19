@@ -208,8 +208,8 @@ public final class Constants {
          * of the robot.
          */
         public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
-                new Translation3d(0.142875, -0.36, CAMERA_HEIGHT_METERS),
-                new Rotation3d(0.0, CAMERA_PITCH_RADIANS, degreesToRadians(20)));
+                new Translation3d(0.235579, -0.351500, 0.305792),
+                new Rotation3d(0.0, 0, degreesToRadians(45)));
 
         public static final Transform3d APRILTAG_CAMERA2_TO_ROBOT = new Transform3d(
             new Translation3d((0.142875-0.152), -0.36, CAMERA_HEIGHT_METERS),
