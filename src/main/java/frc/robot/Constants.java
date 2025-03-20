@@ -36,12 +36,12 @@ public final class Constants {
     public static final boolean debugMode = true;
 
     public static final class Climber {
-        public static final int kLeftClimberMotorId = 80;
+        public static final int kLeftClimberMotorId = 8;
         public static final int kRightClimberMotorId = 81;
 
-        public static final double kPositionConversion = 0.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
+        public static final double kPositionConversion = 1.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
                                                                         // Meters Position
-        public static final double kVelocityConversion = 0.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
+        public static final double kVelocityConversion = 1.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
                                                                         // Meters Position
 
         public static final double kP = 0.0;
@@ -93,7 +93,7 @@ public final class Constants {
         public static final double v_kd = 0;
         public static final double v_KG = 0;
 
-        public static final double transportExtensionSetpoint = 20;
+        public static final double transportExtensionSetpoint = 90;
         public static final double transportRotationSetpoint = -125;
         public static final double intakeExtensionSetpoint = 0;
         public static final double intakeRotationSetpoint = 8;

@@ -49,7 +49,7 @@ public class RobotContainer {
     private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
     private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
-    //private final ClimbSubsystem m_climber = new ClimbSubsystem();
+    private final ClimbSubsystem m_climber = new ClimbSubsystem();
     private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_ledUtility);
 
     // The driver's controller
@@ -118,6 +118,7 @@ public class RobotContainer {
         JoystickButton back_button = new JoystickButton(m_driverController, Button.kBack.value);
         JoystickButton start_button = new JoystickButton(m_driverController, Button.kStart.value);
         JoystickButton driver_stick = new JoystickButton(m_driverController, Button.kLeftStick.value);
+        JoystickButton right_stick= new JoystickButton(m_driverController, Button.kRightStick.value);
         Trigger right_trigger = new Trigger(() -> m_driverController.getRightTriggerAxis() > 0.5);
         Trigger left_trigger = new Trigger(() -> m_driverController.getLeftTriggerAxis() > 0.5);
         POVButton dpad_up = new POVButton(m_driverController, 0);
@@ -125,6 +126,7 @@ public class RobotContainer {
         POVButton dpad_left = new POVButton(m_driverController, 270);
 
         Trigger not_driver_stick = driver_stick.negate(); // Trigger to check if driver stick is not pressed in
+        Trigger not_right_stick = right_stick.negate();
 
         // Automatic controls
         a_button.and(not_driver_stick).onTrue(m_state.setGoalCommand(PositionState.L1Position)); // Set to L1
@@ -136,8 +138,8 @@ public class RobotContainer {
         left_bumper.and(not_driver_stick).onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
         right_bumper.and(not_driver_stick).onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
-        dpad_up.onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
-        dpad_down.onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
+        dpad_up.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
+        dpad_down.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
         dpad_left.onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
         //left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation)
@@ -154,6 +156,8 @@ public class RobotContainer {
         driver_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
         driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(30)); // Manual rotate diff arm out
         driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-30)); // Manual rotate diff arm in
+        right_stick.and(dpad_up).onTrue(m_climber.setClimberSpeedCommand(1)).onFalse(m_climber.setClimberSpeedCommand(0));
+        right_stick.and(dpad_down).onTrue(m_climber.setClimberSpeedCommand(-1)).onFalse(m_climber.setClimberSpeedCommand(0));
         start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 

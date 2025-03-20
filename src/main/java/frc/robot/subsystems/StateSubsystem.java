@@ -82,7 +82,7 @@ public class StateSubsystem extends SubsystemBase {
     // State storage
     private PositionState prevState = PositionState.StartPosition;
     private PositionState currentState = PositionState.StartPosition;
-    private PositionState goalState = PositionState.TravelPosition;
+    private PositionState goalState = PositionState.StartPosition; //PositionState.TravelPosition;
 
     // Boolean for if robot is currently transitioning states
     private boolean transitioning = false;
@@ -370,7 +370,8 @@ public class StateSubsystem extends SubsystemBase {
                     // Implement
                     break;
                 case StartPosition:
-                    currentCommand = new TravelPosition(diff, elevator, this);
+                    //Nothing
+                    //currentCommand = new TravelPosition(diff, elevator, this);
                     break;
                 default:
                     System.out.println("Unknown State!!!!!!!!!!");
