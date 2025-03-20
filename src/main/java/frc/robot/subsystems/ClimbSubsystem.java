@@ -50,7 +50,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
         leftConfig.inverted(true)
                 .idleMode(IdleMode.kBrake)
-                .smartCurrentLimit(40).encoder
+                .smartCurrentLimit(60).encoder
                 .positionConversionFactor(Climber.kPositionConversion)
                 .velocityConversionFactor(Climber.kVelocityConversion);
         leftConfig.closedLoop

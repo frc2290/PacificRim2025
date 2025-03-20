@@ -384,17 +384,30 @@ public class StateSubsystem extends SubsystemBase {
         // LED Management?
         if (atCurrentState()) {
             if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral()) {
-                ledUtility.setAll(LEDEffect.FLASH, Color.kGreen);
+                ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);
             } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral()) {
-                ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+                ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
             } else if (!getRotationLock()) {
-                ledUtility.setAll(LEDEffect.SOLID, Color.kRed);
+                ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
+                ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
+                ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
             } else if (getDriveState() == DriveState.Teleop) {
-                ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
+                if (getRightScore()) {
+                    ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
+                    ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
+                } else {
+                    ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
+                    ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
+                }
             } else if (getDriveState() == DriveState.ReefScoreMove) {
-                ledUtility.setAll(LEDEffect.FLASH, LEDEffects.flytBlue);
+                ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
             } else if (getDriveState() == DriveState.ReefScore) {
-                ledUtility.setAll(LEDEffect.SOLID, Color.kGreen);
+                ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
             }
         }
 

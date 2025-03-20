@@ -17,48 +17,63 @@ import frc.utils.LEDEffects.LEDEffect;
 public class LEDUtility extends SubsystemBase {
     AddressableLED addressableLED;
     int overallLength = 0;
-    ArrayList<LEDStrip> ledStrips = new ArrayList<>();
     AddressableLEDBuffer filler = new AddressableLEDBuffer(0);
+    ArrayList<LEDStrip> newLedStrips = new ArrayList<>();
 
     /** Creates a new LEDUtility. */
     public LEDUtility(int _port) {
         addressableLED = new AddressableLED(_port);
+        addressableLED.start();
     }
 
-    public void addStrip(LEDStrip _strip) {
-        ledStrips.add(_strip);
-        overallLength = overallLength + _strip.getLength();
+    public void addStrip(String _name, int start, int end) {
+        overallLength = overallLength + (end - start);
         setLength(overallLength);
+        newLedStrips.add(new LEDStrip(_name, filler, start, end));
     }
 
     public LEDStrip getStrip(int index) {
-        return ledStrips.get(index);
+        return newLedStrips.get(index);
+    }
+
+    public LEDStrip getStrip(String name) {
+        for (LEDStrip strip : newLedStrips) {
+            if (strip.getName() == name) {
+                return strip;
+            }
+        }
+        return null;
     }
 
     public void setAll(LEDEffect _effect, Color _color) {
-        ledStrips.forEach(strip -> {
+        newLedStrips.forEach(strip -> {
             strip.setColor(_color);
             strip.setEffect(_effect);
         });
     }
 
     public void setAll(LEDEffect _effect) {
-        ledStrips.forEach(strip -> {
+        newLedStrips.forEach(strip -> {
             strip.setEffect(_effect);
         });
     }
 
     // DEFAULT LED PATTERN, CHANGE PER SEASON
     public void setDefault() {
-        getStrip(0).setEffect(LEDEffect.PULSE);
-        getStrip(0).setColor(LEDEffects.flytBlue);
-        getStrip(1).setEffect(LEDEffect.PULSE);
-        getStrip(1).setColor(LEDEffects.flytBlue);
+        getStrip("Left").setEffect(LEDEffect.PULSE);
+        getStrip("Left").setColor(LEDEffects.flytBlue);
+        getStrip("Right").setEffect(LEDEffect.PULSE);
+        getStrip("Right").setColor(LEDEffects.flytBlue);
+        getStrip("TopLeft").setEffect(LEDEffect.ALLIANCE);
+        getStrip("TopRight").setEffect(LEDEffect.ALLIANCE);
     }
 
     private void setLength(int length) {
         filler = new AddressableLEDBuffer(length);
         addressableLED.setLength(length);
+        for (LEDStrip strip : newLedStrips) {
+            strip.setBufferView(filler);
+        }
     }
 
     private Color getAlliance() {
@@ -77,13 +92,13 @@ public class LEDUtility extends SubsystemBase {
                 LEDEffects.setRSLFlashing(_strip);
                 break;
             case FLASH:
-                LEDEffects.setFlashing(_strip, 10);
+                LEDEffects.setFlashing(_strip, 1);
                 break;
             case PULSE:
-                LEDEffects.setPulsing(_strip, 50);
+                LEDEffects.setPulsing(_strip, 2);
                 break;
             case CHASING:
-                LEDEffects.setChasing(_strip, 5);
+                LEDEffects.setChasing(_strip, 0.25);
                 break;
             case ALLIANCE:
                 LEDEffects.setAllianceColor(_strip);
@@ -98,14 +113,11 @@ public class LEDUtility extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
         try {
-            ledStrips.forEach(strip -> {
+            newLedStrips.forEach(strip -> {
                 setStrip(strip);
-                for (int i = strip.getStart(); i <= strip.getStop(); i++) {
-                    filler.setLED(i, strip.getIndex(i - strip.getStart()));
-                }
             });
             addressableLED.setData(filler);
-            addressableLED.start();
+            //addressableLED.start();
         } catch (Exception e) {
             System.out.println("LED EXception: " + e);
         }

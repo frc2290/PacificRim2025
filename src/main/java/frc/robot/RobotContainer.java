@@ -65,8 +65,10 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
 
-        m_ledUtility.addStrip(new LEDStrip(0, 71));
-        m_ledUtility.addStrip(new LEDStrip(72, 143));
+        m_ledUtility.addStrip("Left", 0, 61);
+        m_ledUtility.addStrip("TopLeft", 62, 71);
+        m_ledUtility.addStrip("Right", 72, 133);
+        m_ledUtility.addStrip("TopRight", 134, 143);
         m_ledUtility.setDefault();
 
         // Build an auto chooser. This will use Commands.none() as the default option.
