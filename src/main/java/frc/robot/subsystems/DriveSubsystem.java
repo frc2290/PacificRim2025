@@ -4,19 +4,25 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -47,11 +53,30 @@ public class DriveSubsystem extends SubsystemBase {
 
     private double slowSpeed = 1.0;
 
+    private PIDController rotPid = new PIDController(0.03, 0.0, 0.001);
+    private PIDController xPid = new PIDController(0.8, 0.0, 0.15);
+    private PIDController yPid = new PIDController(0.9, 0.0, 0.15);
+
+    // Create the SysId routine
+    private SysIdRoutine sysIdRoutine = new SysIdRoutine(
+        new SysIdRoutine.Config(),
+        new SysIdRoutine.Mechanism(
+            (voltage) -> this.runCharacterization(voltage.in(Volts)),
+            null, // No log consumer, since data is recorded by URCL
+            this
+        )
+    );
+
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem() {
         // Usage reporting for MAXSwerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
         m_gyro.setAngleAdjustment(180);
+        rotPid.enableContinuousInput(0, 360);
+
+        SmartDashboard.putData("Drive Rot PID", rotPid);
+        SmartDashboard.putData("Drive X PID", xPid);
+        SmartDashboard.putData("Drive Y PID", yPid);
     }
 
     public void setGyroAdjustment(double adjustment) {
@@ -73,6 +98,34 @@ public class DriveSubsystem extends SubsystemBase {
 
     public boolean isSlowSpeed() {
         return slowSpeed < 1;
+    }
+
+    public PIDController getRotPidController() {
+        return rotPid;
+    }
+
+    public PIDController getXPidController() {
+        return xPid;
+    }
+
+    public PIDController getYPidController() {
+        return yPid;
+    }
+
+    public Command getQuasistaticForward() {
+        return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
+    }
+
+    public Command getQuasistaticReverse() {
+        return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
+    }
+
+    public Command getDynamicForward() {
+        return sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
+    }
+
+    public Command getDynamicReverse() {
+        return sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
     }
 
     /**
@@ -197,5 +250,12 @@ public class DriveSubsystem extends SubsystemBase {
     public Rotation2d newHeading() {
         return m_gyro.getRotation2d();
         //return Rotation2d.fromDegrees(-m_gyro.getAngle());
+    }
+
+    private void runCharacterization(double output) {
+        m_frontLeft.runCharacterization(output);
+        m_frontRight.runCharacterization(output);
+        m_rearLeft.runCharacterization(output);
+        m_rearRight.runCharacterization(output);
     }
 }

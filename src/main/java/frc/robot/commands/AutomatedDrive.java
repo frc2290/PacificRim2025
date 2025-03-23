@@ -25,9 +25,9 @@ public class AutomatedDrive extends Command {
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    private PIDController rotPid = new PIDController(0.03, 0.001, 0.001);
-    private PIDController xPid = new PIDController(0.8, 0.008, 0.15);
-    private PIDController yPid = new PIDController(0.9, 0.008, 0.15);
+    private PIDController rotPid;
+    private PIDController xPid;
+    private PIDController yPid;
 
     private SlewRateLimiter slewLimiter = new SlewRateLimiter(150);
     
@@ -42,7 +42,9 @@ public class AutomatedDrive extends Command {
         poseEstimator = m_pose;
         driverController = m_driverController;
 
-        rotPid.enableContinuousInput(0, 360);
+        rotPid = m_drive.getRotPidController();
+        xPid = m_drive.getXPidController();
+        yPid = m_drive.getYPidController();
 
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(drive);

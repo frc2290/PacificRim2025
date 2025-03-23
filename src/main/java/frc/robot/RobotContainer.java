@@ -16,6 +16,7 @@ import frc.robot.commands.ClimberOut;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoAlign;
+import frc.robot.commands.Autos.DrivetrainSysId;
 import frc.robot.commands.Autos.Right1Coral;
 import frc.robot.commands.Autos.Right2Coral;
 import frc.robot.commands.Autos.Right3Coral;
@@ -52,7 +53,7 @@ public class RobotContainer {
     private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
     private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
     private final ClimbSubsystem m_climber = new ClimbSubsystem();
-    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_ledUtility);
+    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
 
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -74,6 +75,7 @@ public class RobotContainer {
         m_ledUtility.setDefault();
 
         // Build an auto chooser. This will use Commands.none() as the default option.
+        auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
         auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
         auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, m_manipulator));

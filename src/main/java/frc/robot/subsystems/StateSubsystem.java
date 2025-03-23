@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.Positions.IntakePosition;
@@ -19,6 +20,7 @@ import frc.robot.commands.Positions.L4Position;
 import frc.robot.commands.Positions.TravelPosition;
 import frc.utils.LEDEffects;
 import frc.utils.LEDUtility;
+import frc.utils.PoseEstimatorSubsystem;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.LEDEffects.LEDEffect;
 
@@ -29,6 +31,7 @@ public class StateSubsystem extends SubsystemBase {
     private DriveSubsystem drive;
     private ManipulatorSubsystem manipulator;
     private LEDUtility ledUtility;
+    private PoseEstimatorSubsystem pose;
 
     /**
      * Robot State Options - Primarily for elevator and arm
@@ -93,12 +96,13 @@ public class StateSubsystem extends SubsystemBase {
     private FlytLogger stateDash = new FlytLogger("State");
 
     /** Creates a new StateSubsystem. */
-    public StateSubsystem(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manip, LEDUtility m_ledUtility) {
+    public StateSubsystem(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manip, PoseEstimatorSubsystem m_pose, LEDUtility m_ledUtility) {
         diff = m_diff;
         elevator = m_elevator;
         drive = m_drive;
         manipulator = m_manip;
         ledUtility = m_ledUtility;
+        pose = m_pose;
 
         stateDash.addStringPublisher("Current State", false, () -> getCurrentState().toString());
         stateDash.addStringPublisher("Prev State", false, () -> getPrevState().toString());
@@ -110,6 +114,11 @@ public class StateSubsystem extends SubsystemBase {
         stateDash.addBoolPublisher("Right Score", false, () -> getRightScore());
     }
 
+    /** Triggers? */
+    public Trigger atTarget() {
+        return new Trigger(() -> pose.atTargetPose() && atCurrentState());
+    }
+    
     /** Robot State Section */
 
     /**
