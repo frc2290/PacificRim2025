@@ -40,7 +40,7 @@ public class ScoreCoral extends Command {
     public void execute() {
         if ((pose.atTargetPose() && state.atCurrentState()) || !state.getRotationLock()) {
             if (state.getCurrentState() == PositionState.L1Position) {
-                manipulator.intake(0.25);
+                manipulator.intake(0.5);
             } else {
                 manipulator.intake(0.75);
             }
@@ -56,14 +56,14 @@ public class ScoreCoral extends Command {
         manipulator.intake(0);
         manipulator.setCoral(false);
         state.setGoal(PositionState.IntakePosition);
-        if (!DriverStation.isAutonomous()){
+        //if (!DriverStation.isAutonomous()){
             state.setDriveState(DriveState.CoralStation);
-        }
+        //}
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return manipulator.getMotorPos() > 15;
+        return manipulator.getMotorPos() > 25;
     }
 }

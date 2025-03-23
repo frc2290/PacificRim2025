@@ -20,7 +20,7 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 public class L2Position extends SequentialCommandGroup {
   private double elevatorPos = 0.725;
   private double diffExt = 80;
-  private double diffRot = -155;
+  private double diffRot = -156;
   private double diffExt1 = 240;
 
   /** Creates a new L1PositionNew. */
@@ -36,7 +36,7 @@ public class L2Position extends SequentialCommandGroup {
       Command moveElev2 = elevator.setElevatorSetpointCommand(elevatorPos);
       ParallelCommandGroup rotateAndUpRest = new ParallelCommandGroup(moveRotStep2, moveElev2);
       Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
-      addCommands(moveAndUp, rotateAndUpRest, moveRot, stateSubsystem.setCurrentStateCommand(PositionState.L4Position));
+      addCommands(moveAndUp, rotateAndUpRest, moveRot, stateSubsystem.setCurrentStateCommand(PositionState.L2Position));
     } else {
       Command rotTransport = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint);
       Command moveExt = diffArm.setExtensionSetpointCommand(diffExt);

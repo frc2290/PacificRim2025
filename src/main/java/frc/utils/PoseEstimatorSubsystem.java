@@ -109,8 +109,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         // Start PhotonVision thread
         photonNotifier.setName("PhotonRunnable");
         photonNotifier.startPeriodic(0.01);
-        //photonNotifier2.setName("PhotonRunnable2");
-        //photonNotifier2.startPeriodic(0.01);
+        photonNotifier2.setName("PhotonRunnable2");
+        photonNotifier2.startPeriodic(0.01);
 
         try {
             config = RobotConfig.fromGUISettings();
@@ -150,6 +150,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
         poseDash.addStringPublisher("Pose", false, () -> getCurrentPose().toString());
         poseDash.addBoolPublisher("At Target Pose", false, () -> atTargetPose());
+        poseDash.addDoublePublisher("Relative To X", true, () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getX());
+        poseDash.addDoublePublisher("Relative To Y", true, () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getY());
+        poseDash.addDoublePublisher("Relative To T", true, () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getRotation().getDegrees());
     }
 
     /**
@@ -200,18 +203,18 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             //}
         }
 
-        // var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-        // if (visionPose2 != null) {
-        //     // New pose from vision
-        //     sawTag = true;
-        //     var pose2d2 = visionPose2.estimatedPose.toPose2d();
-        //     if (originPosition != kBlueAllianceWallRightSide) {
-        //         pose2d2 = flipAlliance(pose2d2);
-        //     }
-        //     //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
-        //         poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
-        //     //}
-        // }
+        var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
+        if (visionPose2 != null) {
+            // New pose from vision
+            sawTag = true;
+            var pose2d2 = visionPose2.estimatedPose.toPose2d();
+            if (originPosition != kBlueAllianceWallRightSide) {
+                pose2d2 = flipAlliance(pose2d2);
+            }
+            //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
+                poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+            //}
+        }
 
         // Set the pose on the dashboard
         var dashboardPose = poseEstimator.getEstimatedPosition();
@@ -303,7 +306,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     public boolean atTargetPose() {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
         return Math.abs(relative.getX()) < 0.0254
-                && Math.abs(relative.getY()) < 0.0254
+                && Math.abs(relative.getY()) < 0.06
                 && Math.abs(relative.getRotation().getDegrees()) < 2;
         //return Math.abs(getAlignX(targetPose.getTranslation())) < 0.03
          //       && Math.abs(getAlignY(targetPose.getTranslation())) < 0.03

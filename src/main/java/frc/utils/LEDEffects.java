@@ -56,7 +56,7 @@ public class LEDEffects {
         base.applyTo(_strip.getBufferView());
     }
 
-    public static void setFlashing(LEDStrip _strip, int _interval) {
+    public static void setFlashing(LEDStrip _strip, double _interval) {
         LEDPattern base = LEDPattern.solid(_strip.getColor());
         base.blink(Seconds.of(_interval)).applyTo(_strip.getBufferView());
     }

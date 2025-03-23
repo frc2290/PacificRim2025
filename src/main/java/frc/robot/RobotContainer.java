@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.Auto;
 import frc.robot.commands.AutomatedDrive;
+import frc.robot.commands.ClimberIn;
+import frc.robot.commands.ClimberOut;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoAlign;
@@ -143,11 +145,10 @@ public class RobotContainer {
         dpad_up.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
         dpad_down.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
         dpad_left.onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
-        //left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
-        left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation)
-                    .whileTrue(new SwerveAutoAlign(m_poseEstimator, m_state))
-                    .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
-        left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state));
+        left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        //left_trigger.whileTrue(new SwerveAutoAlign(m_poseEstimator, m_state))
+        //            .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
+        //left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_poseEstimator)); // Score coral
 
@@ -158,8 +159,10 @@ public class RobotContainer {
         driver_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
         driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(30)); // Manual rotate diff arm out
         driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-30)); // Manual rotate diff arm in
-        right_stick.and(dpad_up).onTrue(m_climber.setClimberSpeedCommand(1)).onFalse(m_climber.setClimberSpeedCommand(0));
-        right_stick.and(dpad_down).onTrue(m_climber.setClimberSpeedCommand(-1)).onFalse(m_climber.setClimberSpeedCommand(0));
+        //right_stick.and(dpad_up).onTrue(m_climber.setClimberSpeedCommand(1)).onFalse(m_climber.setClimberSpeedCommand(0));
+        right_stick.and(dpad_up).onTrue(new ClimberOut(m_climber));
+        //right_stick.and(dpad_down).onTrue(m_climber.setClimberSpeedCommand(-1)).onFalse(m_climber.setClimberSpeedCommand(0));
+        right_stick.and(dpad_down).onTrue(new ClimberIn(m_climber));
         start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 

@@ -13,12 +13,14 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.trajectory.ExponentialProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Elevator;
 import frc.robot.Constants;
+import frc.utils.ExponentialProfiledPIDController;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 //import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 //import frc.utils.FLYTLib.FLYTMotorLib.SparkFlexController;
@@ -29,7 +31,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     //FlytMotorController leftMotor; 
     //FlytMotorController rightMotor;
 
-    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 1, new Constraints(2.5, 6));
+    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 1, new TrapezoidProfile.Constraints(2.5, 9));
     private ElevatorFeedforward feedforward = new ElevatorFeedforward(Elevator.kS, Elevator.kG, Elevator.kV, Elevator.kA);
 
     private SparkFlex leftMotor;
@@ -45,6 +47,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     private FlytLogger elevatorDash = new FlytLogger("Elevator");
 
     private double elevatorSetpoint = 0;
+
+    private ExponentialProfiledPIDController expPidController = new ExponentialProfiledPIDController(0.0, 0.0, 0.0, ExponentialProfile.Constraints.fromCharacteristics(0.0, 0.0, 0.0));
 
     //private SlewRateLimiter elevatorSlew = new SlewRateLimiter(3);
 
@@ -85,6 +89,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         traPidController.reset(elevatorSetpoint);
+
+        expPidController.setTolerance(0.0, 0.0);
+
 
         elevatorDash.addDoublePublisher("Elevator POS", false, () -> getPosition());
         elevatorDash.addDoublePublisher("Elevator Setpoint", false, () -> getElevatorSetpoint());

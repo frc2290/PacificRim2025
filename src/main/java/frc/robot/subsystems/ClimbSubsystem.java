@@ -24,9 +24,11 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;;
 public class ClimbSubsystem extends SubsystemBase {
     private SparkMax leftMotor;
     private SparkMax rightMotor;
-
+//-206
     private Servo servo;
-
+    private double servoOpen = 90;
+    private double servoClosed = 180;
+//-100
     private SparkClosedLoopController climber;
 
     private RelativeEncoder leftEnc;
@@ -61,7 +63,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
         leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        servo = new Servo(0);
+        servo = new Servo(1);
 
         //rightConfig.follow(Climber.kLeftClimberMotorId, true)
         //        .idleMode(IdleMode.kBrake);
@@ -101,7 +103,15 @@ public class ClimbSubsystem extends SubsystemBase {
     }
 
     public void setServoPos(double pos) {
-        servo.set(pos);
+        servo.setAngle(pos);
+    }
+
+    public void setServoClose() {
+        servo.setAngle(servoClosed);
+    }
+
+    public void setServoOpen() {
+        servo.setAngle(servoOpen);
     }
 
     @Override

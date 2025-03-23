@@ -27,7 +27,7 @@ public class LEDUtility extends SubsystemBase {
     }
 
     public void addStrip(String _name, int start, int end) {
-        overallLength = overallLength + (end - start);
+        overallLength = overallLength + ((end - start) + 1);
         setLength(overallLength);
         newLedStrips.add(new LEDStrip(_name, filler, start, end));
     }
@@ -92,7 +92,7 @@ public class LEDUtility extends SubsystemBase {
                 LEDEffects.setRSLFlashing(_strip);
                 break;
             case FLASH:
-                LEDEffects.setFlashing(_strip, 1);
+                LEDEffects.setFlashing(_strip, 0.05);
                 break;
             case PULSE:
                 LEDEffects.setPulsing(_strip, 2);
@@ -117,7 +117,7 @@ public class LEDUtility extends SubsystemBase {
                 setStrip(strip);
             });
             addressableLED.setData(filler);
-            //addressableLED.start();
+            addressableLED.start();
         } catch (Exception e) {
             System.out.println("LED EXception: " + e);
         }

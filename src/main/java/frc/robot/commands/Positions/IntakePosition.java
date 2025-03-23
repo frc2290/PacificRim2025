@@ -21,7 +21,7 @@ public class IntakePosition extends SequentialCommandGroup {
   /** Creates a new IntakePositionNew. */
   public IntakePosition(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
     //Command moveExt1 = diffArm.setExtensionSetpointCommand(70);
-    Command moveRotAndExt = diffArm.setRotAndExtSetpointCommand(115, 55);
+    Command moveRotAndExt = diffArm.setRotAndExtSetpointCommand(180, 55);
     Command moveElev = elevator.setElevatorSetpointCommand(Elevator.intakeSetpoint);
     ParallelCommandGroup moveElevAndArm = new ParallelCommandGroup(moveRotAndExt, moveElev);
     Command moveRotAndExt2 = diffArm.setRotAndExtSetpointCommand(DifferentialArm.intakeExtensionSetpoint, DifferentialArm.intakeRotationSetpoint);

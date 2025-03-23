@@ -21,27 +21,27 @@ public class ClimberOut extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        climb.setServoOpen();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        climb.setServoPos(180);
-        if (climb.getServoPos() > 170) {
+        //climb.setServoPos(180);
+        //if (climb.getServoPos() > 170) {
             climb.setClimberSpeed(-1);
-        }
+        //}
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
         climb.setClimberSpeed(0);
-        climb.setServoPos(0);
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return climb.getClimberPos() > 180;
+        return climb.getClimberPos() < -200;
     }
 }

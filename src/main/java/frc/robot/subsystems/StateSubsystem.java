@@ -73,7 +73,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     // Rotation lock and current drive state
-    private boolean rotLock = true; // TURN BACK TO TRUE
+    private boolean rotLock = false; // TURN BACK TO TRUE
     private DriveState driveState = DriveState.Teleop;
 
     // Boolean for if we want to score on the left or right branch
@@ -300,7 +300,6 @@ public class StateSubsystem extends SubsystemBase {
      */
     public void setDriveState(DriveState newState) {
         driveState = newState;
-        System.out.println("Set new drive state: " + newState.toString());
     }
 
     /**
@@ -383,10 +382,10 @@ public class StateSubsystem extends SubsystemBase {
 
         // LED Management?
         if (atCurrentState()) {
-            if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral()) {
+            if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
                 ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
                 ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);
-            } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral()) {
+            } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
                 ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
                 ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
             } else if (!getRotationLock()) {
@@ -402,6 +401,8 @@ public class StateSubsystem extends SubsystemBase {
                     ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
                     ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
                 }
+                ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
             } else if (getDriveState() == DriveState.ReefScoreMove) {
                 ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
                 ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
