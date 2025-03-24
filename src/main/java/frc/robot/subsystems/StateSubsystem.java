@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.Positions.ClimbPosition;
 import frc.robot.commands.Positions.IntakePosition;
 import frc.robot.commands.Positions.L1Position;
 import frc.robot.commands.Positions.L2Position;
@@ -118,7 +119,7 @@ public class StateSubsystem extends SubsystemBase {
     public Trigger atTarget() {
         return new Trigger(() -> pose.atTargetPose() && atCurrentState());
     }
-    
+
     /** Robot State Section */
 
     /**
@@ -375,7 +376,10 @@ public class StateSubsystem extends SubsystemBase {
                     //}
                     break;
                 case ClimbPosition:
-                    // Implement
+                    currentCommand = new ClimbPosition(elevator, this);
+                    if (currentState != PositionState.TravelPosition) {
+                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                    }
                     break;
                 case StartPosition:
                     //Nothing

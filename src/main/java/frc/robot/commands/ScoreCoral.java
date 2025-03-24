@@ -57,7 +57,7 @@ public class ScoreCoral extends Command {
         manipulator.setCoral(false);
         state.setGoal(PositionState.IntakePosition);
         //if (!DriverStation.isAutonomous()){
-            state.setDriveState(DriveState.CoralStation);
+            //state.setDriveState(DriveState.CoralStation);
         //}
     }
 

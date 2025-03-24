@@ -44,12 +44,14 @@ public final class Constants {
         public static final double kVelocityConversion = 1.0; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
                                                                         // Meters Position
 
-        public static final double kP = 0.0;
+        public static final double kP = 0.1;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double kKG = 0.0;
 
         public static final double transportSetpoint = 0;
+        public static final double climberOutSetpoint = -210;
+        public static final double climberInSetpoint = -85;
     }
 
     public static final class Elevator {

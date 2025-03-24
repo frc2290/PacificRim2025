@@ -57,8 +57,8 @@ public class IntakeCoral extends Command {
         manipulator.intake(-0.05);
         manipulator.setCoral(true);
         //if (!DriverStation.isAutonomous()) {
-            state.setDriveState(DriveState.Teleop);
-            state.setGoal(PositionState.TravelPosition);
+            //state.setDriveState(DriveState.Teleop);
+            //state.setGoal(PositionState.TravelPosition);
         //}
     }
 

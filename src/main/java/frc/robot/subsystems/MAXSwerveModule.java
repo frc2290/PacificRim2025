@@ -4,10 +4,12 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
@@ -15,6 +17,10 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import static edu.wpi.first.math.util.Units.feetToMeters;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 
@@ -33,6 +39,8 @@ public class MAXSwerveModule {
 
     private double m_chassisAngularOffset = 0;
     private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
+
+    private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.13569, 2.2311);
 
     private FlytLogger test = new FlytLogger("Swerve");
 
@@ -112,7 +120,7 @@ public class MAXSwerveModule {
         correctedDesiredState.optimize(new Rotation2d(m_turningEncoder.getPosition()));
 
         // Command driving and turning SPARKS towards their respective setpoints.
-        m_drivingClosedLoopController.setReference(correctedDesiredState.speedMetersPerSecond, ControlType.kVelocity);
+        m_drivingClosedLoopController.setReference(correctedDesiredState.speedMetersPerSecond, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward.calculate(correctedDesiredState.speedMetersPerSecond));
         m_turningClosedLoopController.setReference(correctedDesiredState.angle.getRadians(), ControlType.kPosition);
 
         m_desiredState = desiredState;
@@ -125,8 +133,16 @@ public class MAXSwerveModule {
         m_drivingEncoder.setPosition(0);
     }
 
-    public void runCharacterization(double output) {
+    public void runDriveCharacterization(double output) {
         m_drivingClosedLoopController.setReference(output, ControlType.kVoltage);
-        m_turningClosedLoopController.setReference(new Rotation2d().getRadians(), ControlType.kPosition);
+        m_turningClosedLoopController.setReference(new Rotation2d().plus(Rotation2d.fromRadians(m_chassisAngularOffset)).getRadians(), ControlType.kPosition);
+    }
+
+    public void runTurnCharacterization(double output) {
+        m_turningClosedLoopController.setReference(output, ControlType.kVoltage);
+    }
+
+    public void setDriveCoast() {
+        m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig.idleMode(IdleMode.kCoast), ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 }

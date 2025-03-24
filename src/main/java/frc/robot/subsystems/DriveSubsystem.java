@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.studica.frc.AHRS;
@@ -18,6 +19,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.TimeUnit;
+import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -53,15 +58,24 @@ public class DriveSubsystem extends SubsystemBase {
 
     private double slowSpeed = 1.0;
 
-    private PIDController rotPid = new PIDController(0.03, 0.0, 0.001);
-    private PIDController xPid = new PIDController(0.8, 0.0, 0.15);
-    private PIDController yPid = new PIDController(0.9, 0.0, 0.15);
+    private PIDController rotPid = new PIDController(0.01, 0.0, 0.0);
+    private PIDController xPid = new PIDController(1, 0.0, 0.08);
+    private PIDController yPid = new PIDController(1, 0.0, 0.08);
 
     // Create the SysId routine
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
-        new SysIdRoutine.Config(),
+        new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
         new SysIdRoutine.Mechanism(
-            (voltage) -> this.runCharacterization(voltage.in(Volts)),
+            (voltage) -> this.runDriveCharacterization(voltage.in(Volts)),
+            null, // No log consumer, since data is recorded by URCL
+            this
+        )
+    );
+
+    private SysIdRoutine sysIdRoutineTurn = new SysIdRoutine(
+        new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
+        new SysIdRoutine.Mechanism(
+            (voltage) -> this.runTurnCharacterization(voltage.in(Volts)),
             null, // No log consumer, since data is recorded by URCL
             this
         )
@@ -112,20 +126,20 @@ public class DriveSubsystem extends SubsystemBase {
         return yPid;
     }
 
-    public Command getQuasistaticForward() {
-        return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
+    public Command getQuasistaticForward(boolean turn) {
+        return turn ? sysIdRoutineTurn.quasistatic(SysIdRoutine.Direction.kForward) : sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward);
     }
 
-    public Command getQuasistaticReverse() {
-        return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
+    public Command getQuasistaticReverse(boolean turn) {
+        return turn ? sysIdRoutineTurn.quasistatic(SysIdRoutine.Direction.kReverse) : sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse);
     }
 
-    public Command getDynamicForward() {
-        return sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
+    public Command getDynamicForward(boolean turn) {
+        return turn ? sysIdRoutineTurn.dynamic(SysIdRoutine.Direction.kForward) : sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward);
     }
 
-    public Command getDynamicReverse() {
-        return sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
+    public Command getDynamicReverse(boolean turn) {
+        return turn ? sysIdRoutineTurn.dynamic(SysIdRoutine.Direction.kReverse) : sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
     }
 
     /**
@@ -252,10 +266,24 @@ public class DriveSubsystem extends SubsystemBase {
         //return Rotation2d.fromDegrees(-m_gyro.getAngle());
     }
 
-    private void runCharacterization(double output) {
-        m_frontLeft.runCharacterization(output);
-        m_frontRight.runCharacterization(output);
-        m_rearLeft.runCharacterization(output);
-        m_rearRight.runCharacterization(output);
+    public void setDriveCoast() {
+        m_frontLeft.setDriveCoast();
+        m_frontRight.setDriveCoast();
+        m_rearLeft.setDriveCoast();
+        m_rearRight.setDriveCoast();
+    }
+
+    private void runDriveCharacterization(double output) {
+        m_frontLeft.runDriveCharacterization(output);
+        m_frontRight.runDriveCharacterization(output);
+        m_rearLeft.runDriveCharacterization(output);
+        m_rearRight.runDriveCharacterization(output);
+    }
+
+    private void runTurnCharacterization(double output) {
+        m_frontLeft.runTurnCharacterization(output);
+        m_frontRight.runTurnCharacterization(output);
+        m_rearLeft.runTurnCharacterization(output);
+        m_rearRight.runTurnCharacterization(output);
     }
 }

@@ -146,7 +146,7 @@ public class RobotContainer {
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
         dpad_up.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
         dpad_down.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
-        dpad_left.onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+        dpad_left.and(not_right_stick).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
         left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         //left_trigger.whileTrue(new SwerveAutoAlign(m_poseEstimator, m_state))
         //            .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
@@ -162,9 +162,10 @@ public class RobotContainer {
         driver_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(30)); // Manual rotate diff arm out
         driver_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-30)); // Manual rotate diff arm in
         //right_stick.and(dpad_up).onTrue(m_climber.setClimberSpeedCommand(1)).onFalse(m_climber.setClimberSpeedCommand(0));
-        right_stick.and(dpad_up).onTrue(new ClimberOut(m_climber));
+        right_stick.and(dpad_up).onTrue(new ClimberOut(m_climber, m_state));
         //right_stick.and(dpad_down).onTrue(m_climber.setClimberSpeedCommand(-1)).onFalse(m_climber.setClimberSpeedCommand(0));
-        right_stick.and(dpad_down).onTrue(new ClimberIn(m_climber));
+        right_stick.and(dpad_down).onTrue(new ClimberIn(m_climber, m_robotDrive));
+        right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen()));
         start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 

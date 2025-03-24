@@ -313,6 +313,21 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
          //       && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 2;
     }
 
+    public boolean atTargetX() {
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return Math.abs(relative.getX()) < 0.0254;
+    }
+
+    public boolean atTargetY() {
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return Math.abs(relative.getY()) < 0.06;
+    }
+
+    public boolean atTargetTheta() {
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return Math.abs(relative.getRotation().getDegrees()) < 2;
+    }
+
     /**
      * Resets the current pose to the specified pose. This should ONLY be called
      * when the robot's position on the field is known, like at the beginning of

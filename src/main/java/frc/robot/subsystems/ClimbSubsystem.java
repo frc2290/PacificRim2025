@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -14,11 +15,14 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Climber;
+import frc.robot.Constants.DriveConstants;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;;
 
 public class ClimbSubsystem extends SubsystemBase {
@@ -37,6 +41,14 @@ public class ClimbSubsystem extends SubsystemBase {
     private SparkMaxConfig rightConfig = new SparkMaxConfig();
 
     private double climberSetpoint = 0;
+
+    public double tClimb = 1;
+    public double vSlewrate = Math.abs((Climber.climberOutSetpoint - Climber.climberInSetpoint) / tClimb);
+    public double climbDistance = (Units.inchesToMeters(20)/DriveConstants.kMaxSpeedMetersPerSecond);
+
+    private SlewRateLimiter climberSlew = new SlewRateLimiter(vSlewrate);
+
+    private boolean climbing = false;
 
     private FlytLogger climbDash = new FlytLogger("Climb");
 
@@ -65,17 +77,32 @@ public class ClimbSubsystem extends SubsystemBase {
 
         servo = new Servo(1);
 
+        setServoOpen();
+
         //rightConfig.follow(Climber.kLeftClimberMotorId, true)
         //        .idleMode(IdleMode.kBrake);
 
         //rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         climbDash.addDoublePublisher("Climb Pos", true, () -> getClimberPos());
+        climbDash.addDoublePublisher("Climb Setpoint", true, () -> getClimberSetpoint());
         climbDash.addDoublePublisher("Climb Servo Pos", true, () -> getServoPos());
         climbDash.addDoublePublisher("Climb Current", true, () -> leftMotor.getOutputCurrent());
     }
 
+    public boolean getClimbing() {
+        return climbing;
+    }
+
+    public void setClimbing(boolean hold) {
+        climbing = hold;
+    }
+
     public void setClimberSpeed(double speed) {
         leftMotor.set(speed);
+    }
+
+    public void stopClimberMotor() {
+        leftMotor.stopMotor();
     }
 
     public Command setClimberSpeedCommand(double speed) {
@@ -98,6 +125,10 @@ public class ClimbSubsystem extends SubsystemBase {
         climberSetpoint = setpoint;
     }
 
+    public boolean atClimberSetpoint() {
+        return (climberSetpoint - 5) < getClimberPos() && getClimberPos() < (climberSetpoint + 5);
+    }
+
     public double getServoPos() {
         return servo.getPosition();
     }
@@ -116,6 +147,9 @@ public class ClimbSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (!climbing) {
+            climber.setReference(climberSlew.calculate(climberSetpoint), ControlType.kPosition);
+        }
         // This method will be called once per scheduler run
         climbDash.update(Constants.debugMode);
     }

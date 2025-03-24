@@ -86,11 +86,12 @@ public class AutomatedDrive extends Command {
             //targetPose = poseEstimator.getTargetPose();
 
             rotTarget = targetPose.getRotation().getDegrees();
-            rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
-            //double xPowerPid = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
-            //double yPowerPid = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
-            xPower = xPower * 0.5 + xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
-            yPower = yPower * 0.5 + yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+            double tempRotPid = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
+            rotSpeed = (poseEstimator.atTargetTheta() ? tempRotPid * 0.1 : tempRotPid);
+            double xPowerPid = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
+            double yPowerPid = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
+            xPower = xPower * 0.5 + (poseEstimator.atTargetX() ? xPowerPid * 0.1 : xPowerPid);
+            yPower = yPower * 0.5 + (poseEstimator.atTargetY() ? yPowerPid * 0.1 : yPowerPid);
 
             //yPowerPid = yPowerPid - (rotSpeed * 0.7);
 
