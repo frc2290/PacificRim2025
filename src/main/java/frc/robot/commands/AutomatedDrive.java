@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
@@ -22,6 +23,7 @@ public class AutomatedDrive extends Command {
 
     private StateSubsystem stateSubsystem;
     private DriveSubsystem drive;
+    private DifferentialSubsystem diff;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
@@ -36,9 +38,10 @@ public class AutomatedDrive extends Command {
     private Pose2d targetPose = new Pose2d();
 
     /** Creates a new AutomatedDrive. */
-    public AutomatedDrive(StateSubsystem m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
+    public AutomatedDrive(StateSubsystem m_state, DriveSubsystem m_drive, DifferentialSubsystem m_diff, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
         stateSubsystem = m_state;
         drive = m_drive;
+        diff = m_diff;
         poseEstimator = m_pose;
         driverController = m_driverController;
 
@@ -91,7 +94,7 @@ public class AutomatedDrive extends Command {
             double xPowerPid = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
             double yPowerPid = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
             xPower = xPower * 0.5 + (poseEstimator.atTargetX() ? xPowerPid * 0.1 : xPowerPid);
-            yPower = yPower * 0.5 + (poseEstimator.atTargetY() ? yPowerPid * 0.1 : yPowerPid);
+            yPower = yPower * 0.5 + (poseEstimator.atTargetY(diff.hasLaserCanDistance()) ? yPowerPid * 0.1 : yPowerPid);
 
             //yPowerPid = yPowerPid - (rotSpeed * 0.7);
 
@@ -105,7 +108,7 @@ public class AutomatedDrive extends Command {
             drive.drive(xPower, yPower, rotSpeed, true);
 
             // LED Setting
-            if (poseEstimator.atTargetPose() && stateSubsystem.atCurrentState()) {
+            if (poseEstimator.atTargetPose(diff.hasLaserCanDistance()) && stateSubsystem.atCurrentState()) {
                 stateSubsystem.setDriveState(DriveState.ReefScore);
             } else {
                 stateSubsystem.setDriveState(DriveState.ReefScoreMove);

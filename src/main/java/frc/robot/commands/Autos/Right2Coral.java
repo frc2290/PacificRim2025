@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoStep;
+import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
@@ -26,7 +27,7 @@ import frc.utils.PoseEstimatorSubsystem;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class Right2Coral extends SequentialCommandGroup {
   /** Creates a new Right2Coral. */
-  public Right2Coral(PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
+  public Right2Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
         try {
             //stateSubsystem.setRotationLock(false);
             // Pull in path from start location to reef
@@ -63,11 +64,11 @@ public class Right2Coral extends SequentialCommandGroup {
                         driveSetAuto, 
                         moveToReef, 
                         //new WaitCommand(0.5), 
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst), 
+                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
                         moveToFeeder, 
                         moveToReef2, 
                         //new WaitCommand(0.5), 
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst), 
+                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
                         driveSetTeleop);
         } catch (Exception e) {
             System.out.println("BROKENNNNNNNNNNNNNNNNN");

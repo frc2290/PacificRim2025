@@ -94,6 +94,9 @@ public class StateSubsystem extends SubsystemBase {
     // Storage for current running command or sequence of commands
     private Command currentCommand = null;
 
+    private boolean isAuto = false;
+    private boolean isDisabled = false;
+
     private FlytLogger stateDash = new FlytLogger("State");
 
     /** Creates a new StateSubsystem. */
@@ -329,6 +332,24 @@ public class StateSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> rotLock = !rotLock);
     }
 
+    /** Other */
+
+    public boolean isAuto() {
+        return isAuto;
+    }
+
+    public void setAuto(boolean auto) {
+        isAuto = auto;
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
+    }
+
     @Override
     public void periodic() {
         /**
@@ -344,12 +365,7 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case IntakePosition:
                     currentCommand = new IntakePosition(diff, elevator, this);
-                    //if (currentState != PositionState.TravelPosition) {
-                        //currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    //}
-                    //if (getDriveState() != DriveState.Auto) {
-                        currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
-                    //}
+                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
                     break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, this);
@@ -359,21 +375,12 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case L2Position:
                     currentCommand = new L2Position(diff, elevator, this);
-                    // if (currentState == PositionState.IntakePosition) {
-                    //     currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    // }
                     break;
                 case L3Position:
                     currentCommand = new L3Position(diff, elevator, this);
-                    //if (currentState == PositionState.IntakePosition) {
-                    //    currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    //}
                     break;
                 case L4Position:
                     currentCommand = new L4Position(diff, elevator, this);
-                    //if (currentState == PositionState.IntakePosition) {
-                    //    currentCommand = currentCommand.beforeStarting(new TravelPositionNew(diff, elevator, this));
-                    //}
                     break;
                 case ClimbPosition:
                     currentCommand = new ClimbPosition(elevator, this);
@@ -395,7 +402,14 @@ public class StateSubsystem extends SubsystemBase {
 
         // LED Management?
         if (atCurrentState()) {
-            if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
+            if (isAuto()) {
+                ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
+            } else if (isDisabled()) {
+                ledUtility.getStrip("TopLeft").setEffect(LEDEffect.NAVLIGHTS, Color.kRed);
+                ledUtility.getStrip("TopRight").setEffect(LEDEffect.NAVLIGHTS, Color.kGreen);
+                ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+            } else if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
                 ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
                 ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);
             } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
@@ -422,9 +436,25 @@ public class StateSubsystem extends SubsystemBase {
             } else if (getDriveState() == DriveState.ReefScore) {
                 ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
                 ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+            } 
+        }
+
+        /** Diff Arm Interpolation */
+        if (atInterpolateScoreState() && diff.hasLaserCanDistance()) {
+            if (currentState == PositionState.L4Position) {
+                diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
+                diff.setRotationSetpoint(diff.l4RotationInterpolate());
+            } else {
+                diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
+                diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
             }
         }
 
         stateDash.update(Constants.debugMode);
+    }
+
+    private boolean atInterpolateScoreState() {
+        return currentState == PositionState.L2Position
+                || currentState == PositionState.L3Position || currentState == PositionState.L4Position;
     }
 }

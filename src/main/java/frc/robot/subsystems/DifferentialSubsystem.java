@@ -11,6 +11,10 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -23,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
+import frc.utils.LinearInterpolator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 public class DifferentialSubsystem extends SubsystemBase {
@@ -38,10 +43,10 @@ public class DifferentialSubsystem extends SubsystemBase {
     private ProfiledPIDController extensionPid = new ProfiledPIDController(30, 0, 1.5, new Constraints(3000, 12000));
     private ProfiledPIDController rotationPid = new ProfiledPIDController(60, 0, 4, new Constraints(1400, 5600));
 
-    private ElevatorFeedforward extFeedforward = new ElevatorFeedforward(DifferentialArm.e_kS, DifferentialArm.e_kG,
-            DifferentialArm.e_kV, DifferentialArm.e_kA);
-    private ArmFeedforward rotFeedforward = new ArmFeedforward(DifferentialArm.r_kS, DifferentialArm.r_kG,
-            DifferentialArm.r_kV, DifferentialArm.r_kA);
+    // private ElevatorFeedforward extFeedforward = new ElevatorFeedforward(DifferentialArm.e_kS, DifferentialArm.e_kG,
+    //         DifferentialArm.e_kV, DifferentialArm.e_kA);
+    // private ArmFeedforward rotFeedforward = new ArmFeedforward(DifferentialArm.r_kS, DifferentialArm.r_kG,
+    //         DifferentialArm.r_kV, DifferentialArm.r_kA);
 
     private SparkMax leftMotor;
     private SparkMax rightMotor;
@@ -62,6 +67,15 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     private SlewRateLimiter extendSlew = new SlewRateLimiter(700);
     private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
+
+    private LaserCan lc;
+    private int laserCanDistance = 0;
+    private boolean hasLaserCanDistance = false;
+
+    private LinearInterpolator l4RotationInterpolator = new LinearInterpolator(DifferentialArm.l4RotationData);
+    private LinearInterpolator l4ExtensionInterpolator = new LinearInterpolator(DifferentialArm.l4ExtensionData);
+    private LinearInterpolator l2_3RotationInterpolator = new LinearInterpolator(DifferentialArm.l2_3RotationData);
+    private LinearInterpolator l2_3ExtensionInterpolator = new LinearInterpolator(DifferentialArm.l2_3ExtensionData);
 
     double extensionVelocity;
     double rotationVelocity;
@@ -126,6 +140,17 @@ public class DifferentialSubsystem extends SubsystemBase {
         extensionPid.reset(extensionSetpoint);
         rotationPid.reset(rotationSetpoint);
 
+        lc = new LaserCan(DifferentialArm.kLaserCanId);
+
+        // Optionally initialise the settings of the LaserCAN, if you haven't already done so in GrappleHook
+        try {
+            lc.setRangingMode(LaserCan.RangingMode.SHORT);
+            lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
+            lc.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
+        } catch (ConfigurationFailedException e) {
+            System.out.println("LaserCan Configuration failed! " + e);
+        }
+
         differentialDash.addDoublePublisher("Left POS", true, () -> getLeftPos());
         differentialDash.addDoublePublisher("Right POS", true, () -> getRightPos());
         differentialDash.addDoublePublisher("Extension POS", false, () -> getExtensionPosition());
@@ -145,6 +170,7 @@ public class DifferentialSubsystem extends SubsystemBase {
         differentialDash.addDoublePublisher("Rot Vel", true, () -> (leftEnc.getVelocity() - rightEnc.getVelocity()) / 2);
         differentialDash.addDoublePublisher("Left Command", true, () -> leftCommand);
         differentialDash.addDoublePublisher("Right Command", true, () -> rightCommand);
+        differentialDash.addIntegerPublisher("LaserCan Distance", true, () -> laserCanDistance);
     }
 
     public void extend(double setpoint) {
@@ -224,40 +250,53 @@ public class DifferentialSubsystem extends SubsystemBase {
         return (rotationSetpoint - 5) <= getRotationPosition() && getRotationPosition() <= (rotationSetpoint + 5);
     }
 
+    public int getLaserCanDistance() {
+        return laserCanDistance;
+    }
+
+    public boolean hasLaserCanDistance() {
+        return hasLaserCanDistance;
+    }
+
+    public double l4RotationInterpolate() {
+        return l4RotationInterpolator.getInterpolatedValue(laserCanDistance);
+    }
+
+    public double l4ExtensionInterpolate() {
+        return l4ExtensionInterpolator.getInterpolatedValue(laserCanDistance);
+    }
+
+    public double l2_3RotationInterpolate() {
+        return l2_3RotationInterpolator.getInterpolatedValue(laserCanDistance);
+    }
+
+    public double l2_3ExtensionInterpolate() {
+        return l2_3ExtensionInterpolator.getInterpolatedValue(laserCanDistance);
+    }
+
     private double degreesToMM(double degrees) {
         return (degrees / 360) * 200;
     }
 
     @Override
     public void periodic() {
-        // logging stuff
-        // motor1.updateLogger(Constants.debugMode);
-        // motor2.updateLogger(Constants.debugMode);
+        LaserCan.Measurement measurement = lc.getMeasurement();
+        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT && measurement.distance_mm < 200) {
+            laserCanDistance = measurement.distance_mm;
+            hasLaserCanDistance = true;
+            System.out.println("The target is " + measurement.distance_mm + "mm away!");
+        } else {
+            hasLaserCanDistance = false;
+        }
 
-        // Position Extension PID Loop
-        // setPosition(pid_extension.calculate(getExtensionPosition(),
-        // setExtension),pid_rotation.calculate(getRotationPosition(), setRotation));
-        // GET ENCODER DISTANCE HAS TO BE FIGURED OUT LATER
-        // if (Constants.debugMode) {
-        // double tempSetpoint = differentialDash.getDouble("Ext Setpoint");
-        // if (extensionSetpoint != tempSetpoint) {
-        // extensionSetpoint = tempSetpoint;
-        // }
-        // double tempRot = differentialDash.getDouble("Rot Setpoint");
-        // if (rotationSetpoint != tempRot) {
-        // rotationSetpoint = tempRot;
-        // }
-        // }
         extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
         rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
-        double extFeed = extFeedforward.calculate(extensionVelocity);
-        double rotFeed = rotFeedforward.calculate((degreesToRadians(getRotationPosition()) - 0.139), rotationVelocity);
+        //double extFeed = extFeedforward.calculate(extensionVelocity);
+        //double rotFeed = rotFeedforward.calculate((degreesToRadians(getRotationPosition()) - 0.139), rotationVelocity);
         leftCommand = extensionVelocity - degreesToMM(rotationVelocity);
         rightCommand = extensionVelocity + degreesToMM(rotationVelocity);
-        leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity,
-                ClosedLoopSlot.kSlot0, (extFeed - rotFeed));
-        rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity,
-                ClosedLoopSlot.kSlot0, (extFeed + rotFeed));
+        leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);
+        rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity);
         // leftArm.setReference(extendSlew.calculate(extensionSetpoint) -
         // degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         // rightArm.setReference(extendSlew.calculate(extensionSetpoint) +

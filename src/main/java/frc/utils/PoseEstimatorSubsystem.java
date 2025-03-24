@@ -304,28 +304,35 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     }
 
     public boolean atTargetPose() {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getX()) < 0.0254
-                && Math.abs(relative.getY()) < 0.06
-                && Math.abs(relative.getRotation().getDegrees()) < 2;
-        //return Math.abs(getAlignX(targetPose.getTranslation())) < 0.03
-         //       && Math.abs(getAlignY(targetPose.getTranslation())) < 0.03
-         //       && Math.abs(poseEstimator.getEstimatedPosition().getRotation().getDegrees() - targetPose.getRotation().getDegrees()) < 2;
+        return atTargetX()
+                && atTargetY()
+                && atTargetTheta();
+    }
+
+    public boolean atTargetPose(boolean hasDistance) {
+        return atTargetX()
+                && atTargetY(hasDistance)
+                && atTargetTheta();
     }
 
     public boolean atTargetX() {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getX()) < 0.0254;
+        return Math.abs(relative.getX()) < VisionConstants.xTolerance;
     }
 
     public boolean atTargetY() {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getY()) < 0.06;
+        return Math.abs(relative.getY()) < VisionConstants.yTolerance;
+    }
+
+    public boolean atTargetY(boolean hasDistance) {
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return hasDistance ? Math.abs(relative.getY()) < VisionConstants.yToleranceHasDistance : Math.abs(relative.getY()) < VisionConstants.yTolerance;
     }
 
     public boolean atTargetTheta() {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getRotation().getDegrees()) < 2;
+        return Math.abs(relative.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
     }
 
     /**

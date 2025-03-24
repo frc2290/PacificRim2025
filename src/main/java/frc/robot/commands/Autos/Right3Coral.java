@@ -18,6 +18,7 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoScore;
 import frc.robot.commands.SwerveAutoStep;
+import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
@@ -29,7 +30,7 @@ import frc.utils.PoseEstimatorSubsystem;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class Right3Coral extends SequentialCommandGroup {
   /** Creates a new Right3Coral. */
-  public Right3Coral(PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
+  public Right3Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
         try {
             Timer timer = new Timer();
             // Pull in path from start location to reef
@@ -77,15 +78,15 @@ public class Right3Coral extends SequentialCommandGroup {
                         resetPose, 
                         driveSetAuto, 
                         moveToReef, 
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst), 
+                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
                         moveToFeeder,
                         new WaitCommand(0.25),
                         moveToReef2, 
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst),
+                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         moveToFeeder2,
                         new WaitCommand(0.25),
                         moveToReef3,
-                        new ScoreCoral(manipulator, stateSubsystem, poseEst),
+                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         followPath6,
                         //driveSetTeleop,
                         Commands.runOnce(() -> {

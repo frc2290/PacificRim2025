@@ -17,6 +17,7 @@ public class LEDStrip {
     AddressableLEDBufferView bufferView;
     Color color = LEDEffects.flytBlue;
     LEDEffect effect = LEDEffect.SOLID;
+    boolean helperBool = false;
 
     public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop) {
         name = _name;
@@ -85,5 +86,13 @@ public class LEDStrip {
 
     public void setColor(Color _color) {
         color = colorUtils.gammaCorrection(_color);
+    }
+
+    public boolean getHelperBool() {
+        return helperBool;
+    }
+
+    public void setHelperBool(boolean helper) {
+        helperBool = helper;
     }
 }

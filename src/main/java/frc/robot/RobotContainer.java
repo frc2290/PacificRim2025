@@ -45,15 +45,15 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-    private final LEDUtility m_ledUtility = new LEDUtility(0);
+    private final LEDUtility m_ledUtility;
     // The robot's subsystems
-    private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-    private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
-    private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-    private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
-    private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
-    private final ClimbSubsystem m_climber = new ClimbSubsystem();
-    private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+    private final DriveSubsystem m_robotDrive;
+    private final PoseEstimatorSubsystem m_poseEstimator;
+    private final ElevatorSubsystem m_elevator;
+    private final ManipulatorSubsystem m_manipulator;
+    private final DifferentialSubsystem m_DiffArm;
+    private final ClimbSubsystem m_climber;
+    private final StateSubsystem m_state;
 
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -64,13 +64,23 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer() {
+    public RobotContainer(LEDUtility _led, DriveSubsystem _drive, PoseEstimatorSubsystem _pose, ElevatorSubsystem _elev,
+            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, StateSubsystem _state) {
+        m_ledUtility = _led;
+        m_robotDrive = _drive;
+        m_poseEstimator = _pose;
+        m_elevator = _elev;
+        m_manipulator = _manip;
+        m_DiffArm = _diff;
+        m_climber = _climb;
+        m_state = _state;
         // Configure the button bindings
         configureButtonBindings();
 
         m_ledUtility.addStrip("Left", 0, 61);
         m_ledUtility.addStrip("TopLeft", 62, 71);
         m_ledUtility.addStrip("Right", 72, 133);
+        m_ledUtility.getStrip("Right").setHelperBool(true);
         m_ledUtility.addStrip("TopRight", 134, 143);
         m_ledUtility.setDefault();
 
@@ -78,9 +88,9 @@ public class RobotContainer {
         auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
         auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        auto_chooser.addOption("Right1Coral", new Right1Coral(m_poseEstimator, m_state, m_manipulator));
-        auto_chooser.addOption("RightCoral2", new Right2Coral(m_poseEstimator, m_state, m_manipulator));
-        auto_chooser.addOption("RightCoral3", new Right3Coral(m_poseEstimator, m_state, m_manipulator));
+        auto_chooser.addOption("Right1Coral", new Right1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
@@ -94,7 +104,7 @@ public class RobotContainer {
         //                         -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
         //                         true),
         //                 m_robotDrive));
-        m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_poseEstimator, m_driverController));
+        m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_DiffArm, m_poseEstimator, m_driverController));
     }
 
     /**
@@ -152,7 +162,7 @@ public class RobotContainer {
         //            .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
         //left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
-        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_state, m_poseEstimator)); // Score coral
+        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up

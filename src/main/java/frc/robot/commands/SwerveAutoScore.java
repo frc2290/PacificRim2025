@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
@@ -18,10 +19,10 @@ import frc.utils.PoseEstimatorSubsystem;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class SwerveAutoScore extends ParallelCommandGroup {
   /** Creates a new SwerveAutoScore. */
-  public SwerveAutoScore(Pose2d target, ManipulatorSubsystem manipulator, StateSubsystem state, PoseEstimatorSubsystem pose) {
+  public SwerveAutoScore(Pose2d target, ManipulatorSubsystem manipulator, DifferentialSubsystem diff, StateSubsystem state, PoseEstimatorSubsystem pose) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    Command score = new ScoreCoral(manipulator, state, pose);
+    Command score = new ScoreCoral(manipulator, diff, state, pose);
     Command wait = new WaitCommand(0.25);
     Command waitAndScore = new SequentialCommandGroup(wait, score);
     Command align = pose.setTargetPoseCommand(target);

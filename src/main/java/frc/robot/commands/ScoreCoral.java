@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
@@ -16,14 +17,16 @@ import frc.utils.PoseEstimatorSubsystem;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ScoreCoral extends Command {
     private ManipulatorSubsystem manipulator;
+    private DifferentialSubsystem diff;
     private StateSubsystem state;
     private PoseEstimatorSubsystem pose;
 
     private Timer timer = new Timer();
 
     /** Creates a new ScoreCoral. */
-    public ScoreCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
+    public ScoreCoral(ManipulatorSubsystem m_manip, DifferentialSubsystem m_diff, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
         manipulator = m_manip;
+        diff = m_diff;
         state = m_state;
         pose = m_pose;
         // Use addRequirements() here to declare subsystem dependencies.
@@ -38,7 +41,7 @@ public class ScoreCoral extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        if ((pose.atTargetPose() && state.atCurrentState()) || !state.getRotationLock()) {
+        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
             if (state.getCurrentState() == PositionState.L1Position) {
                 manipulator.intake(0.5);
             } else {
@@ -56,9 +59,9 @@ public class ScoreCoral extends Command {
         manipulator.intake(0);
         manipulator.setCoral(false);
         state.setGoal(PositionState.IntakePosition);
-        //if (!DriverStation.isAutonomous()){
-            //state.setDriveState(DriveState.CoralStation);
-        //}
+        if (!state.isAuto()){
+            state.setDriveState(DriveState.CoralStation);
+        }
     }
 
     // Returns true when the command should end.

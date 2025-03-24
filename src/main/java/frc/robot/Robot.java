@@ -10,6 +10,14 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.ClimbSubsystem;
+import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.StateSubsystem;
+import frc.utils.LEDUtility;
+import frc.utils.PoseEstimatorSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,6 +29,16 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  
+  private final LEDUtility m_ledUtility = new LEDUtility(0);
+  // The robot's subsystems
+  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+  private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
+  private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
+  private final ClimbSubsystem m_climber = new ClimbSubsystem();
+  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -30,7 +48,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
+    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state);
     DataLogManager.start();
 
     URCL.start();
@@ -57,7 +75,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    m_state.setDisabled(true);
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -65,6 +85,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    m_state.setAuto(true);
+    m_state.setDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -86,6 +108,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    m_state.setAuto(false);
+    m_state.setDisabled(false);
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

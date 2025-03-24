@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Unit;
+
 import static edu.wpi.first.math.util.Units.degreesToRadians;
 
 import java.util.List;
@@ -100,23 +102,23 @@ public final class Constants {
         public static final double intakeExtensionSetpoint = 10;
         public static final double intakeRotationSetpoint = 4;
 
-        // pid tune values Internal loop
-        // public static final double v_kp = 0.000006;
-        // public static final double v_ki = 0.000000005;
-        // public static final double v_kd = 0.000001;
-        // public static final double v_KG = 0;
+        public static final int kLaserCanId = 5;
 
-        // pid tune values external extension
-        public static final double e_kS = 0;
-        public static final double e_kV = 0;
-        public static final double e_kA = 0;
-        public static final double e_kG = 0; //0.176;
+        public static final double[][] l4RotationData = {
+            {0, -165}
+        };
 
-        // pid tune values external rotation
-        public static final double r_kS = 0;
-        public static final double r_kV = 0;
-        public static final double r_kA = 0;
-        public static final double r_kG = 0; //0.092;
+        public static final double[][] l4ExtensionData = {
+            {0, 25}
+        };
+
+        public static final double[][] l2_3RotationData = {
+            {0, -156}
+        };
+
+        public static final double[][] l2_3ExtensionData = {
+            {0, 80}
+        };
     }
 
     public static final class DriveConstants {
@@ -283,5 +285,10 @@ public final class Constants {
         public static final Translation2d netScore = new Translation2d(295 * inToM, 295 * inToM);
 
         public static final int ATPipelineIndex = 0;
+
+        public static final double xTolerance = Units.inchesToMeters(1);
+        public static final double yTolerance = Units.inchesToMeters(2);
+        public static final double yToleranceHasDistance = Units.inchesToMeters(10);
+        public static final double thetaTolerance = 2;
     }
 }
