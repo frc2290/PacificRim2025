@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
@@ -36,6 +37,10 @@ public class AutomatedDrive extends Command {
     private double rotTarget = 0;
     private double rotSpeed = 0;
     private Pose2d targetPose = new Pose2d();
+
+    private LinearFilter xFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
+    private LinearFilter yFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
+    private LinearFilter rotFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
     /** Creates a new AutomatedDrive. */
     public AutomatedDrive(StateSubsystem m_state, DriveSubsystem m_drive, DifferentialSubsystem m_diff, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
@@ -90,11 +95,11 @@ public class AutomatedDrive extends Command {
 
             rotTarget = targetPose.getRotation().getDegrees();
             double tempRotPid = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
-            rotSpeed = (poseEstimator.atTargetTheta() ? tempRotPid * 0.1 : tempRotPid);
+            rotSpeed = tempRotPid; //(poseEstimator.atTargetTheta() ? tempRotPid * 0.1 : tempRotPid);
             double xPowerPid = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
             double yPowerPid = yPid.calculate(poseEstimator.getCurrentPose().getY(), targetPose.getY());
-            xPower = xPower * 0.5 + (poseEstimator.atTargetX() ? xPowerPid * 0.1 : xPowerPid);
-            yPower = yPower * 0.5 + (poseEstimator.atTargetY(diff.hasLaserCanDistance()) ? yPowerPid * 0.1 : yPowerPid);
+            xPower = xPower * 0.5 + xPowerPid;//(poseEstimator.atTargetX() ? xPowerPid * 0.1 : xPowerPid);
+            yPower = yPower * 0.5 + yPowerPid;//(poseEstimator.atTargetY(diff.hasLaserCanDistance()) ? yPowerPid * 0.1 : yPowerPid);
 
             //yPowerPid = yPowerPid - (rotSpeed * 0.7);
 
@@ -106,6 +111,7 @@ public class AutomatedDrive extends Command {
             //yPower = yPower * 0.5 + (vCmd * Math.sin(modifier));
 
             drive.drive(xPower, yPower, rotSpeed, true);
+            //drive.drive(xFilter.calculate(xPower), yFilter.calculate(yPower), rotFilter.calculate(rotSpeed), true);
 
             // LED Setting
             if (poseEstimator.atTargetPose(diff.hasLaserCanDistance()) && stateSubsystem.atCurrentState()) {
@@ -137,6 +143,7 @@ public class AutomatedDrive extends Command {
             //yPower = vCmd * Math.sin(modifier);
 
             drive.drive(xPower, yPower, rotSpeed, true);
+            //drive.drive(xFilter.calculate(xPower), yFilter.calculate(yPower), rotFilter.calculate(rotSpeed), true);
         } 
         // Climb state: Implement
         else if (stateSubsystem.getDriveState() == DriveState.Climb) {

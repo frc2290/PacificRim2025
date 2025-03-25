@@ -77,7 +77,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     // Rotation lock and current drive state
-    private boolean rotLock = false; // TURN BACK TO TRUE
+    private boolean rotLock = true; // TURN BACK TO TRUE
     private DriveState driveState = DriveState.Teleop;
 
     // Boolean for if we want to score on the left or right branch
@@ -440,15 +440,15 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         /** Diff Arm Interpolation */
-        if (atInterpolateScoreState() && diff.hasLaserCanDistance()) {
-            if (currentState == PositionState.L4Position) {
-                diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
-                diff.setRotationSetpoint(diff.l4RotationInterpolate());
-            } else {
-                diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
-                diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
-            }
-        }
+        // if (atInterpolateScoreState() && diff.hasLaserCanDistance()) {
+        //     if (currentState == PositionState.L4Position) {
+        //         diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
+        //         diff.setRotationSetpoint(diff.l4RotationInterpolate());
+        //     } else {
+        //         diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
+        //         diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
+        //     }
+        // }
 
         stateDash.update(Constants.debugMode);
     }

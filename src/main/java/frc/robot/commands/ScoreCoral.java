@@ -41,7 +41,8 @@ public class ScoreCoral extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
+        //if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
+        if ((pose.atTargetPose() && state.atCurrentState()) || !state.getRotationLock()) {
             if (state.getCurrentState() == PositionState.L1Position) {
                 manipulator.intake(0.5);
             } else {

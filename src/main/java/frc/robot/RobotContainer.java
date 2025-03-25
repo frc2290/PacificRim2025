@@ -185,6 +185,6 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return auto_chooser.getSelected().andThen(m_state.setDriveStateCommand(DriveState.Teleop));
+        return auto_chooser.getSelected();
     }
 }

@@ -17,7 +17,7 @@ public final class Configs {
             double drivingFactor = ModuleConstants.kWheelDiameterMeters * Math.PI
                     / ModuleConstants.kDrivingMotorReduction;
             double turningFactor = 2 * Math.PI;
-            double drivingVelocityFeedForward = 0.13569; //1 / ModuleConstants.kDriveWheelFreeSpeedRps;
+            double drivingVelocityFeedForward = 1 / ModuleConstants.kDriveWheelFreeSpeedRps;//(2.2311/12.0); //0.13569; //1 / ModuleConstants.kDriveWheelFreeSpeedRps;
             double turnPositionFeedforward = 0.31697;
 
             drivingConfig
@@ -29,9 +29,10 @@ public final class Configs {
             drivingConfig.closedLoop
                     .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                     // These are example gains you may need to them for your own robot!
-                    .pid(0.012343, 0, 0) //.pid(0.05, 0, 0)
-                    //.velocityFF(drivingVelocityFeedForward)
+                    .pid(0.05, 0, 0) //.pid(0.012343, 0, 0) //.pid(0.05, 0, 0)
+                    .velocityFF(drivingVelocityFeedForward)
                     .outputRange(-1, 1);
+                drivingConfig.voltageCompensation(12);
 
             turningConfig
                     .idleMode(IdleMode.kBrake)
@@ -45,7 +46,7 @@ public final class Configs {
             turningConfig.closedLoop
                     .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                     // These are example gains you may need to them for your own robot!
-                    .pid(4.3865, 0, 0) //.pid(1, 0, 0)
+                    .pid(1, 0, 0)//.pid((4.3865/2.0), 0, 0) //.pid(4.3865, 0, 0) //.pid(1, 0, 0)
                     .outputRange(-1, 1)
                     // Enable PID wrap around for the turning motor. This will allow the PID
                     // controller to go through 0 to get to the setpoint i.e. going from 350 degrees
@@ -53,6 +54,7 @@ public final class Configs {
                     // longer route.
                     .positionWrappingEnabled(true)
                     .positionWrappingInputRange(0, turningFactor);
+                    turningConfig.voltageCompensation(12);
         }
     }
 }

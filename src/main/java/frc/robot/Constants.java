@@ -212,12 +212,12 @@ public final class Constants {
          * of the robot.
          */
         public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
-                new Translation3d(0.235579, -0.351500, 0.305792),
-                new Rotation3d(0.0, 0, degreesToRadians(45)));
+                new Translation3d(0.239191, -0.344616, 0.324842),
+                new Rotation3d(0.0, 0, degreesToRadians(30)));
 
         public static final Transform3d APRILTAG_CAMERA2_TO_ROBOT = new Transform3d(
-            new Translation3d((0.142875-0.152), -0.36, CAMERA_HEIGHT_METERS),
-            new Rotation3d(0.0, 0, degreesToRadians(160)));
+            new Translation3d(0.0015, -0.3279, 0.9473),
+            new Rotation3d(0, degreesToRadians(45), degreesToRadians(160)));
 
         public static final double FIELD_LENGTH_METERS = 16.54175;
         public static final double FIELD_WIDTH_METERS = 8.0137;

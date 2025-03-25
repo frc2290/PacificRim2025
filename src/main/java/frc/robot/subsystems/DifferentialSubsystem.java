@@ -284,7 +284,7 @@ public class DifferentialSubsystem extends SubsystemBase {
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT && measurement.distance_mm < 200) {
             laserCanDistance = measurement.distance_mm;
             hasLaserCanDistance = true;
-            System.out.println("The target is " + measurement.distance_mm + "mm away!");
+            //System.out.println("The target is " + measurement.distance_mm + "mm away!");
         } else {
             hasLaserCanDistance = false;
         }

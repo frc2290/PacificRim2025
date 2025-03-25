@@ -63,11 +63,11 @@ public class LEDEffects {
     }
 
     public static void setNavLights(LEDStrip _strip, double _interval, boolean on) {
-        Map<Double, Color> maskSteps = Map.of(0.0, (on ? Color.kBlack : Color.kWhite), 1.0, (on ? Color.kWhite : Color.kBlack));
+        Map<Double, Color> maskSteps = Map.of(0.0, (on ? Color.kBlack : Color.kWhite), 0.5, (on ? Color.kWhite : Color.kBlack));
         LEDPattern base = LEDPattern.solid(_strip.getColor());
         LEDPattern blink = base.blink(Seconds.of(_interval));
         LEDPattern mask = LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(_interval * 2));
-        blink.mask(mask).applyTo(_strip.getBufferView());
+        base.mask(mask).applyTo(_strip.getBufferView());
 
     }
 

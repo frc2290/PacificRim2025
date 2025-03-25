@@ -80,19 +80,20 @@ public class Right3Coral extends SequentialCommandGroup {
                         moveToReef, 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
                         moveToFeeder,
-                        new WaitCommand(0.25),
+                        new WaitCommand(0.5),
                         moveToReef2, 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         moveToFeeder2,
-                        new WaitCommand(0.25),
+                        new WaitCommand(0.5),
                         moveToReef3,
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
-                        followPath6,
-                        //driveSetTeleop,
                         Commands.runOnce(() -> {
                           timer.stop();
                           System.out.println("Right3Coral Time: " + timer.get());
-                        }));
+                        }),
+                        followPath6
+                        //driveSetTeleop,
+                        );
         } catch (Exception e) {
             System.out.println("BROKENNNNNNNNNNNNNNNNN");
             DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());

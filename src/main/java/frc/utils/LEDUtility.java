@@ -104,7 +104,7 @@ public class LEDUtility extends SubsystemBase {
                 LEDEffects.setAllianceColor(_strip);
                 break;
             case NAVLIGHTS:
-                LEDEffects.setNavLights(_strip, 0.1, _strip.getHelperBool());
+                LEDEffects.setNavLights(_strip, 1, _strip.getHelperBool());
             default:
                 LEDEffects.setSolidColor(_strip);
                 break;

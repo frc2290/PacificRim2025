@@ -212,7 +212,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                 pose2d2 = flipAlliance(pose2d2);
             }
             //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
-                poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+                //poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
             //}
         }
 
@@ -304,15 +304,17 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     }
 
     public boolean atTargetPose() {
-        return atTargetX()
-                && atTargetY()
-                && atTargetTheta();
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return atTargetX(relative)
+                && atTargetY(relative)
+                && atTargetTheta(relative);
     }
 
     public boolean atTargetPose(boolean hasDistance) {
-        return atTargetX()
-                && atTargetY(hasDistance)
-                && atTargetTheta();
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return atTargetX(relative)
+                && atTargetY(relative, hasDistance)
+                && atTargetTheta(relative);
     }
 
     public boolean atTargetX() {
@@ -320,9 +322,17 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         return Math.abs(relative.getX()) < VisionConstants.xTolerance;
     }
 
+    public boolean atTargetX(Pose2d pose) {
+        return Math.abs(pose.getX()) < VisionConstants.xTolerance;
+    }
+
     public boolean atTargetY() {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
         return Math.abs(relative.getY()) < VisionConstants.yTolerance;
+    }
+
+    public boolean atTargetY(Pose2d pose) {
+        return Math.abs(pose.getY()) < VisionConstants.yTolerance;
     }
 
     public boolean atTargetY(boolean hasDistance) {
@@ -330,9 +340,17 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         return hasDistance ? Math.abs(relative.getY()) < VisionConstants.yToleranceHasDistance : Math.abs(relative.getY()) < VisionConstants.yTolerance;
     }
 
+    public boolean atTargetY(Pose2d pose, boolean hasDistance) {
+        return hasDistance ? Math.abs(pose.getY()) < VisionConstants.yToleranceHasDistance : Math.abs(pose.getY()) < VisionConstants.yTolerance;
+    }
+
     public boolean atTargetTheta() {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
         return Math.abs(relative.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
+    }
+
+    public boolean atTargetTheta(Pose2d pose) {
+        return Math.abs(pose.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
     }
 
     /**
