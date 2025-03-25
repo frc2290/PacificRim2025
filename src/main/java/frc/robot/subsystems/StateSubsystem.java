@@ -77,7 +77,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     // Rotation lock and current drive state
-    private boolean rotLock = true; // TURN BACK TO TRUE
+    private boolean rotLock = false; // TURN BACK TO TRUE
     private DriveState driveState = DriveState.Teleop;
 
     // Boolean for if we want to score on the left or right branch

@@ -42,7 +42,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     private double climberSetpoint = 0;
 
-    public double tClimb = 1;
+    public double tClimb = 2;
     public double vSlewrate = Math.abs((Climber.climberOutSetpoint - Climber.climberInSetpoint) / tClimb);
     public double climbDistance = (Units.inchesToMeters(20)/DriveConstants.kMaxSpeedMetersPerSecond);
 

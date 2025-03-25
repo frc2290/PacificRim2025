@@ -36,7 +36,9 @@ public class ClimberOut extends Command {
     public void execute() {
         //climb.setServoPos(180);
         //if (climb.getServoPos() > 170) {
+        if (state.atGoal()) {
             climb.setClimberSetpoint(Climber.climberOutSetpoint);
+        }
         //}
     }
 
