@@ -162,7 +162,11 @@ public class RobotContainer {
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral
 
         // Triggers
-        m_manipulator.hasCoralTrigger().and(m_state.isAutoTrigger().negate()).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation));
+        Trigger hasCoral = m_manipulator.hasCoralTrigger();
+        Trigger isAuto = m_state.isAutoTrigger();
+        Trigger notAuto = isAuto.negate();
+
+        hasCoral.and(notAuto).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation));
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
