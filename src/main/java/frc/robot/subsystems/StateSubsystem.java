@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.SetGoalWait;
 import frc.robot.commands.Positions.AlgaeL2Position;
 import frc.robot.commands.Positions.AlgaeL3Position;
 import frc.robot.commands.Positions.ClimbPosition;
@@ -144,6 +145,12 @@ public class StateSubsystem extends SubsystemBase {
         return currentState;
     }
 
+    public boolean atSafeState() {
+        return getCurrentState() != PositionState.IntakePosition ||
+                getCurrentState() != PositionState.StartPosition ||
+                getCurrentState() != PositionState.Cancelled;
+    }
+
     /**
      * Get if robot is at current state based on all subsystems being at their setpoint
      * @return True if at current state
@@ -192,7 +199,7 @@ public class StateSubsystem extends SubsystemBase {
      */
     public void setGoal(PositionState newState) {
         if (currentCommand != null) {
-            //currentCommand.cancel();
+            currentCommand.cancel();
         }
         goalState = newState;
         System.out.println("New Goal: " + newState.toString());
@@ -240,7 +247,7 @@ public class StateSubsystem extends SubsystemBase {
      */
     public Command setGoalCommand(PositionState newGoal, boolean wait) {
         if (wait) {
-            return Commands.run(() -> setGoal(newGoal)).until(() -> atGoal());
+            return new SetGoalWait(this, newGoal);
         } else {
             return setGoalCommand(newGoal);
         }

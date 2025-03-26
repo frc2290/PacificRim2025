@@ -6,11 +6,7 @@ import static edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition.kRedAlli
 import java.util.function.Supplier;
 
 import org.photonvision.targeting.PhotonPipelineResult;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -22,7 +18,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
@@ -84,12 +79,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     private Pose2d targetPose = new Pose2d();
 
-    private DriveSubsystem drive;
-
     private FlytLogger poseDash = new FlytLogger("Pose");
 
     public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
-        drive = m_drive;
         photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
         photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT, () -> getHeading());
 
@@ -120,35 +112,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             // Handle exception as needed
             e.printStackTrace();
         }
-
-        // Configure AutoBuilder last
-        AutoBuilder.configure(
-                this::getCurrentPose, // Robot pose supplier
-                this::setCurrentPose, // Method to reset odometry (will be called if your auto has a starting pose)
-                this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (ChassisSpeeds speeds) -> m_drive.driveChassisSpeeds(new ChassisSpeeds(speeds.vxMetersPerSecond,
-                        speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond)), // Method that will drive the robot
-                                                                                  // given ROBOT RELATIVE ChassisSpeeds
-                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
-                                                // holonomic drive trains
-                        new PIDConstants(18.0, 0.0, 0.18), // Translation PID constants
-                        new PIDConstants(14.0, 0.0, 0.18) // Rotation PID constants
-                ),
-                config, // The robot configuration
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red
-                    // alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-                    var alliance = DriverStation.getAlliance();
-                    if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
-                    }
-                    return false;
-                },
-                m_drive // Reference to this subsystem to set requirements
-        );
 
         poseDash.addStringPublisher("Pose", false, () -> getCurrentPose().toString());
         poseDash.addBoolPublisher("At Target Pose", false, () -> atTargetPose());
@@ -228,14 +191,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         target2d.setPose(targetPose);
         SmartDashboard.putData("Field", field2d);
         poseDash.update(Constants.debugMode);
-    }
-
-    private String getFomattedPose() {
-        var pose = getCurrentPose();
-        return String.format("(%.3f, %.3f) %.2f degrees",
-                pose.getX(),
-                pose.getY(),
-                pose.getRotation().getDegrees());
     }
 
     public boolean isClosestStationRight() {

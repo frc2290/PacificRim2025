@@ -4,13 +4,11 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCoral extends Command {
@@ -56,10 +54,10 @@ public class IntakeCoral extends Command {
         delayTimer.stop();
         manipulator.intake(-0.06);
         manipulator.setCoral(true);
-        if (!state.isAuto()) {
-            state.setDriveState(DriveState.Teleop);
-            //state.setGoal(PositionState.TravelPosition);
-        }
+        // if (!state.isAuto()) {
+        //     state.setDriveState(DriveState.Teleop);
+        //     //state.setGoal(PositionState.TravelPosition);
+        // }
     }
 
     // Returns true when the command should end.

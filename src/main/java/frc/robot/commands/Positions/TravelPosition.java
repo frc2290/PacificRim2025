@@ -24,7 +24,7 @@ public class TravelPosition extends SequentialCommandGroup {
     /** Creates a new Test. */
     public TravelPosition(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
         Command result;
-        if (stateSubsystem.getCurrentState() == PositionState.IntakePosition || stateSubsystem.getCurrentState() == PositionState.StartPosition) {
+        if (!stateSubsystem.atSafeState()) {
             Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
             //Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
             Command moveElevator = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);

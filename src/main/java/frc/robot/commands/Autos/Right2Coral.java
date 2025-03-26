@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.SwerveAutoStep;
@@ -41,9 +42,6 @@ public class Right2Coral extends SequentialCommandGroup {
             // Set drive to auto (have to do this for every auto)
             Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
             
-            // Create a command to go to level 4 score position
-            Command goToL4 = stateSubsystem.setGoalCommand(PositionState.L4Position, true);
-            
             // Create a parallel group to move to the reef and get in scoring position at the same time
             Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
             Command moveToReef = new ParallelCommandGroup(followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
@@ -65,7 +63,8 @@ public class Right2Coral extends SequentialCommandGroup {
                         moveToReef, 
                         //new WaitCommand(0.5), 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
-                        moveToFeeder, 
+                        moveToFeeder,
+                        new WaitCommand(0.5),
                         moveToReef2, 
                         //new WaitCommand(0.5), 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 

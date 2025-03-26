@@ -1,10 +1,5 @@
 package frc.utils;
 
-//import static frc.robot.Constants.VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD;
-import static frc.robot.Constants.VisionConstants.APRILTAG_CAMERA_TO_ROBOT;
-import static frc.robot.Constants.VisionConstants.FIELD_LENGTH_METERS;
-import static frc.robot.Constants.VisionConstants.FIELD_WIDTH_METERS;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,15 +9,12 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -48,7 +40,6 @@ public class PhotonRunnable implements Runnable {
         this.photonCamera = new PhotonCamera(cameraName);
         ;
         PhotonPoseEstimator photonPoseEstimator = null;
-        // try {
         layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
         // PV estimates will always be blue, they'll get flipped by robot thread
         layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
@@ -58,13 +49,7 @@ public class PhotonRunnable implements Runnable {
         if (photonCamera != null) {
             photonPoseEstimator = new PhotonPoseEstimator(
                     layout, PoseStrategy.CONSTRAINED_SOLVEPNP, cameraToRobot);
-            //photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
         }
-        // } catch(IOException e) {
-        // DriverStation.reportError("Failed to load AprilTagFieldLayout",
-        // e.getStackTrace());
-        // photonPoseEstimator = null;
-        // }
         this.photonPoseEstimator = photonPoseEstimator;
     }
 

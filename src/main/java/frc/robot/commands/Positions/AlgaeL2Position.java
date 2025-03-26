@@ -25,8 +25,7 @@ public class AlgaeL2Position extends SequentialCommandGroup {
 
   /** Creates a new AlgaeL3Position. */
   public AlgaeL2Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
-    if (stateSubsystem.getCurrentState() == PositionState.IntakePosition
-        || stateSubsystem.getCurrentState() == PositionState.StartPosition || stateSubsystem.getCurrentState() == PositionState.Cancelled) {
+    if (!stateSubsystem.atSafeState()) {
       Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
       // Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
       Command moveElevator = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);

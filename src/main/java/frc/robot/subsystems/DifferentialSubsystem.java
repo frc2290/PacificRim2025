@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.math.util.Units.degreesToRadians;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -17,8 +16,6 @@ import au.grapplerobotics.LaserCan;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -32,21 +29,8 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 public class DifferentialSubsystem extends SubsystemBase {
 
-    // two motors
-    // each controlled by trapesoidal control postion loop cascacaded with internal
-    // velocity loop
-    // yea a lot
-
-    // private FlytMotorController motor1; //flyt motor
-    // private FlytMotorController motor2; //flyt motor
-
     private ProfiledPIDController extensionPid = new ProfiledPIDController(30, 0, 1.5, new Constraints(3000, 12000));
     private ProfiledPIDController rotationPid = new ProfiledPIDController(60, 0, 4, new Constraints(1400, 5600));
-
-    // private ElevatorFeedforward extFeedforward = new ElevatorFeedforward(DifferentialArm.e_kS, DifferentialArm.e_kG,
-    //         DifferentialArm.e_kV, DifferentialArm.e_kA);
-    // private ArmFeedforward rotFeedforward = new ArmFeedforward(DifferentialArm.r_kS, DifferentialArm.r_kG,
-    //         DifferentialArm.r_kV, DifferentialArm.r_kA);
 
     private SparkMax leftMotor;
     private SparkMax rightMotor;
@@ -83,31 +67,6 @@ public class DifferentialSubsystem extends SubsystemBase {
     double rightCommand;
 
     public DifferentialSubsystem() {
-        // motor1 = new SparkMaxController(getName(), DifferentialArm.kLeftMotorId,
-        // true, true, false);
-        // motor2 = new SparkMaxController(getName(), DifferentialArm.kRightMotorId,
-        // true, true, false);
-        // //motor1.advanceControl(Constants.DifferentialArm.voltageComp,
-        // Constants.DifferentialArm.currentStallLim,
-        // Constants.DifferentialArm.currentFreeLim, 0);
-        // //motor2.advanceControl(Constants.DifferentialArm.voltageComp,
-        // Constants.DifferentialArm.currentStallLim,
-        // Constants.DifferentialArm.currentFreeLim, 0);
-        // //motor1.pidSetup(-1, 1, 0, 1, true, 1); //setup p
-        // //motor2.pidSetup(-1, 1, 0, 1, true, 1); //setup pid
-        // //motor1.pidTune(Constants.DifferentialArm.v_kp,
-        // Constants.DifferentialArm.v_ki, Constants.DifferentialArm.v_kd,
-        // Constants.DifferentialArm.v_ff);
-        // //motor2.pidTune(Constants.DifferentialArm.v_kp,
-        // Constants.DifferentialArm.v_ki, Constants.DifferentialArm.v_kd,
-        // Constants.DifferentialArm.v_ff);
-
-        // setup position loop ADD FEEDFARWARD
-        // pid_extension = new PIDController(Constants.DifferentialArm.e_kp,
-        // Constants.DifferentialArm.e_ki, Constants.DifferentialArm.e_kp);
-        // pid_rotation = new PIDController(Constants.DifferentialArm.r_kp,
-        // Constants.DifferentialArm.r_ki, Constants.DifferentialArm.r_kp);
-
         leftMotor = new SparkMax(DifferentialArm.kLeftMotorId, MotorType.kBrushless);
         rightMotor = new SparkMax(DifferentialArm.kRightMotorId, MotorType.kBrushless);
 

@@ -18,35 +18,36 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class L2Position extends SequentialCommandGroup {
-  private double elevatorPos = 0.725;
-  private double diffExt = 80;
-  private double diffRot = -157;
-  private double diffExt1 = 220;
+    private double elevatorPos = 0.725;
+    private double diffExt = 80;
+    private double diffRot = -157;
+    private double diffExt1 = 220;
 
-  /** Creates a new L1PositionNew. */
-  public L2Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
-    if (stateSubsystem.getCurrentState() == PositionState.IntakePosition
-        || stateSubsystem.getCurrentState() == PositionState.StartPosition) {
-      Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
-      // Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
-      Command moveElevator = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);
-      ParallelCommandGroup moveAndUp = new ParallelCommandGroup(moveExtStep1, moveElevator);
-      Command moveExtStep2 = diffArm.setExtensionSetpointCommand(diffExt);
-      Command moveRotStep2 = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint).andThen(moveExtStep2);
-      Command moveElev2 = elevator.setElevatorSetpointCommand(elevatorPos);
-      ParallelCommandGroup rotateAndUpRest = new ParallelCommandGroup(moveRotStep2, moveElev2);
-      Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
-      addCommands(moveAndUp, rotateAndUpRest, moveRot, stateSubsystem.setCurrentStateCommand(PositionState.L2Position));
-    } else {
-      Command rotTransport = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint);
-      Command moveExt = diffArm.setExtensionSetpointCommand(diffExt);
-      Command moveElev = elevator.setElevatorSetpointCommand(elevatorPos);
-      ParallelCommandGroup moveExtAndElev = new ParallelCommandGroup(moveElev, moveExt);
-      Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
-      // Add your commands in the addCommands() call, e.g.
-      // addCommands(new FooCommand(), new BarCommand());
-      addCommands(rotTransport, moveExtAndElev, moveRot,
-          stateSubsystem.setCurrentStateCommand(PositionState.L2Position));
+    /** Creates a new L1PositionNew. */
+    public L2Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
+        if (!stateSubsystem.atSafeState()) {
+            Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
+            // Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
+            Command moveElevator = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);
+            ParallelCommandGroup moveAndUp = new ParallelCommandGroup(moveExtStep1, moveElevator);
+            Command moveExtStep2 = diffArm.setExtensionSetpointCommand(diffExt);
+            Command moveRotStep2 = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint)
+                    .andThen(moveExtStep2);
+            Command moveElev2 = elevator.setElevatorSetpointCommand(elevatorPos);
+            ParallelCommandGroup rotateAndUpRest = new ParallelCommandGroup(moveRotStep2, moveElev2);
+            Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
+            addCommands(moveAndUp, rotateAndUpRest, moveRot,
+                    stateSubsystem.setCurrentStateCommand(PositionState.L2Position));
+        } else {
+            Command rotTransport = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint);
+            Command moveExt = diffArm.setExtensionSetpointCommand(diffExt);
+            Command moveElev = elevator.setElevatorSetpointCommand(elevatorPos);
+            ParallelCommandGroup moveExtAndElev = new ParallelCommandGroup(moveElev, moveExt);
+            Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
+            // Add your commands in the addCommands() call, e.g.
+            // addCommands(new FooCommand(), new BarCommand());
+            addCommands(rotTransport, moveExtAndElev, moveRot,
+                    stateSubsystem.setCurrentStateCommand(PositionState.L2Position));
+        }
     }
-  }
 }

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.LEDEffects.LEDEffect;
@@ -74,10 +72,6 @@ public class LEDUtility extends SubsystemBase {
         for (LEDStrip strip : newLedStrips) {
             strip.setBufferView(filler);
         }
-    }
-
-    private Color getAlliance() {
-        return DriverStation.getAlliance().get() == Alliance.Blue ? Color.kFirstBlue : Color.kFirstRed;
     }
 
     private void setStrip(LEDStrip _strip) {

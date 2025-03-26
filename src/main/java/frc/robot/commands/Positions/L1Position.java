@@ -25,8 +25,7 @@ public class L1Position extends SequentialCommandGroup {
 
     /** Creates a new L1PositionNew. */
     public L1Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
-        if (stateSubsystem.getCurrentState() == PositionState.IntakePosition
-                || stateSubsystem.getCurrentState() == PositionState.StartPosition) {
+        if (!stateSubsystem.atSafeState()) {
             Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
             // Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
             Command moveElevator = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);

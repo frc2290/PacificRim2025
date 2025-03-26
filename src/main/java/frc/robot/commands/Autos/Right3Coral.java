@@ -14,9 +14,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.ScoreCoral;
-import frc.robot.commands.SwerveAutoScore;
 import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
@@ -67,9 +65,6 @@ public class Right3Coral extends SequentialCommandGroup {
             //Command scoreCoral3 = new SwerveAutoScore(VisionConstants.leftBranches.get(3), manipulator, stateSubsystem, poseEst);
 
             Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
-            
-            // Set drive to teleop (have to do this for every auto)
-            Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
 
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());

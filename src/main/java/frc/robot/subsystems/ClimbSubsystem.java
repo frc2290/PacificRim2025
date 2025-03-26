@@ -27,18 +27,16 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;;
 
 public class ClimbSubsystem extends SubsystemBase {
     private SparkMax leftMotor;
-    private SparkMax rightMotor;
-//-206
+
     private Servo servo;
     private double servoOpen = 90;
     private double servoClosed = 180;
-//-100
+
     private SparkClosedLoopController climber;
 
     private RelativeEncoder leftEnc;
 
     private SparkMaxConfig leftConfig = new SparkMaxConfig();
-    private SparkMaxConfig rightConfig = new SparkMaxConfig();
 
     private double climberSetpoint = 0;
 
@@ -55,7 +53,6 @@ public class ClimbSubsystem extends SubsystemBase {
     /** Creates a new ClimbSubsystem. */
     public ClimbSubsystem() {
         leftMotor = new SparkMax(Climber.kLeftClimberMotorId, MotorType.kBrushless);
-        //rightMotor = new SparkMax(Climber.kRightClimberMotorId, MotorType.kBrushless);
 
         climber = leftMotor.getClosedLoopController();
 
@@ -79,10 +76,6 @@ public class ClimbSubsystem extends SubsystemBase {
 
         setServoOpen();
 
-        //rightConfig.follow(Climber.kLeftClimberMotorId, true)
-        //        .idleMode(IdleMode.kBrake);
-
-        //rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         climbDash.addDoublePublisher("Climb Pos", true, () -> getClimberPos());
         climbDash.addDoublePublisher("Climb Setpoint", true, () -> getClimberSetpoint());
         climbDash.addDoublePublisher("Climb Servo Pos", true, () -> getServoPos());
@@ -127,6 +120,10 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public boolean atClimberSetpoint() {
         return (climberSetpoint - 5) < getClimberPos() && getClimberPos() < (climberSetpoint + 5);
+    }
+
+    public boolean climberOut() {
+        return (Climber.climberOutSetpoint - 5) < getClimberPos() && getClimberPos() < (Climber.climberInSetpoint + 5);
     }
 
     public double getServoPos() {
