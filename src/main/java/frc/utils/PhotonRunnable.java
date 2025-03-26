@@ -8,6 +8,7 @@ import static frc.robot.Constants.VisionConstants.FIELD_WIDTH_METERS;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -21,9 +22,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.utils.PoseUtils.Heading;
 
 /**
  * Runnable that gets AprilTag data from PhotonVision.
@@ -33,13 +36,15 @@ public class PhotonRunnable implements Runnable {
     private final PhotonPoseEstimator photonPoseEstimator;
     private final PhotonCamera photonCamera;
     private final AtomicReference<EstimatedRobotPose> atomicEstimatedRobotPose = new AtomicReference<EstimatedRobotPose>();
+    private Supplier<Heading> heading;
     private PhotonPipelineResult photonResults;
     private PhotonPipelineResult hasAResult = new PhotonPipelineResult();
     private AprilTagFieldLayout layout;
     private String cameraName;
 
-    public PhotonRunnable(String cam_name, Transform3d cameraToRobot) {
+    public PhotonRunnable(String cam_name, Transform3d cameraToRobot, Supplier<Heading> headingSupplier) {
         cameraName = cam_name;
+        heading = headingSupplier;
         this.photonCamera = new PhotonCamera(cameraName);
         ;
         PhotonPoseEstimator photonPoseEstimator = null;
@@ -52,7 +57,7 @@ public class PhotonRunnable implements Runnable {
         }
         if (photonCamera != null) {
             photonPoseEstimator = new PhotonPoseEstimator(
-                    layout, PoseStrategy.LOWEST_AMBIGUITY, cameraToRobot);
+                    layout, PoseStrategy.CONSTRAINED_SOLVEPNP, cameraToRobot);
             //photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
         }
         // } catch(IOException e) {
@@ -70,6 +75,8 @@ public class PhotonRunnable implements Runnable {
             List<PhotonPipelineResult> results = photonCamera.getAllUnreadResults();
 
             for (PhotonPipelineResult result : results) {
+                Heading tempHeading = heading.get();
+                photonPoseEstimator.addHeadingData(tempHeading.timestamp, tempHeading.rotation);
                 Optional<EstimatedRobotPose> photonPose = photonPoseEstimator.update(result);
                 if (photonPose.isPresent()) {
                     double tagDist = result.getBestTarget().bestCameraToTarget.getTranslation().getNorm();
@@ -80,23 +87,6 @@ public class PhotonRunnable implements Runnable {
                     }
                 }
             }
-            // photonResults = photonCamera.getLatestResult();
-            // if (photonResults.hasTargets()) {
-            // //hasAResult = photonResults;
-            // //&& (photonResults.targets.size() > 1 ||
-            // photonResults.targets.get(0).getPoseAmbiguity() <
-            // APRILTAG_AMBIGUITY_THRESHOLD)) {
-            // photonPoseEstimator.update(photonResults).ifPresent(estimatedRobotPose -> {
-            // var estimatedPose = estimatedRobotPose.estimatedPose;
-            // // Make sure the measurement is on the field
-            // if (estimatedPose.getX() > 0.0 && estimatedPose.getX() <=
-            // layout.getFieldLength()
-            // && estimatedPose.getY() > 0.0 && estimatedPose.getY() <=
-            // layout.getFieldWidth()) {
-            // atomicEstimatedRobotPose.set(estimatedRobotPose);
-            // }
-            // });
-            // }
         }
     }
 

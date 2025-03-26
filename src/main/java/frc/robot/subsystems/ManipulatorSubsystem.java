@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.Manipulator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
@@ -77,6 +78,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     public void setAlgae(boolean algae) {
         hasAlgae = algae;
+    }
+
+    public Trigger hasCoralTrigger() {
+        return new Trigger(() -> hasCoral());
     }
 
     @Override

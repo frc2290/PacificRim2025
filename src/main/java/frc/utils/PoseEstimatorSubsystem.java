@@ -25,6 +25,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -36,6 +37,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
+import frc.utils.PoseUtils.Heading;
 
 /**
  * Pose estimator that uses odometry and AprilTags with PhotonVision.
@@ -88,8 +90,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
         drive = m_drive;
-        photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT);
-        photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT);
+        photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
+        photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT, () -> getHeading());
 
         photonNotifier = new Notifier(photonEstimator);
         photonNotifier2 = new Notifier(photonEstimator2);
@@ -385,5 +387,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      */
     private Pose2d flipAlliance(Pose2d poseToFlip) {
         return poseToFlip.relativeTo(VisionConstants.FLIPPING_POSE);
+    }
+
+    private Heading getHeading() {
+        return new Heading(Timer.getFPGATimestamp(), getCurrentRotation());
     }
 }

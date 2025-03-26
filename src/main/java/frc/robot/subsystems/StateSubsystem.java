@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.Positions.AlgaeL2Position;
+import frc.robot.commands.Positions.AlgaeL3Position;
 import frc.robot.commands.Positions.ClimbPosition;
 import frc.robot.commands.Positions.IntakePosition;
 import frc.robot.commands.Positions.L1Position;
@@ -46,7 +48,8 @@ public class StateSubsystem extends SubsystemBase {
         L4Position,
         StartPosition,
         ClimbPosition,
-        AlgaeRemovalPosition,
+        AlgaeL3Position,
+        AlgaeL2Position,
         Cancelled
     }
 
@@ -77,7 +80,7 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     // Rotation lock and current drive state
-    private boolean rotLock = false; // TURN BACK TO TRUE
+    private boolean rotLock = true; // TURN BACK TO TRUE
     private DriveState driveState = DriveState.Teleop;
 
     // Boolean for if we want to score on the left or right branch
@@ -188,6 +191,9 @@ public class StateSubsystem extends SubsystemBase {
      * @param newState Goal state for the robot to go to
      */
     public void setGoal(PositionState newState) {
+        if (currentCommand != null) {
+            //currentCommand.cancel();
+        }
         goalState = newState;
         System.out.println("New Goal: " + newState.toString());
         // currentState = newState;
@@ -338,6 +344,10 @@ public class StateSubsystem extends SubsystemBase {
         return isAuto;
     }
 
+    public Trigger isAutoTrigger() {
+        return new Trigger(() -> isAuto);
+    }
+
     public void setAuto(boolean auto) {
         isAuto = auto;
     }
@@ -387,6 +397,12 @@ public class StateSubsystem extends SubsystemBase {
                     if (currentState != PositionState.TravelPosition) {
                         currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
+                    break;
+                case AlgaeL3Position:
+                    currentCommand = new AlgaeL3Position(diff, elevator, this);
+                    break;
+                case AlgaeL2Position:
+                    currentCommand = new AlgaeL2Position(diff, elevator, this);
                     break;
                 case StartPosition:
                     //Nothing

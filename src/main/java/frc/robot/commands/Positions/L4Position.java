@@ -21,7 +21,7 @@ public class L4Position extends SequentialCommandGroup {
     private double elevatorPos = 1.725;
     private double diffExt = 25;
     private double diffRot = -165;
-    private double diffExt1 = 240;
+    private double diffExt1 = 220;
 
     /** Creates a new L1PositionNew. */
     public L4Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {

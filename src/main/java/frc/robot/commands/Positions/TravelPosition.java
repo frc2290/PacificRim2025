@@ -19,7 +19,7 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class TravelPosition extends SequentialCommandGroup {
 
-    private double diffExt1 = 240;
+    private double diffExt1 = 220;
 
     /** Creates a new Test. */
     public TravelPosition(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {

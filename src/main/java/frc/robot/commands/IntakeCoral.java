@@ -32,7 +32,7 @@ public class IntakeCoral extends Command {
     public void initialize() {
         currentTimer.reset();
         delayTimer.reset();
-        state.setGoal(PositionState.IntakePosition);
+        //state.setGoal(PositionState.IntakePosition);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -54,11 +54,11 @@ public class IntakeCoral extends Command {
     public void end(boolean interrupted) {
         currentTimer.stop();
         delayTimer.stop();
-        manipulator.intake(-0.05);
+        manipulator.intake(-0.06);
         manipulator.setCoral(true);
         if (!state.isAuto()) {
             state.setDriveState(DriveState.Teleop);
-            state.setGoal(PositionState.TravelPosition);
+            //state.setGoal(PositionState.TravelPosition);
         }
     }
 

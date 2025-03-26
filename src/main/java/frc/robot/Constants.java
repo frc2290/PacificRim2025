@@ -100,7 +100,7 @@ public final class Constants {
         public static final double transportExtensionSetpoint = 90;
         public static final double transportRotationSetpoint = -125;
         public static final double intakeExtensionSetpoint = 10;
-        public static final double intakeRotationSetpoint = 4;
+        public static final double intakeRotationSetpoint = 8;
 
         public static final int kLaserCanId = 5;
 
@@ -212,8 +212,8 @@ public final class Constants {
          * of the robot.
          */
         public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
-                new Translation3d(0.239191, -0.344616, 0.324842),
-                new Rotation3d(0.0, 0, degreesToRadians(30)));
+                new Translation3d(0.235579, -0.351500, 0.305792),
+                new Rotation3d(0.0, 0, degreesToRadians(45)));
 
         public static final Transform3d APRILTAG_CAMERA2_TO_ROBOT = new Transform3d(
             new Translation3d(0.0015, -0.3279, 0.9473),

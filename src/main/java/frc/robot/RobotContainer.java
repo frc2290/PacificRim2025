@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.AlgaeRemoval;
 import frc.robot.commands.Auto;
 import frc.robot.commands.AutomatedDrive;
 import frc.robot.commands.ClimberIn;
@@ -117,12 +118,6 @@ public class RobotContainer {
      * {@link JoystickButton}.
      */
     private void configureButtonBindings() {
-        // new JoystickButton(m_driverController, Button.kRightBumper.value)
-        // .whileTrue(new RunCommand(
-        // () -> m_robotDrive.setX(),
-        // m_robotDrive));
-        // new JoystickButton(m_driverController, Button.kLeftBumper.value)
-        // .whileTrue(new RunCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
         // Button definitions
         JoystickButton a_button = new JoystickButton(m_driverController, Button.kA.value);
@@ -140,6 +135,7 @@ public class RobotContainer {
         POVButton dpad_up = new POVButton(m_driverController, 0);
         POVButton dpad_down = new POVButton(m_driverController, 180);
         POVButton dpad_left = new POVButton(m_driverController, 270);
+        POVButton dpad_right = new POVButton(m_driverController, 90);
 
         Trigger not_driver_stick = driver_stick.negate(); // Trigger to check if driver stick is not pressed in
         Trigger not_right_stick = right_stick.negate();
@@ -156,13 +152,17 @@ public class RobotContainer {
         back_button.onTrue(m_state.cancelCommand()); // Cancel current state
         dpad_up.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Set to Travel
         dpad_down.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Set to Intake
-        dpad_left.and(not_right_stick).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+        dpad_left.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, false));
+        dpad_right.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true));
         left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         //left_trigger.whileTrue(new SwerveAutoAlign(m_poseEstimator, m_state))
         //            .onFalse((m_manipulator.hasCoral()) ? m_state.setDriveStateCommand(DriveState.Teleop) : m_state.setDriveStateCommand(DriveState.CoralStation));
-        //left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(new IntakeCoral(m_manipulator, m_state));
+        left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(m_state.setGoalCommand(PositionState.IntakePosition));
         //left_trigger.onTrue(new IntakeCoral(m_manipulator, m_state)); // Intake coral
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral
+
+        // Triggers
+        m_manipulator.hasCoralTrigger().and(m_state.isAutoTrigger().negate()).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation));
 
         // Manual controls
         driver_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
@@ -176,6 +176,7 @@ public class RobotContainer {
         //right_stick.and(dpad_down).onTrue(m_climber.setClimberSpeedCommand(-1)).onFalse(m_climber.setClimberSpeedCommand(0));
         right_stick.and(dpad_down).onTrue(new ClimberIn(m_climber, m_robotDrive));
         right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen()));
+        right_stick.and(dpad_right).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
         start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
     }
 

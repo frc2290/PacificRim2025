@@ -60,9 +60,6 @@ public class ScoreCoral extends Command {
         manipulator.intake(0);
         manipulator.setCoral(false);
         state.setGoal(PositionState.IntakePosition);
-        if (!state.isAuto()){
-            state.setDriveState(DriveState.CoralStation);
-        }
     }
 
     // Returns true when the command should end.
