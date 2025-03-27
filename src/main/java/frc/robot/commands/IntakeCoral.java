@@ -52,8 +52,10 @@ public class IntakeCoral extends Command {
     public void end(boolean interrupted) {
         currentTimer.stop();
         delayTimer.stop();
-        manipulator.intake(-0.06);
-        manipulator.setCoral(true);
+        if (!interrupted) {
+            manipulator.intake(-0.06);
+            manipulator.setCoral(true);
+        }
         // if (!state.isAuto()) {
         //     state.setDriveState(DriveState.Teleop);
         //     //state.setGoal(PositionState.TravelPosition);

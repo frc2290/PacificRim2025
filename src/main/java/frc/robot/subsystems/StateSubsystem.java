@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.SetGoalWait;
 import frc.robot.commands.Positions.AlgaeL2Position;
 import frc.robot.commands.Positions.AlgaeL3Position;
 import frc.robot.commands.Positions.ClimbPosition;
@@ -22,6 +21,7 @@ import frc.robot.commands.Positions.L2Position;
 import frc.robot.commands.Positions.L3Position;
 import frc.robot.commands.Positions.L4Position;
 import frc.robot.commands.Positions.TravelPosition;
+import frc.robot.commands.Waits.SetGoalWait;
 import frc.utils.LEDEffects;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
@@ -146,9 +146,9 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     public boolean atSafeState() {
-        return getCurrentState() != PositionState.IntakePosition ||
-                getCurrentState() != PositionState.StartPosition ||
-                getCurrentState() != PositionState.Cancelled;
+        return (getCurrentState() == PositionState.IntakePosition ||
+                getCurrentState() == PositionState.StartPosition ||
+                getCurrentState() == PositionState.Cancelled);
     }
 
     /**
@@ -216,7 +216,8 @@ public class StateSubsystem extends SubsystemBase {
     public void cancelCurrentCommand() {
         currentCommand.cancel();
         setCurrentState(PositionState.Cancelled);
-        setGoal(PositionState.Cancelled);
+        //setGoal(PositionState.Cancelled);
+        goalState = PositionState.Cancelled;
         elevator.setElevatorSetpoint(elevator.getPosition());
         diff.setExtensionSetpoint(diff.getExtensionPosition());
         diff.setRotationSetpoint(diff.getRotationPosition());
@@ -463,15 +464,15 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         /** Diff Arm Interpolation */
-        // if (atInterpolateScoreState() && diff.hasLaserCanDistance()) {
-        //     if (currentState == PositionState.L4Position) {
-        //         diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
-        //         diff.setRotationSetpoint(diff.l4RotationInterpolate());
-        //     } else {
-        //         diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
-        //         diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
-        //     }
-        // }
+        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto()) {
+            if (currentState == PositionState.L4Position) {
+                diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
+                diff.setRotationSetpoint(diff.l4RotationInterpolate());
+            } else {
+                diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
+                diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
+            }
+        }
 
         stateDash.update(Constants.debugMode);
     }

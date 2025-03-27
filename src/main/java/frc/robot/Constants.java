@@ -104,19 +104,31 @@ public final class Constants {
         public static final int kLaserCanId = 5;
 
         public static final double[][] l4RotationData = {
-            {0, -165}
+            {120, -165},
+            {200, -165},
+            {330, -165},
+            {420, -170}
         };
 
         public static final double[][] l4ExtensionData = {
-            {0, 25}
+            {120, 25},
+            {200, 120},
+            {330, 220},
+            {420, 245}
         };
 
         public static final double[][] l2_3RotationData = {
-            {0, -156}
+            {120, -157},
+            {200, -157},
+            {330, -165},
+            {420, -169}
         };
 
         public static final double[][] l2_3ExtensionData = {
-            {0, 80}
+            {120, 80},
+            {200, 170},
+            {330, 170},
+            {420, 225}
         };
     }
 
@@ -211,12 +223,12 @@ public final class Constants {
          * of the robot.
          */
         public static final Transform3d APRILTAG_CAMERA_TO_ROBOT = new Transform3d(
-                new Translation3d(0.235579, -0.351500, 0.305792),
-                new Rotation3d(0.0, 0, degreesToRadians(45)));
+                new Translation3d(0.239191, -0.344616, 0.324842),
+                new Rotation3d(0.0, 0, degreesToRadians(30)));
 
         public static final Transform3d APRILTAG_CAMERA2_TO_ROBOT = new Transform3d(
-            new Translation3d(0.0015, -0.3279, 0.9473),
-            new Rotation3d(0, degreesToRadians(45), degreesToRadians(160)));
+            new Translation3d(0.0015, -0.3279, (0.9473-0.102)),
+            new Rotation3d(degreesToRadians(180), degreesToRadians(45), degreesToRadians(160)));
 
         public static final double FIELD_LENGTH_METERS = 16.54175;
         public static final double FIELD_WIDTH_METERS = 8.0137;
@@ -286,6 +298,7 @@ public final class Constants {
         public static final int ATPipelineIndex = 0;
 
         public static final double xTolerance = Units.inchesToMeters(1);
+        public static final double xToleranceHasDistance = Units.inchesToMeters(11.5);
         public static final double yTolerance = Units.inchesToMeters(2);
         public static final double yToleranceHasDistance = Units.inchesToMeters(10);
         public static final double thetaTolerance = 2;

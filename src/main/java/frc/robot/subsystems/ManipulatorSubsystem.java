@@ -9,6 +9,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -45,6 +47,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     
     public void intake(double power){
         manipulatorMotor.set(power);
+    }
+
+    public Command runIntake(double power) {
+        return Commands.runOnce(() -> intake(power));
     }
 
     public double getWristPos(){

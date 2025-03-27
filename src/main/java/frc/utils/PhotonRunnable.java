@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -33,6 +34,7 @@ public class PhotonRunnable implements Runnable {
     private PhotonPipelineResult hasAResult = new PhotonPipelineResult();
     private AprilTagFieldLayout layout;
     private String cameraName;
+    private Optional<ConstrainedSolvepnpParams> params = Optional.of(new ConstrainedSolvepnpParams(false, 1.0));
 
     public PhotonRunnable(String cam_name, Transform3d cameraToRobot, Supplier<Heading> headingSupplier) {
         cameraName = cam_name;
@@ -62,7 +64,7 @@ public class PhotonRunnable implements Runnable {
             for (PhotonPipelineResult result : results) {
                 Heading tempHeading = heading.get();
                 photonPoseEstimator.addHeadingData(tempHeading.timestamp, tempHeading.rotation);
-                Optional<EstimatedRobotPose> photonPose = photonPoseEstimator.update(result);
+                Optional<EstimatedRobotPose> photonPose = photonPoseEstimator.update(result, Optional.empty(), Optional.empty(), params);
                 if (photonPose.isPresent()) {
                     double tagDist = result.getBestTarget().bestCameraToTarget.getTranslation().getNorm();
                     double poseAmbig = result.getBestTarget().getPoseAmbiguity();

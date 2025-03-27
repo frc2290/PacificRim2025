@@ -269,8 +269,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public boolean atTargetPose(boolean hasDistance) {
         Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return atTargetX(relative)
-                && atTargetY(relative, hasDistance)
+        return atTargetX(relative, hasDistance)
+                && atTargetY(relative)
                 && atTargetTheta(relative);
     }
 
@@ -281,6 +281,15 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public boolean atTargetX(Pose2d pose) {
         return Math.abs(pose.getX()) < VisionConstants.xTolerance;
+    }
+
+    public boolean atTargetX(boolean hasDistance) {
+        Pose2d relative = getCurrentPose().relativeTo(targetPose);
+        return hasDistance ? Math.abs(relative.getX()) < VisionConstants.xToleranceHasDistance : Math.abs(relative.getX()) < VisionConstants.xTolerance;
+    }
+
+    public boolean atTargetX(Pose2d pose, boolean hasDistance) {
+        return hasDistance ? Math.abs(pose.getX()) < VisionConstants.xToleranceHasDistance : Math.abs(pose.getX()) < VisionConstants.xTolerance;
     }
 
     public boolean atTargetY() {

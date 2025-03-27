@@ -24,6 +24,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
+import frc.robot.commands.Waits.ExtensionAndRotationWait;
+import frc.robot.commands.Waits.ExtensionSetWait;
+import frc.robot.commands.Waits.RotationSetWait;
 import frc.utils.LinearInterpolator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
@@ -147,7 +150,8 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public Command setExtensionSetpointCommand(double setpoint) {
-        return Commands.run(() -> setExtensionSetpoint(setpoint)).until(() -> atExtenstionSetpoint());
+        return new ExtensionSetWait(this, setpoint);
+        //return Commands.run(() -> setExtensionSetpoint(setpoint)).until(() -> atExtenstionSetpoint());
     }
 
     public void setRotationSetpoint(double setpoint) {
@@ -155,16 +159,18 @@ public class DifferentialSubsystem extends SubsystemBase {
     }
 
     public Command setRotationSetpointCommand(double setpoint) {
-        return Commands.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
+        return new RotationSetWait(this, setpoint);
+        //return Commands.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
     }
 
     public Command setRotAndExtSetpointCommand(double ext, double rot) {
-        return Commands.run(() -> {
-            setExtensionSetpoint(ext);
-            setRotationSetpoint(rot);
-        }).until(() -> {
-            return atRotationSetpoint() && atExtenstionSetpoint();
-        });
+        return new ExtensionAndRotationWait(this, ext, rot);
+        // return Commands.run(() -> {
+        //     setExtensionSetpoint(ext);
+        //     setRotationSetpoint(rot);
+        // }).until(() -> {
+        //     return atRotationSetpoint() && atExtenstionSetpoint();
+        // });
     }
 
     public double getExtensionSetpoint() {
@@ -240,7 +246,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         LaserCan.Measurement measurement = lc.getMeasurement();
-        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT && measurement.distance_mm < 200) {
+        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT && measurement.distance_mm < 430) {
             laserCanDistance = measurement.distance_mm;
             hasLaserCanDistance = true;
             //System.out.println("The target is " + measurement.distance_mm + "mm away!");

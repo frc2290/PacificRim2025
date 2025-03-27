@@ -149,18 +149,19 @@ public class RobotContainer {
         // Controller Bumpers
         left_bumper.and(not_left_stick).and(() -> m_manipulator.hasCoral()).onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
         right_bumper.and(not_left_stick).and(() -> m_manipulator.hasCoral()).onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
-        left_bumper.and(not_left_stick).and(() -> !m_manipulator.hasCoral()).onTrue(new AlgaeRemoval(m_manipulator, m_state, false)); // Remove Algae L3
-        right_bumper.and(not_left_stick).and(() -> !m_manipulator.hasCoral()).onTrue(new AlgaeRemoval(m_manipulator, m_state, true)); // Remove Algae L2
+        left_bumper.and(not_left_stick).and(() -> !m_manipulator.hasCoral()).whileTrue(new AlgaeRemoval(m_manipulator, m_state, false)); // Remove Algae L3
+        right_bumper.and(not_left_stick).and(() -> !m_manipulator.hasCoral()).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true)); // Remove Algae L2
         
         // Controller Dpad
         dpad_up.and(not_right_stick).onTrue(new ClimberOut(m_climber, m_state)); // Climber Out
         dpad_down.and(not_right_stick).onTrue(new ClimberIn(m_climber, m_robotDrive)); // Climber In
         //dpad_left.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, false));
         //dpad_right.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true));
+        dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0));
         
         // Controller Triggers
         left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
-        left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(m_state.setGoalCommand(PositionState.IntakePosition));
+        //left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(m_state.setGoalCommand(PositionState.IntakePosition));
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral
 
         // Triggers
@@ -175,8 +176,8 @@ public class RobotContainer {
         left_stick.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
         left_stick.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
         left_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
-        left_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(30)); // Manual rotate diff arm out
-        left_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-30)); // Manual rotate diff arm in
+        left_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
+        left_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
         right_stick.and(dpad_up).onTrue(m_state.setGoalCommand(PositionState.TravelPosition)); // Manual travel pos
         right_stick.and(dpad_down).onTrue(m_state.setGoalCommand(PositionState.IntakePosition)); // Manual Intake pos
         right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen())); // Manual servo open
