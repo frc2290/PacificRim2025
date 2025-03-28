@@ -28,6 +28,7 @@ public class ScoreCoral extends Command {
         state = m_state;
         pose = m_pose;
         // Use addRequirements() here to declare subsystem dependencies.
+        addRequirements(manipulator);
     }
 
     // Called when the command is initially scheduled.
@@ -56,8 +57,10 @@ public class ScoreCoral extends Command {
         timer.stop();
         System.out.println("Time to score: " + timer.get());
         manipulator.intake(0);
-        manipulator.setCoral(false);
-        state.setGoal(PositionState.IntakePosition);
+        if (!interrupted) {
+            manipulator.setCoral(false);
+            state.setGoal(PositionState.IntakePosition);
+        }
     }
 
     // Returns true when the command should end.

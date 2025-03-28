@@ -23,6 +23,7 @@ public class IntakeCoral extends Command {
         manipulator = m_manip;
         state = m_state;
         // Use addRequirements() here to declare subsystem dependencies.
+        addRequirements(manipulator);
     }
 
     // Called when the command is initially scheduled.

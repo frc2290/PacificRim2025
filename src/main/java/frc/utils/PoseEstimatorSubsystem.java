@@ -177,7 +177,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                 pose2d2 = flipAlliance(pose2d2);
             }
             //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
-                //poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+                poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
             //}
         }
 

@@ -22,6 +22,7 @@ public class AlgaeRemoval extends Command {
         state = m_state;
         level2 = _level2;
         // Use addRequirements() here to declare subsystem dependencies.
+        addRequirements(manip);
     }
 
     // Called when the command is initially scheduled.

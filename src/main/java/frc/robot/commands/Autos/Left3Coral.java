@@ -26,18 +26,18 @@ import frc.utils.PoseEstimatorSubsystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class Right3Coral extends SequentialCommandGroup {
-  /** Creates a new Right3Coral. */
-  public Right3Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
+public class Left3Coral extends SequentialCommandGroup {
+  /** Creates a new Left3Coral. */
+  public Left3Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
         try {
             Timer timer = new Timer();
             // Pull in path from start location to reef
-            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
-            PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("RightCoral1ToFeeder");
-            PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToRightCoral2");
-            PathPlannerPath reef2toFeed = PathPlannerPath.fromPathFile("RightCoral2ToFeeder");
-            PathPlannerPath feedToReef3 = PathPlannerPath.fromPathFile("FeederToRightCoral3");
-            PathPlannerPath reef3ToFeed = PathPlannerPath.fromPathFile("RightCoral3ToFeeder");
+            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("LeftCoral1");
+            PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("LeftCoral1ToFeeder");
+            PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToLeftCoral2");
+            PathPlannerPath reef2toFeed = PathPlannerPath.fromPathFile("LeftCoral2ToFeeder");
+            PathPlannerPath feedToReef3 = PathPlannerPath.fromPathFile("FeederToLeftCoral3");
+            PathPlannerPath reef3ToFeed = PathPlannerPath.fromPathFile("LeftCoral3ToFeeder");
             
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
@@ -84,7 +84,7 @@ public class Right3Coral extends SequentialCommandGroup {
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         Commands.runOnce(() -> {
                           timer.stop();
-                          System.out.println("Right3Coral Time: " + timer.get());
+                          System.out.println("Left3Coral Time: " + timer.get());
                         })//,
                         //followPath6
                         //driveSetTeleop,
