@@ -25,7 +25,7 @@ public class AlgaeL3Position extends SequentialCommandGroup {
 
   /** Creates a new AlgaeL3Position. */
   public AlgaeL3Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
-    if (stateSubsystem.atSafeState()) {
+    //if (stateSubsystem.atSafeState()) {
       Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
       // Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
       Command moveElevator = elevator.setElevatorSetpointCommand(Elevator.transportSetpoint);
@@ -35,16 +35,16 @@ public class AlgaeL3Position extends SequentialCommandGroup {
       Command moveElev2 = elevator.setElevatorSetpointCommand(elevatorPos);
       ParallelCommandGroup rotateAndUpRest = new ParallelCommandGroup(moveRotStep2, moveElev2);
       addCommands(moveAndUp, rotateAndUpRest, stateSubsystem.setCurrentStateCommand(PositionState.AlgaeL3Position));
-    } else {
-      Command rotTransport = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint);
-      Command moveExt = diffArm.setExtensionSetpointCommand(diffExt);
-      Command moveElev = elevator.setElevatorSetpointCommand(elevatorPos);
-      ParallelCommandGroup moveExtAndElev = new ParallelCommandGroup(moveElev, moveExt);
-      Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
-      // Add your commands in the addCommands() call, e.g.
-      // addCommands(new FooCommand(), new BarCommand());
-      addCommands(rotTransport, moveExtAndElev, moveRot,
-          stateSubsystem.setCurrentStateCommand(PositionState.AlgaeL3Position));
-    }
+    // } else {
+    //   Command rotTransport = diffArm.setRotationSetpointCommand(DifferentialArm.transportRotationSetpoint);
+    //   Command moveExt = diffArm.setExtensionSetpointCommand(diffExt);
+    //   Command moveElev = elevator.setElevatorSetpointCommand(elevatorPos);
+    //   ParallelCommandGroup moveExtAndElev = new ParallelCommandGroup(moveElev, moveExt);
+    //   Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
+    //   // Add your commands in the addCommands() call, e.g.
+    //   // addCommands(new FooCommand(), new BarCommand());
+    //   addCommands(rotTransport, moveExtAndElev, moveRot,
+    //       stateSubsystem.setCurrentStateCommand(PositionState.AlgaeL3Position));
+    // }
   }
 }

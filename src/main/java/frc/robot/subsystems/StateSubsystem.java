@@ -198,10 +198,11 @@ public class StateSubsystem extends SubsystemBase {
      * @param newState Goal state for the robot to go to
      */
     public void setGoal(PositionState newState) {
-        if (currentCommand != null) {
-            currentCommand.cancel();
-        }
+        // if (currentCommand != null) {
+        //     currentCommand.cancel();
+        // }
         goalState = newState;
+        transitioning = false;
         System.out.println("New Goal: " + newState.toString());
         // currentState = newState;
     }
@@ -464,7 +465,7 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         /** Diff Arm Interpolation */
-        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto()) {
+        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
             if (currentState == PositionState.L4Position) {
                 diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
                 diff.setRotationSetpoint(diff.l4RotationInterpolate());

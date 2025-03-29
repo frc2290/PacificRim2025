@@ -11,24 +11,24 @@ import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class AlgaeRemoval extends Command {
-    private ManipulatorSubsystem manip;
-    private StateSubsystem state;
-    private boolean level2;
+public class AlgaeRemovalL3 extends Command {
+  private ManipulatorSubsystem manip;
+  private StateSubsystem state;
+  private boolean level2;
 
-    /** Creates a new AlgaeRemoval. */
-    public AlgaeRemoval(ManipulatorSubsystem m_manip, StateSubsystem m_state, boolean _level2) {
+  /** Creates a new AlgaeRemoval. */
+    public AlgaeRemovalL3(ManipulatorSubsystem m_manip, StateSubsystem m_state, boolean _level2) {
         manip = m_manip;
         state = m_state;
         level2 = _level2;
         // Use addRequirements() here to declare subsystem dependencies.
-        //addRequirements(manip);
+        addRequirements(manip);
     }
 
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        state.setGoal(PositionState.AlgaeL2Position);
+        state.setGoal(PositionState.AlgaeL3Position);
         state.setDriveState(DriveState.Teleop);
     }
 

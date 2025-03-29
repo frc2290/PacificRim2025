@@ -75,11 +75,11 @@ public class Left3Coral extends SequentialCommandGroup {
                         moveToReef, 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
                         moveToFeeder,
-                        new WaitCommand(0.5),
+                        new WaitCommand(0.75),
                         moveToReef2, 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         moveToFeeder2,
-                        new WaitCommand(0.5),
+                        new WaitCommand(0.55),
                         moveToReef3,
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         Commands.runOnce(() -> {

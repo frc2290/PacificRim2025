@@ -18,6 +18,7 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
+import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -117,6 +118,9 @@ public class Robot extends TimedRobot {
     m_state.setAuto(false);
     m_state.setDisabled(false);
     m_state.setDriveState(DriveState.Teleop);
+    if (!m_manipulator.hasCoral()) {
+      m_state.setGoal(PositionState.IntakePosition);
+    }
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

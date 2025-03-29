@@ -270,7 +270,7 @@ public final class Constants {
                 new Pose2d(3.17, 3.86, new Rotation2d(Math.toRadians(-1))), // 1
                 new Pose2d(3.98, 2.80, new Rotation2d(Math.toRadians(58))), // 2
                 new Pose2d(5.29, 2.96, new Rotation2d(Math.toRadians(118))), // 3
-                new Pose2d(5.80, 3.84, new Rotation2d(Math.toRadians(180))), // 4
+                new Pose2d(5.80, 4.19, new Rotation2d(Math.toRadians(180))), // 4
                 new Pose2d(4.99, 5.25, new Rotation2d(Math.toRadians(-121))), // 5
                 new Pose2d(3.68, 5.07, new Rotation2d(Math.toRadians(-61))));// 6
         public static final List<Pose2d> rightBranchL1 = List.of(
@@ -287,6 +287,9 @@ public final class Constants {
                 new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
                 new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
                 new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
+        public static final List<Pose2d> coralStations = List.of(
+                new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
+                new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
 
         // SHOP
         // public static final List<Pose2d> leftBranches = List.of(
@@ -320,8 +323,8 @@ public final class Constants {
 
         public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
         public static final double halfwayAcrossFieldY = (317 / 2) * inToM;
-        public static final double coralStationLeftHeading = -50;
-        public static final double coralStationRightHeading = 50;
+        public static final double coralStationLeftHeading = -55;
+        public static final double coralStationRightHeading = 55;
 
         // X value of the translation is irrelevant
         public static final Translation2d netScore = new Translation2d(295 * inToM, 295 * inToM);

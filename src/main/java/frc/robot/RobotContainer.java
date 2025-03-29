@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AlgaeRemoval;
+import frc.robot.commands.AlgaeRemovalL3;
 import frc.robot.commands.Auto;
 import frc.robot.commands.AutomatedDrive;
 import frc.robot.commands.ClimberIn;
@@ -157,7 +158,7 @@ public class RobotContainer {
         // Controller Dpad
         //dpad_up.and(not_right_stick).onTrue(new ClimberOut(m_climber, m_state)); // Climber Out
         //dpad_down.and(not_right_stick).onTrue(new ClimberIn(m_climber, m_robotDrive)); // Climber In
-        dpad_up.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, false));
+        dpad_up.and(not_right_stick).whileTrue(new AlgaeRemovalL3(m_manipulator, m_state, false));
         dpad_down.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true));
         dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0));
 
@@ -165,7 +166,7 @@ public class RobotContainer {
         right_stick.and(dpad_down).onTrue(new ClimberIn(m_climber, m_robotDrive)); // Climber In
         
         // Controller Triggers
-        left_trigger.and(() -> m_state.getDriveState() != DriveState.CoralStation).onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
+        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
         //left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(m_state.setGoalCommand(PositionState.IntakePosition));
         right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral
 
