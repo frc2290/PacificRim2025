@@ -68,6 +68,6 @@ public class ScoreCoral extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return manipulator.getMotorPos() > 25 || !manipulator.hasCoral
+        return manipulator.getMotorPos() > 25 || !manipulator.hasCoral();
     }
 }
