@@ -41,8 +41,10 @@ public class ScoreCoral extends Command {
     @Override
     public void execute() {
         //if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
-        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
+        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock() || state.getCurrentState() == PositionState.L1Position) {
             if (state.getCurrentState() == PositionState.L1Position) {
+                manipulator.intake(0.5);
+            } else if (state.getCurrentState() == PositionState.L2Position || state.getCurrentState() == PositionState.L3Position) {
                 manipulator.intake(0.5);
             } else {
                 manipulator.intake(0.75);
@@ -66,6 +68,6 @@ public class ScoreCoral extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return manipulator.getMotorPos() > 25;
+        return manipulator.getMotorPos() > 25 || !manipulator.hasCoral
     }
 }

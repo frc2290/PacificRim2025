@@ -55,8 +55,8 @@ public class DriveSubsystem extends SubsystemBase {
     private double slowSpeed = 1.0;
 
     private PIDController rotPid = new PIDController(0.01, 0.0, 0.0); // 0.015 0 0
-    private PIDController xPid = new PIDController(1, 0.0, 0.08); // 2 0.0 0.5
-    private PIDController yPid = new PIDController(1, 0.0, 0.08); // 2 0.0 0.5
+    private PIDController xPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
+    private PIDController yPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
     // Create the SysId routine
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(

@@ -54,14 +54,14 @@ public class Left3Coral extends SequentialCommandGroup {
             Command moveToFeeder = new ParallelCommandGroup(followPath2);
 
             Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
-            Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+            Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true).beforeStarting(new WaitCommand(0.25)));
             //Command scoreCoral2 = new SwerveAutoScore(VisionConstants.rightBranches.get(3), manipulator, stateSubsystem, poseEst);
 
             Command followPath4 = new SwerveAutoStep(reef2toFeed, poseEst);
             Command moveToFeeder2 = new ParallelCommandGroup(followPath4);
 
             Command followPath5 = new SwerveAutoStep(feedToReef3, poseEst);
-            Command moveToReef3 = new ParallelCommandGroup(followPath5, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+            Command moveToReef3 = new ParallelCommandGroup(followPath5, stateSubsystem.setGoalCommand(PositionState.L4Position, true).beforeStarting(new WaitCommand(0.25)));
             //Command scoreCoral3 = new SwerveAutoScore(VisionConstants.leftBranches.get(3), manipulator, stateSubsystem, poseEst);
 
             Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
