@@ -388,9 +388,9 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, this);
-                    if (currentState == PositionState.IntakePosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
-                    }
+                    //if (currentState == PositionState.IntakePosition) {
+                    //    currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                    //}
                     break;
                 case L2Position:
                     currentCommand = new L2Position(diff, elevator, this);
@@ -465,7 +465,7 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         /** Diff Arm Interpolation */
-        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
+        /*if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
             if (currentState == PositionState.L4Position) {
                 diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
                 diff.setRotationSetpoint(diff.l4RotationInterpolate());
@@ -473,7 +473,7 @@ public class StateSubsystem extends SubsystemBase {
                 diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
                 diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
             }
-        }
+        }*/
 
         stateDash.update(Constants.debugMode);
     }

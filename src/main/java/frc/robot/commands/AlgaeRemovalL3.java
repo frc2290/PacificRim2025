@@ -22,7 +22,7 @@ public class AlgaeRemovalL3 extends Command {
         state = m_state;
         level2 = _level2;
         // Use addRequirements() here to declare subsystem dependencies.
-        addRequirements(manip);
+        //addRequirements(manip);
     }
 
     // Called when the command is initially scheduled.
@@ -35,7 +35,7 @@ public class AlgaeRemovalL3 extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        manip.intake(-0.9);
+        manip.intake(-0.5);
     }
 
     // Called once the command ends or is interrupted.

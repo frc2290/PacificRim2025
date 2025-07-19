@@ -35,6 +35,8 @@ public class ScoreCoral extends Command {
     @Override
     public void initialize() {
         manipulator.resetMotorPos();
+        timer.reset();
+        System.out.println("Starting Score Coral");
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -45,11 +47,13 @@ public class ScoreCoral extends Command {
             if (state.getCurrentState() == PositionState.L1Position) {
                 manipulator.intake(0.5);
             } else if (state.getCurrentState() == PositionState.L2Position || state.getCurrentState() == PositionState.L3Position) {
-                manipulator.intake(0.5);
+                manipulator.intake(1);
             } else {
-                manipulator.intake(0.75);
+                manipulator.intake(1);
             }
-            timer.restart();
+            if (!timer.isRunning()) {
+                timer.restart();
+            }
         }
     }
 
@@ -68,6 +72,7 @@ public class ScoreCoral extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return manipulator.getMotorPos() > 25 || !manipulator.hasCoral();
+        return timer.hasElapsed(1);
+        //return manipulator.getMotorPos() > 200;// || !manipulator.hasCoral();
     }
 }

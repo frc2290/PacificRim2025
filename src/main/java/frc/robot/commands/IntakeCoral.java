@@ -18,6 +18,9 @@ public class IntakeCoral extends Command {
     private Timer currentTimer = new Timer();
     private Timer delayTimer = new Timer();
 
+    private boolean sawCoral = false;
+    private boolean finished = false;
+
     /** Creates a new IntakeOn. */
     public IntakeCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
         manipulator = m_manip;
@@ -31,13 +34,24 @@ public class IntakeCoral extends Command {
     public void initialize() {
         currentTimer.reset();
         delayTimer.reset();
+        sawCoral = false;
+        finished = false;
         //state.setGoal(PositionState.IntakePosition);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        manipulator.intake(-0.9);
+        manipulator.intake(0.5);
+        if (!sawCoral && manipulator.seesCoral()) {
+            sawCoral = true;
+        }
+        if (sawCoral) {
+            if (!manipulator.seesCoral()) {
+                finished = true;
+            }
+        }
+        /*manipulator.intake(-0.9);
         if (manipulator.getOutputCurrent() > 30) {
             if (!delayTimer.isRunning()) {
                 delayTimer.restart();
@@ -45,7 +59,7 @@ public class IntakeCoral extends Command {
                 delayTimer.stop();
                 currentTimer.restart();
             }
-        }
+        }*/
     }
 
     // Called once the command ends or is interrupted.
@@ -54,7 +68,7 @@ public class IntakeCoral extends Command {
         currentTimer.stop();
         delayTimer.stop();
         if (!interrupted) {
-            manipulator.intake(-0.06);
+            manipulator.intake(0);
             manipulator.setCoral(true);
         }
         // if (!state.isAuto()) {
@@ -66,7 +80,8 @@ public class IntakeCoral extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return currentTimer.hasElapsed(0.5);
+        return finished;
+        //return currentTimer.hasElapsed(0.5);
         // return manipulator.gotCoral();
     }
 }
