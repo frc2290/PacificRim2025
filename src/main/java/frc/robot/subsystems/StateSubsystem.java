@@ -481,8 +481,9 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         /** Diff Arm Interpolation */
-        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
-            if (currentState == PositionState.L4Position) {
+        //if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
+        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && manipulator.hasCoral()) {
+                if (currentState == PositionState.L4Position) {
                 diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
                 diff.setRotationSetpoint(diff.l4RotationInterpolate());
             } else {
