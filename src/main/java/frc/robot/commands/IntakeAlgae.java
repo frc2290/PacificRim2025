@@ -6,27 +6,23 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
-import frc.utils.PoseEstimatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ScoreCoral extends Command {
+public class IntakeAlgae extends Command {
     private ManipulatorSubsystem manipulator;
-    private DifferentialSubsystem diff;
     private StateSubsystem state;
-    private PoseEstimatorSubsystem pose;
 
-    private Timer timer = new Timer();
+    private Timer currentTimer = new Timer();
+    private Timer delayTimer = new Timer();
 
-    /** Creates a new ScoreCoral. */
-    public ScoreCoral(ManipulatorSubsystem m_manip, DifferentialSubsystem m_diff, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
+    /** Creates a new IntakeOn. */
+    public IntakeAlgae(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
         manipulator = m_manip;
-        diff = m_diff;
         state = m_state;
-        pose = m_pose;
         // Use addRequirements() here to declare subsystem dependencies.
         //addRequirements(manipulator);
     }
@@ -34,19 +30,21 @@ public class ScoreCoral extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        manipulator.resetMotorPos();
-        timer.reset();
-        System.out.println("Starting Score Coral");
+        currentTimer.reset();
+        delayTimer.reset();
+        //state.setGoal(PositionState.IntakePosition);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        //if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
-        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock() || state.getCurrentState() == PositionState.L1Position || state.getCurrentState() == PositionState.ProcessorPosition) {
-            manipulator.intake(1);
-            if (!timer.isRunning()) {
-                timer.restart();
+        manipulator.intake(-0.9);
+        if (manipulator.getOutputCurrent() > 30) {
+            if (!delayTimer.isRunning()) {
+                delayTimer.restart();
+            } else if (delayTimer.hasElapsed(0.5) && delayTimer.isRunning()) {
+                delayTimer.stop();
+                currentTimer.restart();
             }
         }
     }
@@ -54,20 +52,24 @@ public class ScoreCoral extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        timer.stop();
-        System.out.println("Time to score: " + timer.get());
-        manipulator.intake(0);
+        currentTimer.stop();
+        delayTimer.stop();
         if (!interrupted) {
-            manipulator.setCoral(false);
-            manipulator.setAlgae(false);
-            state.setGoal(PositionState.IntakePosition);
+            manipulator.intake(-0.1);
+            manipulator.setAlgae(true);
+            state.setGoal(PositionState.ProcessorPosition);
         }
+        // if (!state.isAuto()) {
+        //     state.setDriveState(DriveState.Teleop);
+        //     //state.setGoal(PositionState.TravelPosition);
+        // }
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(1);
-        //return manipulator.getMotorPos() > 200;// || !manipulator.hasCoral();
+        //return finished;
+        return currentTimer.hasElapsed(0.5);
+        // return manipulator.gotCoral();
     }
 }

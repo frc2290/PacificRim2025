@@ -158,8 +158,10 @@ public class RobotContainer {
         // Controller Dpad
         //dpad_up.and(not_right_stick).onTrue(new ClimberOut(m_climber, m_state)); // Climber Out
         //dpad_down.and(not_right_stick).onTrue(new ClimberIn(m_climber, m_robotDrive)); // Climber In
-        dpad_up.and(not_right_stick).whileTrue(new AlgaeRemovalL3(m_manipulator, m_state, false));
-        dpad_down.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true));
+        //dpad_up.and(not_right_stick).whileTrue(new AlgaeRemovalL3(m_manipulator, m_state, false)); // Old Algae Removal
+        //dpad_down.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true)); // Old Algae Removal
+        dpad_up.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.AlgaeL3Position)); // Algae L3
+        dpad_down.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.AlgaeL2Position)); // Algae L2
         dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0));
 
         right_stick.and(dpad_up).onTrue(new ClimberOut(m_climber, m_state)); // Climber Out
@@ -172,10 +174,11 @@ public class RobotContainer {
 
         // Triggers
         Trigger hasCoral = m_manipulator.hasCoralTrigger();
+        Trigger hasAlgae = m_manipulator.hasAlgaeTrigger();
         Trigger isAuto = m_state.isAutoTrigger();
         Trigger notAuto = isAuto.negate();
 
-        hasCoral.and(notAuto).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation)).onTrue(m_state.setDriveStateCommand(DriveState.Teleop));
+        hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation)).onTrue(m_state.setDriveStateCommand(DriveState.Teleop));
 
         // Manual controls
         left_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up

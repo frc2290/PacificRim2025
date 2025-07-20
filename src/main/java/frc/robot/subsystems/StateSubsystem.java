@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.commands.IntakeAlgae;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.Positions.AlgaeL2Position;
 import frc.robot.commands.Positions.AlgaeL3Position;
@@ -20,6 +21,7 @@ import frc.robot.commands.Positions.L1Position;
 import frc.robot.commands.Positions.L2Position;
 import frc.robot.commands.Positions.L3Position;
 import frc.robot.commands.Positions.L4Position;
+import frc.robot.commands.Positions.ProcessorPosition;
 import frc.robot.commands.Positions.TravelPosition;
 import frc.robot.commands.Waits.SetGoalWait;
 import frc.utils.LEDEffects;
@@ -51,6 +53,7 @@ public class StateSubsystem extends SubsystemBase {
         ClimbPosition,
         AlgaeL3Position,
         AlgaeL2Position,
+        ProcessorPosition,
         Cancelled
     }
 
@@ -289,6 +292,14 @@ public class StateSubsystem extends SubsystemBase {
     }
 
     /**
+     * Get if robot has algae
+     * @return True if has algae
+     */
+    public boolean hasAlgae() {
+        return manipulator.hasAlgae();
+    }
+
+    /**
      * Check if elevator is at a safe height to move
      * @return True if elevator is at a safe height
      */
@@ -409,9 +420,14 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case AlgaeL3Position:
                     currentCommand = new AlgaeL3Position(diff, elevator, this);
+                    currentCommand = currentCommand.andThen(new IntakeAlgae(manipulator, this));
                     break;
                 case AlgaeL2Position:
                     currentCommand = new AlgaeL2Position(diff, elevator, this);
+                    currentCommand = currentCommand.andThen(new IntakeAlgae(manipulator, this));
+                    break;
+                case ProcessorPosition:
+                    currentCommand = new ProcessorPosition(diff, elevator, this);
                     break;
                 case StartPosition:
                     //Nothing
@@ -465,7 +481,7 @@ public class StateSubsystem extends SubsystemBase {
         }
 
         /** Diff Arm Interpolation */
-        /*if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
+        if (atInterpolateScoreState() && diff.hasLaserCanDistance() && !isAuto() && manipulator.hasCoral()) {
             if (currentState == PositionState.L4Position) {
                 diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
                 diff.setRotationSetpoint(diff.l4RotationInterpolate());
@@ -473,7 +489,7 @@ public class StateSubsystem extends SubsystemBase {
                 diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
                 diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
             }
-        }*/
+        }
 
         stateDash.update(Constants.debugMode);
     }

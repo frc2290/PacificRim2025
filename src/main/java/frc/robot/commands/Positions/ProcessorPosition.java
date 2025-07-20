@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.Constants.Elevator;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
@@ -17,20 +16,20 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class L1Position extends SequentialCommandGroup {
-    private double elevatorPos = 0.675;
-    private double diffExt = 80;
-    private double diffRot = 235;
-    private double diffExt1 = 220;
+public class ProcessorPosition extends SequentialCommandGroup {
+	private double elevatorPos = 0.675;
+	private double diffExt = 80;
+	private double diffRot = 235;
+	private double diffExt1 = 220;
 
-    /** Creates a new L1PositionNew. */
-    public L1Position(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
+	/** Creates a new ProcessorPosition. */
+  public ProcessorPosition(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
         if (stateSubsystem.getCurrentState() == PositionState.StartPosition) {
             Command moveExtTransport = diffArm.setExtensionSetpointCommand(DifferentialArm.transportExtensionSetpoint);
             Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
             Command moveElev = elevator.setElevatorSetpointCommand(elevatorPos);
             ParallelCommandGroup elevAndRot = new ParallelCommandGroup(moveRot, moveElev);
-            addCommands(moveExtTransport, elevAndRot, stateSubsystem.setCurrentStateCommand(PositionState.L1Position));
+            addCommands(moveExtTransport, elevAndRot, stateSubsystem.setCurrentStateCommand(PositionState.ProcessorPosition));
         } /*else if (stateSubsystem.atSafeState()) {
             Command moveExtStep1 = diffArm.setExtensionSetpointCommand(diffExt1);
             // Command moveRotStep1 = diffArm.setRotationSetpointCommand(diffRot1);
@@ -53,7 +52,7 @@ public class L1Position extends SequentialCommandGroup {
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
             addCommands(moveExtAndElev, moveRot,
-                    stateSubsystem.setCurrentStateCommand(PositionState.L1Position));
+                    stateSubsystem.setCurrentStateCommand(PositionState.ProcessorPosition));
         }
-    }
+	}
 }

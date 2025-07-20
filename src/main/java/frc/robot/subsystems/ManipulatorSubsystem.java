@@ -52,6 +52,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
         manipDash.addDoublePublisher("Motor Pos", true, () -> getMotorPos());
         manipDash.addBoolPublisher("Got Coral", false, () -> hasCoral());
+        manipDash.addBoolPublisher("Got Algae", true, () -> hasAlgae());
         manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
         manipDash.addBoolPublisher("Sees Coral", true, () -> seesCoral());
     }
@@ -99,6 +100,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     public Trigger hasCoralTrigger() {
         return new Trigger(() -> hasCoral());
+    }
+
+    public Trigger hasAlgaeTrigger() {
+        return new Trigger(() -> hasAlgae());
     }
 
     public boolean seesCoral() {

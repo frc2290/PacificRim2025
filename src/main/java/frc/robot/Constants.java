@@ -104,31 +104,31 @@ public final class Constants {
         public static final int kLaserCanId = 5;
 
         public static final double[][] l4RotationData = {
-            //{120, -165},
-            //{200, -165},
-            //{330, -165},
-            //{420, -170}
+            {120, 235},
+            {200, 235},
+            {330, 235},
+            {420, 235}
         };
 
         public static final double[][] l4ExtensionData = {
-            //{120, 25},
-            //{200, 120},
-            //{330, 220},
-            //{420, 245}
+            {120, 80},
+            {200, 80},
+            {330, 80},
+            {420, 80}
         };
 
         public static final double[][] l2_3RotationData = {
-            //{120, -157},
-            //{200, -157},
-            //{330, -165},
-            //{420, -169}
+            {120, 235},
+            {200, 235},
+            {330, 235},
+            {420, 235}
         };
 
         public static final double[][] l2_3ExtensionData = {
-            //{120, 80},
-            //{200, 170},
-            //{330, 170},
-            //{420, 225}
+            {120, 80},
+            {200, 80},
+            {330, 80},
+            {420, 80}
         };
     }
 
@@ -322,6 +322,7 @@ public final class Constants {
                 new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
 
         public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
+        public static final Translation2d processor = new Translation2d(203 * inToM, 0);
         public static final double halfwayAcrossFieldY = (317 / 2) * inToM;
         public static final double coralStationLeftHeading = -55;
         public static final double coralStationRightHeading = 55;
