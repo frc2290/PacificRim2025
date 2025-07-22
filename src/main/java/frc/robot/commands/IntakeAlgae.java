@@ -42,7 +42,7 @@ public class IntakeAlgae extends Command {
         if (manipulator.getOutputCurrent() > 30) {
             if (!delayTimer.isRunning()) {
                 delayTimer.restart();
-            } else if (delayTimer.hasElapsed(0.5) && delayTimer.isRunning()) {
+            } else if (delayTimer.hasElapsed(1) && delayTimer.isRunning()) {
                 delayTimer.stop();
                 currentTimer.restart();
             }
@@ -55,7 +55,7 @@ public class IntakeAlgae extends Command {
         currentTimer.stop();
         delayTimer.stop();
         if (!interrupted) {
-            manipulator.intake(-0.1);
+            manipulator.intake(-0.5);
             manipulator.setAlgae(true);
             state.setGoal(PositionState.ProcessorPosition);
         }

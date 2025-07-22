@@ -35,7 +35,7 @@ public class AlgaeRemovalL3 extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        manip.intake(-0.5);
+        manip.intake(-1.0);
     }
 
     // Called once the command ends or is interrupted.

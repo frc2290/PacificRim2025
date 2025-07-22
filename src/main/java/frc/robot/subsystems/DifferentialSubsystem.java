@@ -78,7 +78,9 @@ public class DifferentialSubsystem extends SubsystemBase {
                 .smartCurrentLimit(50)
                 .encoder
                     .positionConversionFactor(34.2857)
-                    .velocityConversionFactor(0.5714);
+                    .velocityConversionFactor(0.5714)
+                    .quadratureMeasurementPeriod(10)
+                    .quadratureAverageDepth(2);
         leftConfig.closedLoop
                 .p(DifferentialArm.v_kp, ClosedLoopSlot.kSlot0)
                 .i(DifferentialArm.v_ki, ClosedLoopSlot.kSlot0)

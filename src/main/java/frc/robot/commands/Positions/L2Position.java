@@ -18,9 +18,9 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class L2Position extends SequentialCommandGroup {
-    private double elevatorPos = 0.675;
+    private double elevatorPos = 0.74;
     private double diffExt = 80;
-    private double diffRot = 235;
+    private double diffRot = 230;
     private double diffExt1 = 220;
 
     /** Creates a new L1PositionNew. */

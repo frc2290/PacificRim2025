@@ -42,7 +42,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
         manipulatorMotor = new SparkFlex(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
 
         manipulatorConfig.idleMode(IdleMode.kBrake)
-                            .smartCurrentLimit(40);
+                            .smartCurrentLimit(50);
         manipulatorConfig.limitSwitch.forwardLimitSwitchEnabled(false);
         manipulatorMotor.configure(manipulatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

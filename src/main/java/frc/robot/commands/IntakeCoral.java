@@ -42,7 +42,7 @@ public class IntakeCoral extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        manipulator.intake(0.5);
+        manipulator.intake(0.55);
         if (!sawCoral && manipulator.seesCoral()) {
             sawCoral = true;
         }

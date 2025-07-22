@@ -17,9 +17,9 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class ProcessorPosition extends SequentialCommandGroup {
-	private double elevatorPos = 0.675;
+	private double elevatorPos = 0.125;
 	private double diffExt = 80;
-	private double diffRot = 235;
+	private double diffRot = 195;
 	private double diffExt1 = 220;
 
 	/** Creates a new ProcessorPosition. */
