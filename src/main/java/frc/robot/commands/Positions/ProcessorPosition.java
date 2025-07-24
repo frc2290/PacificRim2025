@@ -51,7 +51,7 @@ public class ProcessorPosition extends SequentialCommandGroup {
             Command moveRot = diffArm.setRotationSetpointCommand(diffRot);
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
-            addCommands(moveExtAndElev, moveRot,
+            addCommands(moveRot, moveExtAndElev,
                     stateSubsystem.setCurrentStateCommand(PositionState.ProcessorPosition));
         }
 	}
