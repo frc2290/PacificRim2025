@@ -101,9 +101,6 @@ public class StateSubsystem extends SubsystemBase {
     // Storage for current running command or sequence of commands
     private Command currentCommand = null;
 
-    // Test for Algae issues
-    private Command manipCommand = null;
-
     private boolean isAuto = false;
     private boolean isDisabled = false;
 
@@ -131,6 +128,14 @@ public class StateSubsystem extends SubsystemBase {
     /** Triggers? */
     public Trigger atTarget() {
         return new Trigger(() -> pose.atTargetPose() && atCurrentState());
+    }
+
+    public boolean atAlgaePosition() {
+        return (currentState == PositionState.AlgaeL2Position || currentState == PositionState.AlgaeL3Position);
+    }
+    
+    public Trigger atAlgaePositionTrigger() {
+        return new Trigger(() -> atAlgaePosition());
     }
 
     /** Robot State Section */
@@ -398,9 +403,7 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case IntakePosition:
                     currentCommand = new IntakePosition(diff, elevator, this);
-                    //currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
-                    manipCommand.cancel();
-                    manipCommand = new IntakeCoral(manipulator, this);
+                    currentCommand = currentCommand.andThen(new IntakeCoral(manipulator, this));
                     break;
                 case L1Position:
                     currentCommand = new L1Position(diff, elevator, this);
@@ -425,15 +428,11 @@ public class StateSubsystem extends SubsystemBase {
                     break;
                 case AlgaeL3Position:
                     currentCommand = new AlgaeL3Position(diff, elevator, this);
-                    //currentCommand = currentCommand.andThen(new IntakeAlgae(manipulator, this));
-                    manipCommand.cancel();
-                    manipCommand = new IntakeAlgae(manipulator, this);
+                    currentCommand = currentCommand.andThen(new IntakeAlgae(manipulator, this));
                     break;
                 case AlgaeL2Position:
                     currentCommand = new AlgaeL2Position(diff, elevator, this);
-                    //currentCommand = currentCommand.andThen(new IntakeAlgae(manipulator, this));
-                    manipCommand.cancel();
-                    manipCommand = new IntakeAlgae(manipulator, this);
+                    currentCommand = currentCommand.andThen(new IntakeAlgae(manipulator, this));
                     break;
                 case ProcessorPosition:
                     currentCommand = new ProcessorPosition(diff, elevator, this);
@@ -447,7 +446,6 @@ public class StateSubsystem extends SubsystemBase {
                     break;
             }
             currentCommand.schedule();
-            manipCommand.schedule();
             transitioning = true;
         }
 

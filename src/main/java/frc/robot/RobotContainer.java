@@ -177,8 +177,9 @@ public class RobotContainer {
         Trigger hasAlgae = m_manipulator.hasAlgaeTrigger();
         Trigger isAuto = m_state.isAutoTrigger();
         Trigger notAuto = isAuto.negate();
+        Trigger atAlgaePos = m_state.atAlgaePositionTrigger();
 
-        hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation)).onTrue(m_state.setDriveStateCommand(DriveState.Teleop));
+        hasCoral.or(hasAlgae).or(atAlgaePos).and(notAuto).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation)).onTrue(m_state.setDriveStateCommand(DriveState.Teleop));
 
         // Manual controls
         left_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up

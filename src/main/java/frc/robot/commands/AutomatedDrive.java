@@ -122,7 +122,7 @@ public class AutomatedDrive extends Command {
         }
         // Teleop state: If we have a coral, point robot towards center of reef
         else if (stateSubsystem.getDriveState() == DriveState.Teleop) {
-            if (stateSubsystem.hasCoral()) {
+            if (stateSubsystem.hasCoral() || stateSubsystem.atAlgaePosition()) {
                 rotTarget = poseEstimator.turnToTarget(VisionConstants.reefCenter);
             } else if (stateSubsystem.hasAlgae()) {
                 rotTarget = poseEstimator.turnToTarget(VisionConstants.processor);
