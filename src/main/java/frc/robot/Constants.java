@@ -105,30 +105,31 @@ public final class Constants {
 
         public static final double[][] l4RotationData = {
             {120, 235},
-            {200, 235},
-            {330, 235},
-            {420, 235}
+            {200, 240},
+            {330, 230},
+            {420, 230}
         };
 
         public static final double[][] l4ExtensionData = {
             {120, 140},
-            {200, 140},
-            {330, 140},
-            {420, 140}
+            {200, 250},
+            {330, 260},
+            {420, 260}
         };
 
         public static final double[][] l2_3RotationData = {
             {120, 230},
             {200, 230},
-            {330, 230},
-            {420, 230}
+            {330, 222},
+            {420, 218}
         };
 
         public static final double[][] l2_3ExtensionData = {
+  
             {120, 80},
-            {200, 80},
-            {330, 80},
-            {420, 80}
+            {200, 170},
+            {330, 170},
+            {420, 225}
         };
     }
 
