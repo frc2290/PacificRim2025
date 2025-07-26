@@ -26,18 +26,13 @@ import frc.utils.PoseEstimatorSubsystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class Right3Coral extends SequentialCommandGroup {
-  /** Creates a new Right3Coral. */
-  public Right3Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
+public class Middle1Coral extends SequentialCommandGroup {
+  /** Creates a new Left3Coral. */
+  public Middle1Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
         try {
             Timer timer = new Timer();
             // Pull in path from start location to reef
-            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
-            PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("RightCoral1ToFeeder");
-            PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToRightCoral2");
-            PathPlannerPath reef2toFeed = PathPlannerPath.fromPathFile("RightCoral2ToFeeder");
-            PathPlannerPath feedToReef3 = PathPlannerPath.fromPathFile("FeederToRightCoral3");
-            PathPlannerPath reef3ToFeed = PathPlannerPath.fromPathFile("RightCoral3ToFeeder");
+            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("MiddleCoral1");
             
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
@@ -50,21 +45,6 @@ public class Right3Coral extends SequentialCommandGroup {
             Command moveToReef = new ParallelCommandGroup(followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
             //Command scoreCoral1 = new SwerveAutoScore(VisionConstants.leftBranches.get(2), manipulator, stateSubsystem, poseEst);
 
-            Command followPath2 = new SwerveAutoStep(reefToFeed, poseEst);
-            Command moveToFeeder = new ParallelCommandGroup(followPath2);
-
-            Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
-            Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true).beforeStarting(new WaitCommand(0.25)));
-            //Command scoreCoral2 = new SwerveAutoScore(VisionConstants.rightBranches.get(3), manipulator, stateSubsystem, poseEst);
-
-            Command followPath4 = new SwerveAutoStep(reef2toFeed, poseEst);
-            Command moveToFeeder2 = new ParallelCommandGroup(followPath4);
-
-            Command followPath5 = new SwerveAutoStep(feedToReef3, poseEst);
-            Command moveToReef3 = new ParallelCommandGroup(followPath5, stateSubsystem.setGoalCommand(PositionState.L4Position, true).beforeStarting(new WaitCommand(0.25)));
-            //Command scoreCoral3 = new SwerveAutoScore(VisionConstants.leftBranches.get(3), manipulator, stateSubsystem, poseEst);
-
-            Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
 
             // Add your commands in the addCommands() call, e.g.
             // addCommands(new FooCommand(), new BarCommand());
@@ -74,17 +54,9 @@ public class Right3Coral extends SequentialCommandGroup {
                         driveSetAuto, 
                         moveToReef, 
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
-                        moveToFeeder,
-                        new WaitCommand(1.5),
-                        moveToReef2, 
-                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
-                        moveToFeeder2,
-                        new WaitCommand(1.5),
-                        moveToReef3,
-                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
                         Commands.runOnce(() -> {
                           timer.stop();
-                          System.out.println("Right3Coral Time: " + timer.get());
+                          System.out.println("MiddleCoral1 Time: " + timer.get());
                         })//,
                         //followPath6
                         //driveSetTeleop,

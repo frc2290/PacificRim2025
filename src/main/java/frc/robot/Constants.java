@@ -377,7 +377,7 @@ public final class Constants {
         //         new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
 
         public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
-        public static final Translation2d processor = new Translation2d(6.246, 0);
+        public static final Translation2d processor = new Translation2d(6, 0);
         public static final double halfwayAcrossFieldY = (317 / 2) * inToM;
         public static final double coralStationLeftHeading = -55;
         public static final double coralStationRightHeading = 55;

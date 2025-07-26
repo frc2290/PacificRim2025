@@ -18,6 +18,7 @@ import frc.robot.commands.ClimberOut;
 import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.Autos.DrivetrainSysId;
 import frc.robot.commands.Autos.Left3Coral;
+import frc.robot.commands.Autos.Middle1Coral;
 import frc.robot.commands.Autos.Right1Coral;
 import frc.robot.commands.Autos.Right2Coral;
 import frc.robot.commands.Autos.Right3Coral;
@@ -92,6 +93,7 @@ public class RobotContainer {
         auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         auto_chooser.addOption("Left3Coral", new Left3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        auto_chooser.addOption("Middle1Coral", new Middle1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
         // Configure default commands
