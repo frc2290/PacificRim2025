@@ -292,35 +292,68 @@ public final class Constants {
         //         new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
         //         new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
 
-        // SHOP
-        public static final List<Pose2d> leftBranches = List.of(
-                new Pose2d(3.18, 4.23, new Rotation2d(Math.toRadians(-4))), // front
-                new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left
-                new Pose2d(4.96, 2.78, new Rotation2d(Math.toRadians(116))), // back right
-                new Pose2d(3.66, 2.97, new Rotation2d(Math.toRadians(57))), // front right
-                new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left
-                new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back
-        public static final List<Pose2d> rightBranches = List.of(
-                new Pose2d(3.18, 3.85, new Rotation2d(Math.toRadians(-2))), // front
-                new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left
-                new Pose2d(5.28, 2.95, new Rotation2d(Math.toRadians(118))), // back right
-                new Pose2d(3.95, 2.80, new Rotation2d(Math.toRadians(58))), // front right
-                new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left
-                new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back
-        public static final List<Pose2d> rightBranchL1 = List.of(
-                new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
-                new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
-                new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
-                new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
-                new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
-                new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
-        public static final List<Pose2d> leftBranchL1 = List.of(
-                new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
-                new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
-                new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
-                new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
-                new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
-                new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
+        // R2OC
+         public static final List<Pose2d> leftBranches = List.of(
+                 new Pose2d(3.180, 4.135, new Rotation2d(Math.toRadians(-1.6))),   // 18_LEFT
+                 new Pose2d(3.680, 2.980, new Rotation2d(Math.toRadians(57.9))),   // 17_LEFT
+                 new Pose2d(4.995, 2.805, new Rotation2d(Math.toRadians(118.4))),  // 22_LEFT
+                 new Pose2d(5.795, 3.843, new Rotation2d(Math.toRadians(178.1))),  // 21_LEFT
+                 new Pose2d(5.284, 5.071, new Rotation2d(Math.toRadians(-121.2))), // 20_LEFT
+                 new Pose2d(3.989, 5.241, new Rotation2d(Math.toRadians(-62)))); // 19_LEFT
+         public static final List<Pose2d> rightBranches = List.of(
+                 new Pose2d(3.178, 3.842, new Rotation2d(Math.toRadians(-0.6))),   // 18_RIGHT
+                 new Pose2d(3.985, 2.804, new Rotation2d(Math.toRadians(58.9))),   // 17_RIGHT
+                 new Pose2d(5.286, 2.971, new Rotation2d(Math.toRadians(119))),  // 22_RIGHT
+                 new Pose2d(5.795, 4.204, new Rotation2d(Math.toRadians(179.6))),  // 21_RIGHT
+                 new Pose2d(4.983, 5.244, new Rotation2d(Math.toRadians(-120.3))), // 20_RIGHT
+                 new Pose2d(3.694, 5.072, new Rotation2d(Math.toRadians(-61.6)))); // 19_RIGHT
+         public static final List<Pose2d> rightBranchL1 = List.of(
+                 new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
+                 new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
+                 new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
+                 new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
+                 new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
+                 new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
+         public static final List<Pose2d> leftBranchL1 = List.of(
+                 new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
+                 new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
+                 new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
+                 new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
+                 new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
+                 new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
+        // public static final List<Pose2d> coralStations = List.of(
+        //         new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
+        //         new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
+
+        // // SHOP
+        // public static final List<Pose2d> leftBranches = List.of(
+        //        new Pose2d(3.18, 4.23, new Rotation2d(Math.toRadians(-4))), // front (18_LEFT)
+        //         new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left (20_LEFT)
+        //         new Pose2d(4.96, 2.78, new Rotation2d(Math.toRadians(116))), // back right (22_LEFT)
+        //         new Pose2d(3.66, 2.97, new Rotation2d(Math.toRadians(57))), // front right (17_LEFT)
+        //         new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left (19_RIGHT)
+        //         new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back (21_LEFT)
+        // public static final List<Pose2d> rightBranches = List.of(
+        //         new Pose2d(3.18, 3.85, new Rotation2d(Math.toRadians(-2))), // front (18_RIGHT)
+        //         new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left (20_RIGHT)
+        //         new Pose2d(5.28, 2.95, new Rotation2d(Math.toRadians(118))), // back right (22_RIGHT)
+        //         new Pose2d(3.95, 2.80, new Rotation2d(Math.toRadians(58))), // front right (17_RIGHT)
+        //         new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left (19_RIGHT)
+        //         new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back (21_RIGHT)
+        // public static final List<Pose2d> rightBranchL1 = List.of(
+        //         new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
+        //         new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
+        //         new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
+        //         new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
+        //         new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
+        //         new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
+        // public static final List<Pose2d> leftBranchL1 = List.of(
+        //         new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
+        //         new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
+        //         new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
+        //         new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
+        //         new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
+        //         new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
 
         public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
         public static final Translation2d processor = new Translation2d(203 * inToM, 0);
