@@ -9,13 +9,8 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
-import frc.robot.commands.AlgaeRemoval;
-import frc.robot.commands.AlgaeRemovalL3;
 import frc.robot.commands.Auto;
 import frc.robot.commands.AutomatedDrive;
-import frc.robot.commands.ClimberIn;
-import frc.robot.commands.ClimberOut;
-import frc.robot.commands.ScoreCoral;
 import frc.robot.commands.Autos.DrivetrainSysId;
 import frc.robot.commands.Autos.Left3Coral;
 import frc.robot.commands.Autos.Middle1Coral;
@@ -28,9 +23,9 @@ import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.StateMachine;
+import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
+import frc.robot.subsystems.StateMachine.DriveState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,7 +49,7 @@ public class RobotContainer {
     private final ManipulatorSubsystem m_manipulator;
     private final DifferentialSubsystem m_DiffArm;
     private final ClimbSubsystem m_climber;
-    private final StateSubsystem m_state;
+    private final StateMachine m_state;
 
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -66,7 +61,7 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer(LEDUtility _led, DriveSubsystem _drive, PoseEstimatorSubsystem _pose, ElevatorSubsystem _elev,
-            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, StateSubsystem _state) {
+            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, StateMachine _state) {
         m_ledUtility = _led;
         m_robotDrive = _drive;
         m_poseEstimator = _pose;
@@ -89,25 +84,15 @@ public class RobotContainer {
         auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
         auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        auto_chooser.addOption("Right1Coral", new Right1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        auto_chooser.addOption("Left3Coral", new Left3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        auto_chooser.addOption("Middle1Coral", new Middle1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        //auto_chooser.addOption("Right1Coral", new Right1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        //auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        //auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        //auto_chooser.addOption("Left3Coral", new Left3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        //auto_chooser.addOption("Middle1Coral", new Middle1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
-        // Configure default commands
-        // m_robotDrive.setDefaultCommand(
-        //         // The left stick controls translation of the robot.
-        //         // Turning is controlled by the X axis of the right stick.
-        //         new RunCommand(
-        //                 () -> m_robotDrive.drive(
-        //                         -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
-        //                         -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
-        //                         -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-        //                         true),
-        //                 m_robotDrive));
-        m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_DiffArm, m_poseEstimator, m_driverController));
+
+        //m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_DiffArm, m_poseEstimator, m_driverController));
     }
 
     /**
@@ -139,58 +124,52 @@ public class RobotContainer {
         POVButton dpad_left = new POVButton(m_driverController, 270);
         POVButton dpad_right = new POVButton(m_driverController, 90);
 
-        // Negates
         Trigger not_left_stick = left_stick.negate(); // Trigger to check if left stick is not pressed in
         Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in
 
+
         // Controller Buttons
-        a_button.and(not_left_stick).onTrue(m_state.setGoalCommand(PositionState.L1Position)); // Set to L1
-        b_button.and(not_left_stick).onTrue(m_state.setGoalCommand(PositionState.L2Position)); // Set to L2
-        y_button.and(not_left_stick).onTrue(m_state.setGoalCommand(PositionState.L3Position)); // Set to L3
-        x_button.and(not_left_stick).onTrue(m_state.setGoalCommand(PositionState.L4Position)); // Set to L3
-        back_button.onTrue(m_state.cancelCommand()); // Cancel current state
-        start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls
+        //extra buttons for different statemachine states HERE
+        a_button.and(not_left_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.L1)); // Set to L1
+        b_button.and(not_left_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.L2)); // Set to L2
+        y_button.and(not_left_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.L3)); // Set to L3
+        x_button.and(not_left_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.L4)); // Set to L3
+        //back_button.onTrue(m_state.cancelCommand()); // Cancel current state  RECHECK
+        //start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls DO WE NEED THIS
 
         // Controller Bumpers
         left_bumper.and(not_left_stick).onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
         right_bumper.and(not_left_stick).onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
-        //left_bumper.and(not_left_stick).and(() -> !m_manipulator.hasCoral()).whileTrue(new AlgaeRemoval(m_manipulator, m_state, false)); // Remove Algae L3
-        //right_bumper.and(not_left_stick).and(() -> !m_manipulator.hasCoral()).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true)); // Remove Algae L2
         
-        // Controller Dpad
-        //dpad_up.and(not_right_stick).onTrue(new ClimberOut(m_climber, m_state)); // Climber Out
-        //dpad_down.and(not_right_stick).onTrue(new ClimberIn(m_climber, m_robotDrive)); // Climber In
-        //dpad_up.and(not_right_stick).whileTrue(new AlgaeRemovalL3(m_manipulator, m_state, false)); // Old Algae Removal
-        //dpad_down.and(not_right_stick).whileTrue(new AlgaeRemoval(m_manipulator, m_state, true)); // Old Algae Removal
-        dpad_up.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.AlgaeL3Position)); // Algae L3
-        dpad_down.and(not_right_stick).onTrue(m_state.setGoalCommand(PositionState.AlgaeL2Position)); // Algae L2
-        dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0));
-
-        right_stick.and(dpad_up).onTrue(new ClimberOut(m_climber, m_state)); // Climber Out
-        right_stick.and(dpad_down).onTrue(new ClimberIn(m_climber, m_robotDrive)); // Climber In
+        // Controller D-Pad
+        dpad_up.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL3)); // Algae L3
+        dpad_down.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL2)); // Algae L2
+        dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); //run intake
         
         // Controller Triggers
-        left_trigger.onTrue(m_state.setDriveStateCommand(DriveState.ReefScoreMove)).onFalse(m_state.setDriveStateCommand(DriveState.Teleop));
-        //left_trigger.and(() -> m_state.getDriveState() == DriveState.CoralStation).onTrue(m_state.setGoalCommand(PositionState.IntakePosition));
-        right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral
+        left_trigger.onTrue(m_state.setGoalDriveCommand(DriveState.ReefRelative)).onFalse(m_state.setGoalDriveCommand(DriveState.Teleop));
+        //right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral RECHECK
 
         // Triggers
-        Trigger hasCoral = m_manipulator.hasCoralTrigger();
-        Trigger hasAlgae = m_manipulator.hasAlgaeTrigger();
-        Trigger isAuto = m_state.isAutoTrigger();
-        Trigger notAuto = isAuto.negate();
-        Trigger atAlgaePos = m_state.atAlgaePositionTrigger();
+        //Trigger hasCoral = m_manipulator.hasCoralTrigger();
+        //Trigger hasAlgae = m_manipulator.hasAlgaeTrigger();
+        //Trigger isAuto = m_state.isAutoTrigger();
+        //Trigger notAuto = isAuto.negate();
 
-        hasCoral.or(hasAlgae).or(atAlgaePos).and(notAuto).onFalse(m_state.setDriveStateCommand(DriveState.CoralStation)).onTrue(m_state.setDriveStateCommand(DriveState.Teleop));
+        //IDK what is this, if that is logic, it should be inside state machine
+        //hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
 
         // Manual controls
-        left_stick.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
-        left_stick.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
-        left_stick.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
-        left_stick.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
-        left_stick.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
-        left_stick.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
+        left_stick.and(start_button).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.Manual)); // Set to manual mode, will turn off once another state is chosen
+
+        new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual).and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
+        new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual).and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
+        new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual).and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
+        new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual).and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
+        new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual).and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
+        new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual).and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
         
+        //Other
         right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen())); // Manual servo open
         right_stick.and(dpad_right).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading())); // Manual heading reset
     }

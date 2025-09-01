@@ -16,8 +16,9 @@ import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
+import frc.robot.subsystems.StateMachine;
+import frc.robot.subsystems.StateMachine.DriveState;
+import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
@@ -41,7 +42,7 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+  private final StateMachine m_state = new StateMachine(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
 
   public Robot() {
     CanBridge.runTCP();
@@ -117,10 +118,10 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     m_state.setAuto(false);
     m_state.setDisabled(false);
-    m_state.setDriveState(DriveState.Teleop);
-    if (!m_manipulator.hasCoral()) {
-      m_state.setGoal(PositionState.IntakePosition);
-    }
+    m_state.setGoalDriveCommand(DriveState.Teleop);
+    //run reset after autonomus, Idea for later if needed
+    //m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); //from whatever state it was left off in auto, should reset to safe coral travel
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

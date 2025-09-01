@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -20,10 +21,12 @@ import frc.robot.commands.Positions.L1Position;
 import frc.robot.commands.Positions.L2Position;
 import frc.robot.commands.Positions.L3Position;
 import frc.robot.commands.Positions.L4Position;
-import frc.robot.commands.Positions.ProcessorPosition;
+import frc.robot.commands.Positions.ProcessorPosition;                
 import frc.robot.commands.Positions.TravelPosition;
 import frc.robot.commands.Waits.SetGoalWait;
 import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.utils.GraphCommand;
+import frc.utils.GraphCommand.GraphCommandNode;
 import frc.utils.LEDEffects;
 import frc.utils.LEDEffects.LEDEffect;
 import frc.utils.LEDUtility;
@@ -34,6 +37,7 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 public class StateMachine extends SubsystemBase {
 
     //Place to import csubsystems and commmands
+    private GraphCommand m_graphCommand = new GraphCommand();
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;
     private DriveSubsystem drive;
@@ -43,36 +47,15 @@ public class StateMachine extends SubsystemBase {
 
 
     /**
-     * Main Robot State Options - General comand state caleld by controller
-     */
-    public enum RobotState{
-        StartPosition,  //Initial startin position
-        Intake,
-        Travel,
-        L1,
-        L2,
-        L3,
-        L4,
-        AlgaeL2,
-        AlgaeL3,
-        Prossesor,
-        Barge,
-        Climb,
-        Manual,      //setRobot to manual mode override
-        Resseting    //Resets Robot if robot got stuck at some command or state
-    }
-
-
-    /**
      * DriveTrain states - drive state machine
      */
     public enum DriveState {
-        Travel,            // Field oriented freerome
+        Teleop,            // Field oriented freerome
         FollowPath,        // Auto path following
         BargeRelative,     //FacesBarge
         ClimbRelative,     //FacesClimb
         ProcessorRelative, //Faces Processor
-        IntakeRelative,    //FacesIntake based on half field
+        CoralStation,    //FacesIntake based on half field
         ReefRelative,      //FacesReef based on robot position and angles as drives around
         ReefPreScore,       //Locked to right or left reef, holding position
         Cancelled
@@ -83,32 +66,19 @@ public class StateMachine extends SubsystemBase {
      */
     public enum ElevatorManipulatorState {
         StartPosition,     //Initial robot poisiton when turned on
-        TravelPosition,    //TravelPosition Reset, basicaly PreCoralPosition just intake is not running
-        PreCoralIntake,    //Prepare for CoralIntake
-        IntakeCoral,       //Intake Coral
-        SafeCoralTravel,   //Safe Travel with Coral
-        L1Prep,            //Prepare for L1 score
-        L2Prep,            //Prepare for L2 score
-        L3Prep,            //Prepare for L3 score
-        L4Prep,            //Prepare for L4 score
-        ScoreL1,           //Final position to score L1
-        ScoreL2,           //Final position to score L2
-        ScoreL3,           //Final position to score L3
-        ScoreL4,           //Final position to score L4
-        L1PostScore,       //Get into safe position before going down to safe travel
-        L2PostScore,       //Get into safe position before going down to safe travel
-        L3PostScore,
-        L4PostScore,
-        PrepAlgaeIntake,   //Prepare to intake Algae
-        PrepAlgaeL2,       //Prepare to intake Algae from L2
-        PrepAlgaeL3,       //Prepare to intake Algae from L3
-        SafeAlgaeTravel,   //Safe travel with Algae
-        ScoreProssesor,    //Score Algae into prossesor final position
-        PrepScoreBarge,    //Prepage to score Algae into barge
-        ScoreBarge,        //Score Algae into barge
-        ClimbPrep,         //Get into safe position before engagin climber
-        ClimbRead,         //RetractClimber - Ready to Climb
-        Cancelled          //Cancell all the running commands and states, can also be called using manual override, to reset robot to travel position
+        SafeCoralTravel,   //Safe travel with coral position
+        IntakeCoral,
+        L1,
+        L2,
+        L3,
+        L4,
+        AlgaeL2,
+        AlgaeL3,
+        Processor,
+        Barge,
+        Climb,
+        Manual,
+        Reset,
     }
         
     /**
@@ -123,12 +93,174 @@ public class StateMachine extends SubsystemBase {
         ScoreAlgae         //Score Algae
     }
 
+
+    /*
+     * Graph Command Nodes
+     **/
+    GraphCommandNode startPosition = m_graphCommand.new GraphCommandNode(
+        "StartPosition", 
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+    
+    GraphCommandNode preCoralIntake = m_graphCommand.new GraphCommandNode(
+        "PreCoralIntake", 
+        new PrintCommand("SendCommand to move into this position, for elevator then when safe move the extension out and rotatation"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    //Set in the main statemachine
+    GraphCommandNode intakeCoral = m_graphCommand.new GraphCommandNode(
+        "IntakeCoral",
+        new PrintCommand("Turn on the intake, wait until note is detected"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode safeCoralTravel = m_graphCommand.new GraphCommandNode(
+        "SafeCoralTravel",
+        new PrintCommand("Move into safe coral travel position, by this point all of the running commands have finished and robot is wainting for driver commands"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode l1Prep = m_graphCommand.new GraphCommandNode(
+        "L1Prep",
+        new PrintCommand("Move elevator to L1 prep position"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode l2Prep = m_graphCommand.new GraphCommandNode(
+        "L2Prep",
+        new PrintCommand("Move elevator to L2 prep position"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode l3Prep = m_graphCommand.new GraphCommandNode(
+        "L3Prep",
+        new PrintCommand("Move elevator to L3 prep position"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode l4Prep = m_graphCommand.new GraphCommandNode(
+        "L4Prep",
+        new PrintCommand("Move elevator to L4 prep position"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode scoreL1 = m_graphCommand.new GraphCommandNode(
+        "ScoreL1",
+        new PrintCommand("Get into final position and wait for the score command from driver"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode scoreL2 = m_graphCommand.new GraphCommandNode(
+        "ScoreL2",
+        new PrintCommand("Get into final position and wait for the score command from driver"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode scoreL3 = m_graphCommand.new GraphCommandNode(
+        "ScoreL3",
+        new PrintCommand("Get into final position and wait for the score command from driver"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode scoreL4 = m_graphCommand.new GraphCommandNode(
+        "ScoreL4",
+        new PrintCommand("Get into final position and wait for the score command from driver"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode l1PostScore = m_graphCommand.new GraphCommandNode(
+        "L1PostScore",
+        new PrintCommand("Get into safe position before going down to safe travel"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode l2PostScore = m_graphCommand.new GraphCommandNode(
+        "L2PostScore",
+        new PrintCommand("Get into safe position before going down to safe travel"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode l3PostScore = m_graphCommand.new GraphCommandNode(
+        "L3PostScore",
+        new PrintCommand("Get into safe position before going down to safe travel"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode l4PostScore = m_graphCommand.new GraphCommandNode( 
+        "L4PostScore",
+        new PrintCommand("Get into safe position before going down to safe travel"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode prepAlgaeIntake = m_graphCommand.new GraphCommandNode(
+        "PrepAlgaeIntake",
+        new PrintCommand("Get into position to intake algae"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode prepAlgaeL2 = m_graphCommand.new GraphCommandNode(
+        "PrepAlgaeL2",
+        new PrintCommand("Final position before intake algaeL2"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode prepAlgaeL3 = m_graphCommand.new GraphCommandNode(
+        "PrepAlgaeL3",
+        new PrintCommand("Final position before intake algaeL3"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));
+
+    GraphCommandNode safeAlgaeTravel = m_graphCommand.new GraphCommandNode(
+        "SafeAlgaeTravel",
+        new PrintCommand("Get into safe travel with algae position"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode scoreProssesor = m_graphCommand.new GraphCommandNode(
+        "ScoreProssesor",
+        new PrintCommand("Basicaly same as safe travel with algae postion"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode prepScoreBarge = m_graphCommand.new GraphCommandNode(
+        "PrepScoreBarge",
+        new PrintCommand("Get into position to score into barge"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode scoreBarge = m_graphCommand.new GraphCommandNode(
+        "ScoreBarge",
+        new PrintCommand("Final score barge position and wait for driver to hit score"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode climbPrep = m_graphCommand.new GraphCommandNode(
+        "ClimbPrep",
+        new PrintCommand("Get into position to preapare to engage climber out, after which it is enaged"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode climbReady = m_graphCommand.new GraphCommandNode(
+        "ClimbReady",
+        new PrintCommand("Once climber out robot is waiting for driver to hit climb command"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+
+    GraphCommandNode cancelled = m_graphCommand.new GraphCommandNode(
+        "Cancelled",
+        new PrintCommand("Should cancel all of the running commands, stop the robot and get everything into safe travel position"),
+        new PrintCommand("Nothing"),
+        new PrintCommand("Nothing"));   
+        
+
     //General State Variables
     private boolean rotLock = true; //Lock rotation when driving preventing user from overriding
     private boolean rightScore = false; //Selecting Branch for scoring
     private boolean driveTransitioning = false; //If drivetrain statemachine transitioning
     private boolean elevManiTransitioning = false; //If elevatorManipulator is transitioning between states
-    private boolean robotTransitioning = false; //If robot is transitioning between main states
+    // private boolean robotTransitioning = false; //If robot is transitioning between main states
     private boolean isAuto = false; //If robot is in auto mode
     private boolean isDisabled = false; //If robot is disabled
 
@@ -137,22 +269,20 @@ public class StateMachine extends SubsystemBase {
     private EndEffector endEffector = EndEffector.HasCoral; //When robot starts, it knows, it has coral
 
     // State storage and queueing
-    private RobotState prevRobotState = RobotState.StartPosition;
-    private RobotState robotState = RobotState.StartPosition; //current main robot state
-    private RobotState goalRobotState = RobotState.StartPosition; //PositionState.TravelPosition;
-    private DriveState prevDriveState = DriveState.Travel;
-    private DriveState driveState = DriveState.Travel;
-    private DriveState goalDriveState = DriveState.Travel;
+    // private RobotState prevRobotState = RobotState.StartPosition;
+    // private RobotState robotState = RobotState.StartPosition; //current main robot state
+    // private RobotState goalRobotState = RobotState.StartPosition; //PositionState.TravelPosition;
+    private DriveState prevDriveState = DriveState.Teleop;
+    private DriveState driveState = DriveState.Teleop;
+    private DriveState goalDriveState = DriveState.Teleop;
     private ElevatorManipulatorState prevElevManiState = ElevatorManipulatorState.StartPosition;
     private ElevatorManipulatorState elevManiState = ElevatorManipulatorState.StartPosition; //When robot is turned on, this isthe starting state
     private ElevatorManipulatorState goalElevManiState = ElevatorManipulatorState.StartPosition;
 
-    //LATER SHUOLD BE MODIFIED, PASTED FROM ORIGINAL ONE
-    private FlytLogger stateDash = new FlytLogger("State");
 
     /*
      * Creat a new StateSubsystem
-     */
+     **/
     public StateMachine(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manipulator, PoseEstimatorSubsystem m_pose, LEDUtility m_ledUtility) {
         diff = m_diff;
         elevator = m_elevator;
@@ -161,17 +291,73 @@ public class StateMachine extends SubsystemBase {
         pose = m_pose;
         ledUtility = m_ledUtility;
 
-        //Dashboard
-        stateDash.addIntegerPublisher("RobotState", false, () -> robotState.ordinal());
-        stateDash.addIntegerPublisher("DriveState", false, () -> driveState.ordinal());
-        stateDash.addIntegerPublisher("ElevManiState", false, () -> elevManiState.ordinal());
-        stateDash.addIntegerPublisher("EndEffector", false, () -> endEffector.ordinal());
-        stateDash.addBoolPublisher("RotLock", false, () -> rotLock);
-        stateDash.addBoolPublisher("RightScore", false, () -> rightScore);
-        //stateDash.addBoolPublisher("Transitioning", false, () -> transitioning);
-        stateDash.addBoolPublisher("isAuto", false, () -> isAuto);
-        stateDash.addBoolPublisher("isDisabled", false, () -> isDisabled);
+        //Graph Command setup
+        m_graphCommand.setGraphRootNode(startPosition); //rood node
+        startPosition.AddNode(safeCoralTravel, 1.0); //connections
+        safeCoralTravel.AddNode(preCoralIntake, 1.0);
+        preCoralIntake.AddNode(intakeCoral, 1.0);
+        intakeCoral.AddNode(safeCoralTravel, 1.0);
+        safeCoralTravel.AddNode(l1Prep, 1.0);
+        safeCoralTravel.AddNode(l2Prep, 1.0);
+        safeCoralTravel.AddNode(l3Prep, 1.0);
+        safeCoralTravel.AddNode(l4Prep, 1.0);
+        l1Prep.AddNode(l2Prep, 1.0);
+        l1Prep.AddNode(l3Prep, 1.0);
+        l1Prep.AddNode(l4Prep, 1.0);
+        l2Prep.AddNode(l1Prep, 1.0);
+        l2Prep.AddNode(l3Prep, 1.0);
+        l2Prep.AddNode(l4Prep, 1.0);
+        l3Prep.AddNode(l1Prep, 1.0);
+        l3Prep.AddNode(l2Prep, 1.0);
+        l3Prep.AddNode(l4Prep, 1.0);
+        l4Prep.AddNode(l1Prep, 1.0);
+        l4Prep.AddNode(l2Prep, 1.0);
+        l4Prep.AddNode(l3Prep, 1.0);
+        l1Prep.AddNode(scoreL1, 1.0);
+        l2Prep.AddNode(scoreL2, 1.0);
+        l3Prep.AddNode(scoreL3, 1.0);
+        l4Prep.AddNode(scoreL4, 1.0);
+        scoreL1.AddNode(l1Prep, 1.0);
+        scoreL2.AddNode(l2Prep, 1.0);
+        scoreL3.AddNode(l3Prep, 1.0);
+        scoreL4.AddNode(l4Prep, 1.0);
+        scoreL1.AddNode(l1PostScore, 1.0);
+        scoreL2.AddNode(l2PostScore, 1.0);
+        scoreL3.AddNode(l3PostScore, 1.0);
+        scoreL4.AddNode(l4PostScore, 1.0);
+        l1PostScore.AddNode(safeCoralTravel, 1.0);
+        l2PostScore.AddNode(safeCoralTravel, 1.0);
+        l3PostScore.AddNode(safeCoralTravel, 1.0);
+        l4PostScore.AddNode(safeCoralTravel, 1.0);
+        safeCoralTravel.AddNode(prepAlgaeIntake, 1.0);
+        prepAlgaeIntake.AddNode(safeAlgaeTravel, 1.0);
+        prepAlgaeIntake.AddNode(prepAlgaeL2, 1.0);
+        prepAlgaeIntake.AddNode(prepAlgaeL3, 1.0);
+        prepAlgaeL2.AddNode(prepAlgaeIntake, 1.0);
+        prepAlgaeL3.AddNode(prepAlgaeIntake, 1.0);
+        prepAlgaeL2.AddNode(safeAlgaeTravel, 1.0);
+        prepAlgaeL3.AddNode(safeAlgaeTravel, 1.0);
+        safeAlgaeTravel.AddNode(scoreProssesor, 1.0);
+        safeAlgaeTravel.AddNode(prepScoreBarge, 1.0);
+        prepScoreBarge.AddNode(scoreBarge, 1.0);
+        scoreProssesor.AddNode(safeCoralTravel, 1.0);
+        scoreBarge.AddNode(safeCoralTravel, 1.0);
+        safeCoralTravel.AddNode(climbPrep, 1.0);
+        climbPrep.AddNode(climbReady, 1.0);
+        climbReady.AddNode(climbPrep, 1.0);
+        climbPrep.AddNode(safeCoralTravel, 1.0);
+
+        //Any position to cancelled
+        //Rest stuff is basicaly tie every node to special node that can cancell and reset robot at anypoint
+
+        //Rest of the setup
+        m_graphCommand.addRequirements(this); //this subsystem required by graph command
+        this.setDefaultCommand(m_graphCommand); //Set graph command as root and keep it constantly running
+        m_graphCommand.setCurrentNode(startPosition); //same as root node
+        m_graphCommand.initialize(); //calculate "cheapest" paths to each node from each node
+
     }
+
 
      /** Triggers? */
       public Trigger atDriveTarget() {
@@ -181,13 +367,13 @@ public class StateMachine extends SubsystemBase {
          return new Trigger(() -> elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && atCurrentElevManiState());
      }
 
-     //QUESTIONED
-     public boolean atAlgaePosition() {
-         return (elevManiState == ElevatorManipulatorState.PrepAlgaeL2 || elevManiState == ElevatorManipulatorState.PrepAlgaeL3);
-     }
-     public Trigger atAlgaePositionTrigger() {
-         return new Trigger(() -> atAlgaePosition());
-     }
+    //  //QUESTIONED
+    //  public boolean atAlgaePosition() {
+    //      return (elevManiState == ElevatorManipulatorState.PrepAlgaeL2 || elevManiState == ElevatorManipulatorState.PrepAlgaeL3);
+    //  }
+    //  public Trigger atAlgaePositionTrigger() {
+    //      return new Trigger(() -> atAlgaePosition());
+    //  }
 
 
 
@@ -197,9 +383,9 @@ public class StateMachine extends SubsystemBase {
      * Get if robot is transitioning between states
      * @return True if transitioning
      */
-    public boolean robotIsTransitioning() {
-        return robotTransitioning;
-    }
+    // public boolean robotIsTransitioning() {
+    //     return robotTransitioning;
+    // }
     public boolean driveIsTransitioning() {
         return driveTransitioning;
     }
@@ -209,17 +395,16 @@ public class StateMachine extends SubsystemBase {
 
      //LATER SHUOLD BE MODIFIED, PASTED FROM ORIGINAL ONE
      public boolean atSafeState() {
-        return (getCurrentElevManiState() == ElevatorManipulatorState.TravelPosition ||
-                getCurrentElevManiState() == ElevatorManipulatorState.StartPosition);
+        return (getCurrentElevManiState() == ElevatorManipulatorState.StartPosition);
     }
 
     /**
      * Get current state robot is in
      * @return Current state of the robot
      */
-    public RobotState getCurrentState() {
-        return robotState;
-    }
+    // public RobotState getCurrentState() {
+    //     return robotState;
+    // }
     public DriveState getCurrentDriveState() {
         return driveState;
     }
@@ -231,9 +416,9 @@ public class StateMachine extends SubsystemBase {
      * Get if robot is at current state based on all subsystems being at their setpoint
      * @return True if at current state
      */
-    public boolean atCurrentRobotState() {
-        return atCurrentDriveState() && atCurrentElevManiState() && !robotIsTransitioning();
-    }
+    // public boolean atCurrentRobotState() {
+    //     return atCurrentDriveState() && atCurrentElevManiState() && !robotIsTransitioning();
+    // }
     public boolean atCurrentDriveState() { //FIND THE RIGHT CODE CHECK
         return pose.atTargetPose() && !driveIsTransitioning();
     }
@@ -245,9 +430,9 @@ public class StateMachine extends SubsystemBase {
      * Get previous state of the robot
      * @return Previous state of the robot
      */
-    public RobotState getPrevRobotState() {
-        return prevRobotState;
-    }
+    // public RobotState getPrevRobotState() {
+    //     return prevRobotState;
+    // }
     public DriveState getPrevDriveState() {
         return prevDriveState;
     }
@@ -259,9 +444,9 @@ public class StateMachine extends SubsystemBase {
      * Get goal state of the robot
      * @return Goal state of the robot
      */
-    public RobotState getGoalRobotState() {
-        return goalRobotState;
-    }
+    // public RobotState getGoalRobotState() {
+    //     return goalRobotState;
+    // }
     public DriveState getGoalDriveState() {
         return goalDriveState;
     }
@@ -273,13 +458,13 @@ public class StateMachine extends SubsystemBase {
      * Set the current state of the robot. Also sets the previous state to where it was before
      * @param curState State the robot is currently at
      */
-    public void setCurrentRobotState(RobotState curState) {
-        robotTransitioning = false;
-        prevRobotState = robotState;
-        robotState = curState;
-        System.out.println("Current: " + robotState.toString() + " Prev: " + prevRobotState.toString() + " Goal: "
-                + goalRobotState.toString());
-    }
+    // public void setCurrentRobotState(RobotState curState) {
+    //     robotTransitioning = false;
+    //     prevRobotState = robotState;
+    //     robotState = curState;
+    //     System.out.println("Current: " + robotState.toString() + " Prev: " + prevRobotState.toString() + " Goal: "
+    //             + goalRobotState.toString());
+    // }
     public void setCurrentDriveState(DriveState curState) {
         driveTransitioning = false;
         prevDriveState = driveState;
@@ -295,11 +480,11 @@ public class StateMachine extends SubsystemBase {
                 + goalElevManiState.toString());
     }
 
-    public Command setCurrentRobotStateCommand(RobotState curState) {
-        return Commands.runOnce(() -> {
-            setCurrentRobotState(curState);
-        });
-    }
+    // public Command setCurrentRobotStateCommand(RobotState curState) {
+    //     return Commands.runOnce(() -> {
+    //         setCurrentRobotState(curState);
+    //     });
+    // }
     public Command setCurrentDriveStateCommand(DriveState curState) {
         return Commands.runOnce(() -> {
             setCurrentDriveState(curState);
@@ -315,15 +500,15 @@ public class StateMachine extends SubsystemBase {
      * Set the goal state for the robot i.e. where we want it to go
      * @param newState Goal state for the robot to go to
      */
-    public void setRobotGoal(RobotState newState) {
-        // if (currentCommand != null) {
-        //     currentCommand.cancel();
-        // }
-        goalRobotState = newState;
-        robotTransitioning = false;
-        System.out.println("New Goal: " + newState.toString());
-        // currentState = newState;
-    }
+    // public void setRobotGoal(RobotState newState) {
+    //     // if (currentCommand != null) {
+    //     //     currentCommand.cancel();
+    //     // }
+    //     goalRobotState = newState;
+    //     robotTransitioning = false;
+    //     System.out.println("New Goal: " + newState.toString());
+    //     // currentState = newState;
+    // }
     public void setDriveGoal(DriveState newState) {
         // if (currentCommand != null) {
         //     currentCommand.cancel();
@@ -343,9 +528,9 @@ public class StateMachine extends SubsystemBase {
         // currentState = newState;
     }
 
-    public boolean atRobotGoal() {
-        return goalRobotState == robotState;
-    }
+    // public boolean atRobotGoal() {
+    //     return goalRobotState == robotState;
+    // }
     public boolean atDriveGoal() {
         return goalDriveState == driveState;
     }
@@ -380,25 +565,18 @@ public class StateMachine extends SubsystemBase {
      * @param newGoal Goal state for the robot to go to
      * @return Instant command to set goal state
      */
-    public Command setGoalCommand(RobotState newGoal) {
-        return Commands.runOnce(() -> setRobotGoal(newGoal));
+    // public Command setGoalCommand(RobotState newGoal) {
+    //     return Commands.runOnce(() -> setRobotGoal(newGoal));
+    // }
+    public Command setGoalDriveCommand(DriveState newGoal){
+        return Commands.runOnce(() -> setDriveGoal(newGoal));
+    }
+    public Command setGoalElevManiCommand(ElevatorManipulatorState newGoal){
+        return Commands.runOnce(() -> setElevManiGoal(newGoal));
     }
 
 
-    /**
-     * Set the goal state for the robot i.e. where we want it to go
-     * @param newGoal Goal state for the robot to go to
-     * @param wait Boolean to determine if we want to wait for it to finish (True will wait)
-     * @return Instant command to set goal state or command with a wait until at goal
-     */
-    // public Command setGoalCommand(PositionState newGoal, boolean wait) {
-    //     if (wait) {
-    //         return new SetGoalWait(this, newGoal);
-    //     } else {
-    //         return setGoalCommand(newGoal);
-    //     }
-    // }
-
+    /** ----- Branch Selection ----- */
     /**
      * Get if robot wants to score on right branch
      * @return True if right branch
@@ -407,11 +585,7 @@ public class StateMachine extends SubsystemBase {
         return rightScore;
     }
 
-    /**
-     * Set if robot wants to score on right branch
-     * @param right True if right branch
-     */
-    public void setRightScore(boolean right) {
+    private void setRightScore(boolean right) {
         rightScore = right;
     }
 
@@ -423,6 +597,8 @@ public class StateMachine extends SubsystemBase {
     public Command setRightScoreCommand(boolean right) {
         return Commands.runOnce(() -> setRightScore(right));
     }
+     /** ------------------------- */
+
 
     /**
      * Get if robot has coral
@@ -499,7 +675,7 @@ public class StateMachine extends SubsystemBase {
     public void driveStateMachine(){
         //Manage Drive State Machine
             switch (goalDriveState) {
-        case Travel:
+        case Teleop:
                 //free roam, just field oriented driving
             break;
         case FollowPath:
@@ -514,7 +690,7 @@ public class StateMachine extends SubsystemBase {
         case ProcessorRelative:
                 //Commadn to tell robot to dynamically face processor (angel towards it)
             break;
-        case IntakeRelative:
+        case CoralStation:
                 //command to tell robot to face intake (rest is managed by AutomatedDrive)
             break;
         case ReefRelative:
@@ -527,100 +703,12 @@ public class StateMachine extends SubsystemBase {
                 //make sure all of the drive commands are cancelled and robot is stopped
             break;
         default:
+
             System.out.println("Unknown State!!!!!!!!!!");
             break;
         }
     }
 
-    public void elevatorManipulatorStateMachine(){
-        //Manage Elevator and Manipulator State Machine
-            switch (goalElevManiState) {
-        case StartPosition:
-                //Initial robot poisiton when turned on
-            break;
-        case TravelPosition:
-                //TravelPosition Reset, basicaly PreCoralPosition just intake is not running
-            break;
-        case PreCoralIntake:
-                //Prepare for CoralIntake
-            break;
-        case IntakeCoral:
-                //Intake Coral
-            break;
-        case SafeCoralTravel:
-                //Safe Travel with Coral
-            break;
-        case L1Prep:
-                //Prepare for L1 score
-            break;
-        case L2Prep:
-                //Prepare for L2 score
-            break;
-        case L3Prep:
-                //Prepare for L3 score
-            break;
-        case L4Prep:
-                //Prepare for L4 score
-            break;
-        case ScoreL1:
-                //Final position to score L1
-            break;
-        case ScoreL2:
-                //Final position to score L2
-            break;
-        case ScoreL3:
-                //Final position to score L3
-            break;
-        case ScoreL4:
-                //Final position to score L4
-            break;
-        case L1PostScore:
-                //Get into safe position before going down to safe travel
-            break;
-        case L2PostScore:
-                //Get into safe position before going down to safe travel
-            break;
-        case L3PostScore:
-                //
-            break;
-        case L4PostScore:
-                //
-            break;
-        case PrepAlgaeIntake:
-                //Prepare to intake Algae
-            break;
-        case PrepAlgaeL2:
-                //Prepare to intake Algae from L2
-            break;
-        case PrepAlgaeL3:
-                //Prepare to intake Algae from L3
-            break;
-        case SafeAlgaeTravel:
-                //Safe travel with Algae
-            break;
-        case ScoreProssesor:
-                //Score Algae into prossesor final position
-            break;
-        case PrepScoreBarge:
-                //Prepage to score Algae into barge
-            break;
-        case ScoreBarge:
-                //Score Algae into barge
-            break;
-        case ClimbPrep:
-                //Get into safe position before engagin climber
-            break;
-        case ClimbRead:
-                //RetractClimber - Ready to Climb
-            break;
-        case Cancelled:
-                //Cancell all the running commands and states, can also be called using manual override, to reset robot to travel position
-            break;
-        default:
-            System.out.println("Unknown State!!!!!!!!!!");
-            break;
-        }
-    }
     
 
     @Override
@@ -631,189 +719,66 @@ public class StateMachine extends SubsystemBase {
          * Inside each case for each state is specific controls to add moves in case it needs to go somewhere else first (Mostly been moved to individual commands)
          * Finally schedules command(s) at the bottom to be executed
          */
+        
 
-        if (goalRobotState != robotState && !robotIsTransitioning() && atCurrentRobotState() && DriverStation.isEnabled())
-        {
-            switch (goalRobotState) {
+        if(DriverStation.isEnabled()){
+
+            switch (goalElevManiState) {
                 case StartPosition:
-                    //Nothing
-                    //currentCommand = new TravelPosition(diff, elevator, this);
-                    //robotTransitioning = false;
+                        //Initial robot poisiton when turned on
                     break;
-                case Intake:
-                    //set drivetrainstatemachine to IntakeRelative awaiting to get into reefRelative
-                    //when that is done
-                    //elevatorManipulatorStateMachine() to PreCoralIntake
-                    //after few internal cheks it will go to intakecoral and wait until it has coral
-                    //after which it will go to safe coral travel position (robot state will be set to Travel)
-                    //once it got into that position drivetrainstatemachine will be set to reefRelative
-                    
-                    break;
-                case Travel:
-                    //This is internal state where it has a game piece and is in safe travel position before going into any other state
-                    
+                case IntakeCoral:
+                        //Intake Coral
                     break;
                 case L1:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to L1Prep
-                    //when that is done it will be set to ScoreL1 and at the same time drive statemachine will be set to ReefPreScore 
-                    //which mean, it will drive towards closest reef and lock angle to either left or right based on what branch we are scoring on
-                    //once it is at scoreL1 position and at reef prescore position stopped moving or almost stopped moving
-                    // it will kick in the interpolation and wait for driver to hit score button
-                   
+                        //Safe Travel with Coral
                     break;
                 case L2:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to L1Prep
-                    //when that is done it will be set to ScoreL2 and at the same time drive statemachine will be set to ReefPreScore 
-                    //which mean, it will drive towards closest reef and lock angle to either left or right based on what branch we are scoring on
-                    //once it is at scoreL2 position and at reef prescore position stopped moving or almost stopped moving
-                    // it will kick in the interpolation and wait for driver to hit score button
-            
+                        //Prepare for L1 score
                     break;
                 case L3:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to L1Prep
-                    //when that is done it will be set to ScoreL3 and at the same time drive statemachine will be set to ReefPreScore 
-                    //which mean, it will drive towards closest reef and lock angle to either left or right based on what branch we are scoring on
-                    //once it is at scoreL3 position and at reef prescore position stopped moving or almost stopped moving
-                    // it will kick in the interpolation and wait for driver to hit score button
-                  
+                        //Prepare for L2 score
                     break;
                 case L4:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to L1Prep
-                    //when that is done it will be set to ScoreL4 and at the same time drive statemachine will be set to ReefPreScore 
-                    //which mean, it will drive towards closest reef and lock angle to either left or right based on what branch we are scoring on
-                    //once it is at scoreL4 position and at reef prescore position stopped moving or almost stopped moving
-                    // it will kick in the interpolation and wait for driver to hit score button
-                 
+                        //Prepare for L3 score
                     break;
                 case AlgaeL2:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to PrepAlgaeL2 and double make sure 
-                    //drivetrain is set to reefRelative
-                    //when that is done it will be set to IntakeAlgae and wait until it has algae
-                    //when it detects algae, it will be set to SafeAlgaeTravel (robot state will be set to Travel)
-                    //once it got into that position drivetrainstatemachine will be set to prossesor unless driver requests barge (Robot state will be set to Prossesor unless driver specifies barge)
-               
+                        //Prepare for L4 score
                     break;
                 case AlgaeL3:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to PrepAlgaeL2 and double make sure 
-                    //drivetrain is set to reefRelative
-                    //when that is done it will be set to IntakeAlgae and wait until it has algae
-                    //when it detects algae, it will be set to SafeAlgaeTravel (robot state will be set to Travel)
-                    //once it got into that position drivetrainstatemachine will be set to Scoreprossesor unless driver requests barge
-            
+                        //Final position to score L1
                     break;
-                case Prossesor:
-                    //Waits untill driver scores or requests barge
-                  
+                case Processor:
+                        //Final position to score L2
                     break;
                 case Barge:
-                    //Waits untill driver scores
-       
+                        //Final position to score L3
                     break;
                 case Climb:
-                    //Once this state has been set by driver, elevatorManipulatorStateMachine() will be set to ClimbPrep and drivetrain will be set to ClimbRelative
-                    //when that is done it will be set to ClimbRead and wait until driver hits climb button
-                     
+                        //Final position to score L4
                     break;
                 case Manual:
-                    //When driver wants to take over manual control of elevator and manipulator, it will set robot state to manual, 
-                    //state machines will freez at current position and listen for direct commands from the driver
-                    //once disabled robot will follow next state commadn from driver
-                    break;  
-                case Resseting:
-                    //When robot got stuck or something went wrong, driver can resset robot, it will cancel all running commands and set everything to safe travel position
-                    //Also will be done automaticaly if robot is not at goal after certain time or robot needs to change too many states to reach the goal
+                        //Get into safe position before going down to safe travel
+                    break;
+                case Reset:
 
                     break;
                 default:
                     System.out.println("Unknown State!!!!!!!!!!");
                     break;
+                }
+            
+            //Manage Elevator and Manipulator State Machine
+            if (true){
+                driveStateMachine();
             }
 
-            
-                    
-        }
-
-        
-
-        //Manage Elevator and Manipulator State Machine
-        if (true){
-            elevatorManipulatorStateMachine();
             currentCommand.schedule();
         }
-
-        //Manage Drive State Machine
-        if (true){
-            driveStateMachine();
-            currentCommand.schedule();
-        }
-
-
-
-  
-    
-
-        // // LED Management?
-        // if (atCurrentState()) {
-        //     if (isAuto()) {
-        //         ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //     } else if (isDisabled()) {
-        //         ledUtility.getStrip("TopLeft").setEffect(LEDEffect.NAVLIGHTS, Color.kRed);
-        //         ledUtility.getStrip("TopRight").setEffect(LEDEffect.NAVLIGHTS, Color.kGreen);
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //     } else if (getCurrentState() == PositionState.IntakePosition && !manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);
-        //     } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
-        //     } else if (!getRotationLock()) {
-        //         ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
-        //         ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //     } else if (getDriveState() == DriveState.Teleop) {
-        //         if (getRightScore()) {
-        //             ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
-        //             ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
-        //         } else {
-        //             ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
-        //             ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
-        //         }
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-        //     } else if (getDriveState() == DriveState.ReefScoreMove) {
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-        //     } else if (getDriveState() == DriveState.ReefScore) {
-        //         ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
-        //         ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
-        //     } 
-        // }
-
-        // /** Diff Arm Interpolation */
-        // if (atInterpolateScoreState() 
-        //     && diff.hasLaserCanDistance() 
-        //     && !isAuto() 
-        //     && manipulator.hasCoral()) 
-        //     {
-        //     //if (atInterpolateScoreState() && diff.hasLaserCanDistance() && manipulator.hasCoral()) {
-        //         if (currentState == PositionState.L4Position) {
-        //         diff.setExtensionSetpoint(diff.l4ExtensionInterpolate());
-        //         diff.setRotationSetpoint(diff.l4RotationInterpolate());
-        //     } else {
-        //         diff.setExtensionSetpoint(diff.l2_3ExtensionInterpolate());
-        //         diff.setRotationSetpoint(diff.l2_3RotationInterpolate());
-        //     }
-        // }
-
-        stateDash.update(Constants.debugMode);
+       
+       
     }
 
-    // private boolean atInterpolateScoreState() {
-    //     return currentState == PositionState.L2Position
-    //             || currentState == PositionState.L3Position || currentState == PositionState.L4Position;
-    // }
 }
 
 
