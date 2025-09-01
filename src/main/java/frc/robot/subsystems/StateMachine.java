@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import java.lang.Thread.State;
 import java.util.Queue;
 
+import com.pathplanner.lib.commands.FollowPathCommand;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
@@ -12,6 +14,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.DriveCommands.CoralStationDrive;
+import frc.robot.commands.DriveCommands.FollowPathDrive;
+import frc.robot.commands.DriveCommands.ProcessorRelativeDrive;
+import frc.robot.commands.DriveCommands.ReefAlignDrive;
+import frc.robot.commands.DriveCommands.ReefRelativeDrive;
+import frc.robot.commands.DriveCommands.TeleopDrive;
 import frc.utils.GraphCommand;
 import frc.utils.GraphCommand.GraphCommandNode;
 import frc.utils.LEDUtility;
@@ -81,7 +89,7 @@ public class StateMachine extends SubsystemBase {
 
     /*
      * Graph Command Nodes
-     **/
+     */
     GraphCommandNode startPosition = m_graphCommand.new GraphCommandNode(
         "StartPosition", 
         new PrintCommand("Nothing"),
@@ -243,31 +251,28 @@ public class StateMachine extends SubsystemBase {
     //General State Variables
     private boolean rotLock = true; //Lock rotation when driving preventing user from overriding
     private boolean rightScore = false; //Selecting Branch for scoring
-    private boolean driveTransitioning = false; //If drivetrain statemachine transitioning
-    private boolean elevManiTransitioning = false; //If elevatorManipulator is transitioning between states
     private boolean isAuto = false; //If robot is in auto mode
     private boolean isDisabled = false; //If robot is disabled
 
-    private Command currentCommand = null;
+    private Command currentDriveCommand = null;
+    private Command getCurrentElevManiCommand = null;
 
     private EndEffector endEffector = EndEffector.HasCoral; //When robot starts, it knows, it has coral
-
-    // State storage and queueing
-    // private RobotState prevRobotState = RobotState.StartPosition;
-    // private RobotState robotState = RobotState.StartPosition; //current main robot state
-    // private RobotState goalRobotState = RobotState.StartPosition; //PositionState.TravelPosition;
     private DriveState prevDriveState = DriveState.Teleop;
     private DriveState driveState = DriveState.Teleop;
     private DriveState goalDriveState = DriveState.Teleop;
+    private boolean driveTransitioning = false; //If drivetrain statemachine transitioning
     private ElevatorManipulatorState prevElevManiState = ElevatorManipulatorState.StartPosition;
     private ElevatorManipulatorState elevManiState = ElevatorManipulatorState.StartPosition; //When robot is turned on, this isthe starting state
     private ElevatorManipulatorState goalElevManiState = ElevatorManipulatorState.StartPosition;
+    private boolean elevManiTransitioning = false; //If elevatorManipulator is transitioning between states
 
 
     /*
      * Creat a new StateSubsystem
      **/
     public StateMachine(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manipulator, PoseEstimatorSubsystem m_pose, LEDUtility m_ledUtility, XboxController m_driverController) {
+
         diff = m_diff;
         elevator = m_elevator;
         drive = m_drive;
@@ -344,13 +349,37 @@ public class StateMachine extends SubsystemBase {
     }
 
 
-     /** Triggers? */
-      public Trigger atDriveTarget() {
-         return new Trigger(() -> pose.atTargetPose() && atCurrentDriveState());
-     }
-     public Trigger atElevManiTarget() {
-         return new Trigger(() -> elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && atCurrentElevManiState());
-     }
+    /** ----- Branch Selection ----- */
+    /**
+     * Get if robot wants to score on right branch
+     * @return True if right branch
+     */
+    public boolean getRightScore() {
+        return rightScore;
+    }
+
+    private void setRightScore(boolean right) {
+        rightScore = right;
+    }
+
+    /**
+     * Set if robot wants to score on right branch
+     * @param right True if right branch
+     * @return Instant command to set right branch
+     */
+    public Command setRightScoreCommand(boolean right) {
+        return Commands.runOnce(() -> setRightScore(right));
+    }
+     /** ------------------------- */
+
+
+    //  /** Triggers? */
+    //   public Trigger atDriveTarget() {
+    //      return new Trigger(() -> pose.atTargetPose() && atCurrentDriveState());
+    //  }
+    //  public Trigger atElevManiTarget() {
+    //      return new Trigger(() -> elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && atCurrentElevManiState());
+    //  }
 
     //  //QUESTIONED
     //  public boolean atAlgaePosition() {
@@ -371,17 +400,17 @@ public class StateMachine extends SubsystemBase {
     // public boolean robotIsTransitioning() {
     //     return robotTransitioning;
     // }
-    public boolean driveIsTransitioning() {
-        return driveTransitioning;
-    }
-    public boolean elevManiIsTransitioning() {
-        return elevManiTransitioning;
-    }
+    // public boolean driveIsTransitioning() {
+    //     return driveTransitioning;
+    // }
+    // public boolean elevManiIsTransitioning() {
+    //     return elevManiTransitioning;
+    // }
 
-     //LATER SHUOLD BE MODIFIED, PASTED FROM ORIGINAL ONE
-     public boolean atSafeState() {
-        return (getCurrentElevManiState() == ElevatorManipulatorState.StartPosition);
-    }
+    //  //LATER SHUOLD BE MODIFIED, PASTED FROM ORIGINAL ONE
+    //  public boolean atSafeState() {
+    //     return (getCurrentElevManiState() == ElevatorManipulatorState.StartPosition);
+    // }
 
     /**
      * Get current state robot is in
@@ -390,9 +419,9 @@ public class StateMachine extends SubsystemBase {
     // public RobotState getCurrentState() {
     //     return robotState;
     // }
-    public DriveState getCurrentDriveState() {
-        return driveState;
-    }
+    // public DriveState getCurrentDriveState() {
+    //     return driveState;
+    // }
     public ElevatorManipulatorState getCurrentElevManiState() {
         return elevManiState;
     }  
@@ -404,12 +433,12 @@ public class StateMachine extends SubsystemBase {
     // public boolean atCurrentRobotState() {
     //     return atCurrentDriveState() && atCurrentElevManiState() && !robotIsTransitioning();
     // }
-    public boolean atCurrentDriveState() { //FIND THE RIGHT CODE CHECK
-        return pose.atTargetPose() && !driveIsTransitioning();
-    }
-    public boolean atCurrentElevManiState() {
-        return elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && !elevManiIsTransitioning();
-    }
+    // public boolean atCurrentDriveState() { //FIND THE RIGHT CODE CHECK
+    //     return pose.atTargetPose() && !driveIsTransitioning();
+    // }
+    // public boolean atCurrentElevManiState() {
+    //     return elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && !elevManiIsTransitioning();
+    // }
 
     /**
      * Get previous state of the robot
@@ -418,26 +447,14 @@ public class StateMachine extends SubsystemBase {
     // public RobotState getPrevRobotState() {
     //     return prevRobotState;
     // }
-    public DriveState getPrevDriveState() {
-        return prevDriveState;
-    }
-    public ElevatorManipulatorState getPrevElevManiState() {
-        return prevElevManiState;
-    }
-
-    /**
-     * Get goal state of the robot
-     * @return Goal state of the robot
-     */
-    // public RobotState getGoalRobotState() {
-    //     return goalRobotState;
+    // public DriveState getPrevDriveState() {
+    //     return prevDriveState;
     // }
-    public DriveState getGoalDriveState() {
-        return goalDriveState;
-    }
-    public ElevatorManipulatorState getGoalElevManiState() {
-        return goalElevManiState;
-    }
+    // public ElevatorManipulatorState getPrevElevManiState() {
+    //     return prevElevManiState;
+    // }
+
+
 
     /**
      * Set the current state of the robot. Also sets the previous state to where it was before
@@ -450,78 +467,47 @@ public class StateMachine extends SubsystemBase {
     //     System.out.println("Current: " + robotState.toString() + " Prev: " + prevRobotState.toString() + " Goal: "
     //             + goalRobotState.toString());
     // }
-    public void setCurrentDriveState(DriveState curState) {
-        driveTransitioning = false;
-        prevDriveState = driveState;
-        driveState = curState;
-        System.out.println("Current: " + driveState.toString() + " Prev: " + prevDriveState.toString() + " Goal: "
-                + goalDriveState.toString());
-    }
-    public void setCurrentElevManiState(ElevatorManipulatorState curState) {
-        elevManiTransitioning = false;
-        prevElevManiState = elevManiState;
-        elevManiState = curState;
-        System.out.println("Current: " + elevManiState.toString() + " Prev: " + prevElevManiState.toString() + " Goal: "
-                + goalElevManiState.toString());
-    }
+    // public void setCurrentDriveState(DriveState curState) {
+    //     driveTransitioning = false;
+    //     prevDriveState = driveState;
+    //     driveState = curState;
+    //     System.out.println("Current: " + driveState.toString() + " Prev: " + prevDriveState.toString() + " Goal: "
+    //             + goalDriveState.toString());
+    // }
+    // public void setCurrentElevManiState(ElevatorManipulatorState curState) {
+    //     elevManiTransitioning = false;
+    //     prevElevManiState = elevManiState;
+    //     elevManiState = curState;
+    //     System.out.println("Current: " + elevManiState.toString() + " Prev: " + prevElevManiState.toString() + " Goal: "
+    //             + goalElevManiState.toString());
+    // }
 
     // public Command setCurrentRobotStateCommand(RobotState curState) {
     //     return Commands.runOnce(() -> {
     //         setCurrentRobotState(curState);
     //     });
     // }
-    public Command setCurrentDriveStateCommand(DriveState curState) {
-        return Commands.runOnce(() -> {
-            setCurrentDriveState(curState);
-        });
-    }
-    public Command setCurrentElevManiStateCommand(ElevatorManipulatorState curState) {
-        return Commands.runOnce(() -> {
-            setCurrentElevManiState(curState);
-        });
-    }
-
-    /**
-     * Set the goal state for the robot i.e. where we want it to go
-     * @param newState Goal state for the robot to go to
-     */
-    // public void setRobotGoal(RobotState newState) {
-    //     // if (currentCommand != null) {
-    //     //     currentCommand.cancel();
-    //     // }
-    //     goalRobotState = newState;
-    //     robotTransitioning = false;
-    //     System.out.println("New Goal: " + newState.toString());
-    //     // currentState = newState;
+    // public Command setCurrentDriveStateCommand(DriveState curState) {
+    //     return Commands.runOnce(() -> {
+    //         setCurrentDriveState(curState);
+    //     });
     // }
-    public void setDriveGoal(DriveState newState) {
-        // if (currentCommand != null) {
-        //     currentCommand.cancel();
-        // }
-        goalDriveState = newState;
-        driveTransitioning = false;
-        System.out.println("New Goal: " + newState.toString());
-        // currentState = newState;
-    }
-    public void setElevManiGoal(ElevatorManipulatorState newState) {
-        // if (currentCommand != null) {
-        //     currentCommand.cancel();
-        // }
-        goalElevManiState = newState;
-        elevManiTransitioning = false;
-        System.out.println("New Goal: " + newState.toString());
-        // currentState = newState;
-    }
+    // public Command setCurrentElevManiStateCommand(ElevatorManipulatorState curState) {
+    //     return Commands.runOnce(() -> {
+    //         setCurrentElevManiState(curState);
+    //     });
+    // }
+
 
     // public boolean atRobotGoal() {
     //     return goalRobotState == robotState;
     // }
-    public boolean atDriveGoal() {
-        return goalDriveState == driveState;
-    }
-    public boolean atElevManiGoal() {
-        return goalElevManiState == elevManiState;
-    }
+    // public boolean atDriveGoal() {
+    //     return goalDriveState == driveState;
+    // }
+    // public boolean atElevManiGoal() {
+    //     return goalElevManiState == elevManiState;
+    // }
 
     /**
      * Cancels current running command or sequence of commands. Also sets current state to cancelled and sets the subsystems to their current position
@@ -545,14 +531,26 @@ public class StateMachine extends SubsystemBase {
     //     return Commands.runOnce(() -> cancelCurrentCommand());
     // }
 
-    /**
-     * Set the goal state for the robot i.e. where we want it to go
-     * @param newGoal Goal state for the robot to go to
-     * @return Instant command to set goal state
-     */
-    // public Command setGoalCommand(RobotState newGoal) {
-    //     return Commands.runOnce(() -> setRobotGoal(newGoal));
-    // }
+
+    /** ----- Goal Commands ------ */
+    private void setDriveGoal(DriveState newState) {
+        // if (currentCommand != null) {
+        //     currentCommand.cancel();
+        // }
+        goalDriveState = newState;
+        driveTransitioning = false;
+        System.out.println("New Goal: " + newState.toString());
+        // currentState = newState;
+    }
+    private void setElevManiGoal(ElevatorManipulatorState newState) {
+        // if (currentCommand != null) {
+        //     currentCommand.cancel();
+        // }
+        goalElevManiState = newState;
+        elevManiTransitioning = false;
+        System.out.println("New Goal: " + newState.toString());
+        // currentState = newState;
+    }
     public Command setGoalDriveCommand(DriveState newGoal){
         return Commands.runOnce(() -> setDriveGoal(newGoal));
     }
@@ -560,29 +558,14 @@ public class StateMachine extends SubsystemBase {
         return Commands.runOnce(() -> setElevManiGoal(newGoal));
     }
 
-
-    /** ----- Branch Selection ----- */
-    /**
-     * Get if robot wants to score on right branch
-     * @return True if right branch
-     */
-    public boolean getRightScore() {
-        return rightScore;
+    public DriveState getGoalDriveState() {
+        return goalDriveState;
     }
-
-    private void setRightScore(boolean right) {
-        rightScore = right;
+    public ElevatorManipulatorState getGoalElevManiState() {
+        return goalElevManiState;
     }
+    /** ------------------------- */
 
-    /**
-     * Set if robot wants to score on right branch
-     * @param right True if right branch
-     * @return Instant command to set right branch
-     */
-    public Command setRightScoreCommand(boolean right) {
-        return Commands.runOnce(() -> setRightScore(right));
-    }
-     /** ------------------------- */
 
 
     /**
@@ -671,28 +654,28 @@ public class StateMachine extends SubsystemBase {
         //Manage Drive State Machine
             switch (goalDriveState) {
         case Teleop:
-                //free roam, just field oriented driving
+            currentDriveCommand = new TeleopDrive(this, drive, pose, driverController);
             break;
         case FollowPath:
-                //path to follow
+            currentDriveCommand = new FollowPathDrive(this, drive, pose, driverController);
             break;
         case BargeRelative:
                 //command to tell robot to face barge
             break;
         case ClimbRelative:
-                //command to tell robot to face climb
+                //command to tell robot to face climb 
             break;
         case ProcessorRelative:
-                //Commadn to tell robot to dynamically face processor (angel towards it)
+                currentDriveCommand = new ProcessorRelativeDrive(this, drive, pose, driverController);
             break;
         case CoralStation:
-                //command to tell robot to face intake (rest is managed by AutomatedDrive)
+                currentDriveCommand = new CoralStationDrive(this, drive, pose, driverController);
             break;
         case ReefRelative:
-                //command to tell robot to face towards closest reef (rest is managed by AutomatedDrive)
+                currentDriveCommand = new ReefRelativeDrive(this, drive, pose, driverController);
             break;
         case ReefAlign:         
-               //still faces reef but locks angle to either left or right side based on what branch we are scoring on and does not drive, locked in position waiting to score
+               currentDriveCommand = new ReefAlignDrive(this, drive, pose, driverController);
             break;
         case Cancelled:
                 //make sure all of the drive commands are cancelled and robot is stopped
@@ -723,34 +706,34 @@ public class StateMachine extends SubsystemBase {
                         //Initial robot poisiton when turned on
                     break;
                 case IntakeCoral:
-                        //Intake Coral
+                    setGoalDriveCommand(DriveState.CoralStation);
                     break;
                 case L1:
-                        //Safe Travel with Coral
+                    setGoalDriveCommand(DriveState.ReefRelative);
                     break;
                 case L2:
-                        //Prepare for L1 score
+                    
                     break;
                 case L3:
-                        //Prepare for L2 score
+                    
                     break;
                 case L4:
-                        //Prepare for L3 score
+                    
                     break;
                 case AlgaeL2:
-                        //Prepare for L4 score
+                    
                     break;
                 case AlgaeL3:
-                        //Final position to score L1
+                    
                     break;
                 case Processor:
-                        //Final position to score L2
+                    setGoalDriveCommand(DriveState.ProcessorRelative);
                     break;
                 case Barge:
-                        //Final position to score L3
+                    setGoalDriveCommand(DriveState.Teleop);
                     break;
                 case Climb:
-                        //Final position to score L4
+                    setGoalDriveCommand(DriveState.Teleop);
                     break;
                 case Manual:
                         //Get into safe position before going down to safe travel
@@ -763,12 +746,10 @@ public class StateMachine extends SubsystemBase {
                     break;
                 }
             
-            //Manage Elevator and Manipulator State Machine
-            if (true){
-                driveStateMachine();
-            }
 
-            currentCommand.schedule();
+                driveStateMachine();
+
+            currentDriveCommand.schedule();
         }
        
        
