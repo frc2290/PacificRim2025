@@ -4,34 +4,18 @@ import java.lang.Thread.State;
 import java.util.Queue;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.commands.IntakeAlgae;
-import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.Positions.AlgaeL2Position;
-import frc.robot.commands.Positions.AlgaeL3Position;
-import frc.robot.commands.Positions.ClimbPosition;
-import frc.robot.commands.Positions.IntakePosition;
-import frc.robot.commands.Positions.L1Position;
-import frc.robot.commands.Positions.L2Position;
-import frc.robot.commands.Positions.L3Position;
-import frc.robot.commands.Positions.L4Position;
-import frc.robot.commands.Positions.ProcessorPosition;                
-import frc.robot.commands.Positions.TravelPosition;
-import frc.robot.commands.Waits.SetGoalWait;
-import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.GraphCommand;
 import frc.utils.GraphCommand.GraphCommandNode;
-import frc.utils.LEDEffects;
-import frc.utils.LEDEffects.LEDEffect;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
-import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 
 public class StateMachine extends SubsystemBase {
@@ -44,6 +28,7 @@ public class StateMachine extends SubsystemBase {
     private ManipulatorSubsystem manipulator;
     private PoseEstimatorSubsystem pose;
     private LEDUtility ledUtility;
+    private XboxController driverController;
 
 
     /**
@@ -57,7 +42,7 @@ public class StateMachine extends SubsystemBase {
         ProcessorRelative, //Faces Processor
         CoralStation,    //FacesIntake based on half field
         ReefRelative,      //FacesReef based on robot position and angles as drives around
-        ReefPreScore,       //Locked to right or left reef, holding position
+        ReefAlign,       //Locked to right or left reef, holding position
         Cancelled
     }
 
@@ -260,7 +245,6 @@ public class StateMachine extends SubsystemBase {
     private boolean rightScore = false; //Selecting Branch for scoring
     private boolean driveTransitioning = false; //If drivetrain statemachine transitioning
     private boolean elevManiTransitioning = false; //If elevatorManipulator is transitioning between states
-    // private boolean robotTransitioning = false; //If robot is transitioning between main states
     private boolean isAuto = false; //If robot is in auto mode
     private boolean isDisabled = false; //If robot is disabled
 
@@ -283,13 +267,14 @@ public class StateMachine extends SubsystemBase {
     /*
      * Creat a new StateSubsystem
      **/
-    public StateMachine(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manipulator, PoseEstimatorSubsystem m_pose, LEDUtility m_ledUtility) {
+    public StateMachine(DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, DriveSubsystem m_drive, ManipulatorSubsystem m_manipulator, PoseEstimatorSubsystem m_pose, LEDUtility m_ledUtility, XboxController m_driverController) {
         diff = m_diff;
         elevator = m_elevator;
         drive = m_drive;
         manipulator = m_manipulator;
         pose = m_pose;
         ledUtility = m_ledUtility;
+        driverController = m_driverController;
 
         //Graph Command setup
         m_graphCommand.setGraphRootNode(startPosition); //rood node
@@ -672,6 +657,16 @@ public class StateMachine extends SubsystemBase {
         isDisabled = disabled;
     }
 
+
+    public Command safeSwitch(Command oldCmd, Command newCmd) {
+    return new InstantCommand(() -> {
+        if (oldCmd.isScheduled()) {
+            oldCmd.cancel();
+        }
+        newCmd.schedule();
+    });
+}
+
     public void driveStateMachine(){
         //Manage Drive State Machine
             switch (goalDriveState) {
@@ -696,7 +691,7 @@ public class StateMachine extends SubsystemBase {
         case ReefRelative:
                 //command to tell robot to face towards closest reef (rest is managed by AutomatedDrive)
             break;
-        case ReefPreScore:         
+        case ReefAlign:         
                //still faces reef but locks angle to either left or right side based on what branch we are scoring on and does not drive, locked in position waiting to score
             break;
         case Cancelled:

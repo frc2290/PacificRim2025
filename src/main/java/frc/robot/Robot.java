@@ -9,6 +9,7 @@ import org.littletonrobotics.urcl.URCL;
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -35,6 +36,7 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   
   private final LEDUtility m_ledUtility = new LEDUtility(0);
+  private XboxController m_driver = new XboxController(0);
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
@@ -42,7 +44,7 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateMachine m_state = new StateMachine(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+  private final StateMachine m_state = new StateMachine(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility, m_driver);
 
   public Robot() {
     CanBridge.runTCP();
@@ -56,7 +58,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state);
+    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state, m_driver);
     DataLogManager.start();
 
     URCL.start();

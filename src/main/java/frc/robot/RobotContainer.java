@@ -52,7 +52,7 @@ public class RobotContainer {
     private final StateMachine m_state;
 
     // The driver's controller
-    XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
+    XboxController m_driverController;
 
     // Auto Chooser for Dashboard
     SendableChooser<Command> auto_chooser = new SendableChooser<>();
@@ -61,7 +61,8 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer(LEDUtility _led, DriveSubsystem _drive, PoseEstimatorSubsystem _pose, ElevatorSubsystem _elev,
-            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, StateMachine _state) {
+            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, StateMachine _state, XboxController _driverController) {
+        m_driverController = _driverController;
         m_ledUtility = _led;
         m_robotDrive = _drive;
         m_poseEstimator = _pose;
