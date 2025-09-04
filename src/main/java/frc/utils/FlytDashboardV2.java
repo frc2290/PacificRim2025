@@ -2,7 +2,6 @@ package frc.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
@@ -16,13 +15,7 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 
 /**
- * A comprehensive manager for robot-dashboard communication using the modern
- * NetworkTables PubSub API.
- * <p>
- * This class provides a centralized way to publish robot data to the dashboard
- * and subscribe to values sent from the dashboard, all within a single,
- * clean API. It is designed to be instantiated once per robot, and its methods
- * can be called from various subsystems to register and update variables.
+ * FlytDashboardV2 - Pub/Sub-based NetworkTables wrapper
  */
 public class FlytDashboardV2 {
 
@@ -32,127 +25,67 @@ public class FlytDashboardV2 {
     private final Map<String, DoublePublisher> doublePublishers = new HashMap<>();
     private final Map<String, StringPublisher> stringPublishers = new HashMap<>();
 
-    /**
-     * Constructs a new dashboard manager for a specific NetworkTable.
-     *
-     * @param tableName The name of the NetworkTable to use (e.g., "drive", "arm", etc.).
-     */
+    private final Map<String, BooleanSubscriber> boolSubscribers = new HashMap<>();
+    private final Map<String, IntegerSubscriber> intSubscribers = new HashMap<>();
+    private final Map<String, DoubleSubscriber> doubleSubscribers = new HashMap<>();
+    private final Map<String, StringSubscriber> stringSubscribers = new HashMap<>();
+
     public FlytDashboardV2(String tableName) {
         this.table = NetworkTableInstance.getDefault().getTable(tableName);
     }
 
-    /**
-     * Publishes a boolean value to the dashboard.
-     *
-     * @param key The key to identify the value.
-     * @param value The boolean value to send to the dashboard.
-     */
+    // === Boolean ===
     public void putBoolean(String key, boolean value) {
-        table.getEntry(key).setBoolean(value);
+        boolPublishers.computeIfAbsent(key, k -> table.getBooleanTopic(k).publish()).set(value);
     }
 
-    /**
-     * Gets a boolean value from the dashboard, providing a default if not found.
-     *
-     * @param key The key to identify the value.
-     * @param defaultValue The default value to return if the key is not found.
-     * @return The boolean value from the dashboard or the default value.
-     */
     public boolean getBoolean(String key, boolean defaultValue) {
-        return table.getEntry(key).getBoolean(defaultValue);
+        return boolSubscribers.computeIfAbsent(key, k -> table.getBooleanTopic(k).subscribe(defaultValue)).get();
     }
 
-    /**
-     * Publishes a double value to the dashboard.
-     *
-     * @param key The key to identify the value.
-     * @param value The double value to send to the dashboard.
-     */
+    // === Double ===
     public void putDouble(String key, double value) {
-        table.getEntry(key).setDouble(value);
+        doublePublishers.computeIfAbsent(key, k -> table.getDoubleTopic(k).publish()).set(value);
     }
 
-    /**
-     * Gets a double value from the dashboard, providing a default if not found.
-     *
-     * @param key The key to identify the value.
-     * @param defaultValue The default value to return if the key is not found.
-     * @return The double value from the dashboard or the default value.
-     */
     public double getDouble(String key, double defaultValue) {
-        return table.getEntry(key).getDouble(defaultValue);
+        return doubleSubscribers.computeIfAbsent(key, k -> table.getDoubleTopic(k).subscribe(defaultValue)).get();
     }
 
-    /**
-     * Publishes an integer value to the dashboard.
-     *
-     * @param key The key to identify the value.
-     * @param value The integer value to send to the dashboard.
-     */
+    // === Integer ===
     public void putInteger(String key, int value) {
-        table.getEntry(key).setInteger(value);
+        intPublishers.computeIfAbsent(key, k -> table.getIntegerTopic(k).publish()).set(value);
     }
 
-    /**
-     * Gets an integer value from the dashboard, providing a default if not found.
-     *
-     * @param key The key to identify the value.
-     * @param defaultValue The default value to return if the key is not found.
-     * @return The integer value from the dashboard or the default value.
-     */
     public int getInteger(String key, int defaultValue) {
-        return (int) table.getEntry(key).getInteger(defaultValue);
+        return (int) intSubscribers.computeIfAbsent(key, k -> table.getIntegerTopic(k).subscribe(defaultValue)).get();
     }
 
-    /**
-     * Publishes a string value to the dashboard.
-     *
-     * @param key The key to identify the value.
-     * @param value The string value to send to the dashboard.
-     */
+    // === String ===
     public void putString(String key, String value) {
-        table.getEntry(key).setString(value);
+        stringPublishers.computeIfAbsent(key, k -> table.getStringTopic(k).publish()).set(value);
     }
 
-    /**
-     * Gets a string value from the dashboard, providing a default if not found.
-     *
-     * @param key The key to identify the value.
-     * @param defaultValue The default value to return if the key is not found.
-     * @return The string value from the dashboard or the default value.
-     */
     public String getString(String key, String defaultValue) {
-        return table.getEntry(key).getString(defaultValue);
+        return stringSubscribers.computeIfAbsent(key, k -> table.getStringTopic(k).subscribe(defaultValue)).get();
     }
 
-    /**
-     * A simple example of how to use the FlytDashboard class.
-     * You would use this logic inside your robot's main code, not as a standalone main method.
-     */
-    public static void main(String[] args) {
-        // --- Example Usage in a Robot Class or Subsystem ---
-
-        // Create a FlytDashboard object for the "RobotStates" table.
-        FlytDashboardV2 robotDashboard = new FlytDashboardV2("RobotStates");
-
-        // --- Sending data to the dashboard ---
-        System.out.println("Putting values to dashboard...");
-        double currentSpeed = 5.67;
-        boolean hasCoral = true;
-        String robotStatus = "Ready to intake";
-
-        robotDashboard.putDouble("CurrentSpeed", currentSpeed);
-        robotDashboard.putBoolean("HasCoral", hasCoral);
-        robotDashboard.putString("RobotStatus", robotStatus);
-
-        System.out.println("Values sent to the 'RobotStates' table.");
-
-        // --- Getting data from the dashboard ---
-        System.out.println("Getting values from dashboard...");
-        double desiredSpeed = robotDashboard.getDouble("DesiredSpeed", 0.0);
-        boolean intakeOverride = robotDashboard.getBoolean("IntakeOverride", false);
-
-        System.out.println("Received DesiredSpeed: " + desiredSpeed);
-        System.out.println("Received IntakeOverride: " + intakeOverride);
+    // === Bulk Logging ===
+    public void putAll(Map<String, Object> values) {
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof Boolean b) {
+                putBoolean(key, b);
+            } else if (value instanceof Integer i) {
+                putInteger(key, i);
+            } else if (value instanceof Double d) {
+                putDouble(key, d);
+            } else if (value instanceof String s) {
+                putString(key, s);
+            } else {
+                System.out.println("[FlytDashboardV2] Unsupported type for key: " + key + " -> " + value);
+            }
+        }
     }
 }

@@ -7,7 +7,6 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -20,6 +19,7 @@ import frc.robot.commands.DriveCommands.ProcessorRelativeDrive;
 import frc.robot.commands.DriveCommands.ReefAlignDrive;
 import frc.robot.commands.DriveCommands.ReefRelativeDrive;
 import frc.robot.commands.DriveCommands.TeleopDrive;
+import frc.utils.FlytDashboardV2;
 import frc.utils.GraphCommand;
 import frc.utils.GraphCommand.GraphCommandNode;
 import frc.utils.LEDUtility;
@@ -30,6 +30,7 @@ public class StateMachine extends SubsystemBase {
 
     //Place to import csubsystems and commmands
     private GraphCommand m_graphCommand = new GraphCommand();
+    FlytDashboardV2 dashboard = new FlytDashboardV2("State Machine");
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;
     private DriveSubsystem drive;
@@ -254,8 +255,10 @@ public class StateMachine extends SubsystemBase {
     private boolean isAuto = false; //If robot is in auto mode
     private boolean isDisabled = false; //If robot is disabled
 
+    private Command oldDriveCommmand = null;
     private Command currentDriveCommand = null;
-    private Command getCurrentElevManiCommand = null;
+    private Command olfElevManiCommand = null;
+    private Command CurrentElevManiCommand = null;
 
     private EndEffector endEffector = EndEffector.HasCoral; //When robot starts, it knows, it has coral
     private DriveState prevDriveState = DriveState.Teleop;
@@ -539,7 +542,7 @@ public class StateMachine extends SubsystemBase {
         // }
         goalDriveState = newState;
         driveTransitioning = false;
-        System.out.println("New Goal: " + newState.toString());
+        System.out.println("New DriveGoal: " + newState.toString());
         // currentState = newState;
     }
     private void setElevManiGoal(ElevatorManipulatorState newState) {
@@ -548,7 +551,7 @@ public class StateMachine extends SubsystemBase {
         // }
         goalElevManiState = newState;
         elevManiTransitioning = false;
-        System.out.println("New Goal: " + newState.toString());
+        System.out.println("New Elevstor/Manipultor Goal: " + newState.toString());
         // currentState = newState;
     }
     public Command setGoalDriveCommand(DriveState newGoal){
@@ -681,10 +684,11 @@ public class StateMachine extends SubsystemBase {
                 //make sure all of the drive commands are cancelled and robot is stopped
             break;
         default:
-
             System.out.println("Unknown State!!!!!!!!!!");
             break;
         }
+
+
     }
 
     
@@ -747,9 +751,13 @@ public class StateMachine extends SubsystemBase {
                 }
             
 
+            if (oldDriveCommmand != currentDriveCommand && currentDriveCommand != null){
                 driveStateMachine();
+                            
+                safeSwitch(oldDriveCommmand, currentDriveCommand);
+                oldDriveCommmand = currentDriveCommand;
+            }
 
-            currentDriveCommand.schedule();
         }
        
        
