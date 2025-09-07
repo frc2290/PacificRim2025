@@ -97,6 +97,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_state.setAuto(true);
     m_state.setDisabled(false);
+    m_state.setGoalElevManiCommand(ElevatorManipulatorState.StartPosition); //reset to safe coral travel at start of auto
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*

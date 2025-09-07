@@ -131,6 +131,11 @@ public class RobotContainer {
         Trigger not_on_manual = on_manual.negate();
 
 
+
+
+
+
+
         // Controller Buttons
         //extra buttons for different statemachine states HERE
         not_on_manual.and(a_button).and(not_left_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.L1)); // Set to L1
@@ -150,7 +155,7 @@ public class RobotContainer {
         dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); //run intake
         
         // Controller Triggers
-        left_trigger.onTrue(m_state.setGoalDriveCommand(DriveState.ReefRelative)).onFalse(m_state.setGoalDriveCommand(DriveState.Teleop));
+        left_trigger.onTrue(m_state.setGoalDriveCommand(DriveState.ReefAlign)).onFalse(m_state.setGoalDriveCommand(DriveState.ReefRelative));
         //right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral RECHECK
 
 

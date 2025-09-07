@@ -19,6 +19,7 @@ import frc.robot.commands.DriveCommands.ProcessorRelativeDrive;
 import frc.robot.commands.DriveCommands.ReefAlignDrive;
 import frc.robot.commands.DriveCommands.ReefRelativeDrive;
 import frc.robot.commands.DriveCommands.TeleopDrive;
+import frc.robot.commands.ElevatorManipulator.SafeTravel;
 import frc.utils.FlytDashboardV2;
 import frc.utils.GraphCommand;
 import frc.utils.GraphCommand.GraphCommandNode;
@@ -29,8 +30,8 @@ import frc.utils.PoseEstimatorSubsystem;
 public class StateMachine extends SubsystemBase {
 
     //Place to import csubsystems and commmands
-    private GraphCommand m_graphCommand = new GraphCommand();
-    FlytDashboardV2 dashboard = new FlytDashboardV2("State Machine");
+    private GraphCommand m_graphCommand;
+    private FlytDashboardV2 dashboard;
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;
     private DriveSubsystem drive;
@@ -93,7 +94,7 @@ public class StateMachine extends SubsystemBase {
      */
     GraphCommandNode startPosition = m_graphCommand.new GraphCommandNode(
         "StartPosition", 
-        new PrintCommand("Nothing"),
+        new PrintCommand("Robot is at start position"),
         new PrintCommand("Nothing"),
         new PrintCommand("Nothing"));
     
@@ -112,9 +113,9 @@ public class StateMachine extends SubsystemBase {
 
     GraphCommandNode safeCoralTravel = m_graphCommand.new GraphCommandNode(
         "SafeCoralTravel",
-        new PrintCommand("Move into safe coral travel position, by this point all of the running commands have finished and robot is wainting for driver commands"),
-        new PrintCommand("Nothing"),
-        new PrintCommand("Nothing"));
+        new SafeTravel(diff, elevator, this),
+        setCurrentDriveStateCommand(DriveState.Teleop),
+        reachedElevManiGoalCommand());
 
     GraphCommandNode l1Prep = m_graphCommand.new GraphCommandNode(
         "L1Prep",
@@ -258,7 +259,7 @@ public class StateMachine extends SubsystemBase {
     private Command oldDriveCommmand = null;
     private Command currentDriveCommand = null;
     private Command olfElevManiCommand = null;
-    private Command CurrentElevManiCommand = null;
+    private Command currentElevManiCommand = null;
 
     private EndEffector endEffector = EndEffector.HasCoral; //When robot starts, it knows, it has coral
     private DriveState prevDriveState = DriveState.Teleop;
@@ -283,6 +284,9 @@ public class StateMachine extends SubsystemBase {
         pose = m_pose;
         ledUtility = m_ledUtility;
         driverController = m_driverController;
+
+        dashboard = new FlytDashboardV2("StateMachine");
+        m_graphCommand = new GraphCommand();
 
         //Graph Command setup
         m_graphCommand.setGraphRootNode(startPosition); //rood node
@@ -376,10 +380,22 @@ public class StateMachine extends SubsystemBase {
      /** ------------------------- */
 
 
-    //  /** Triggers? */
-    //   public Trigger atDriveTarget() {
-    //      return new Trigger(() -> pose.atTargetPose() && atCurrentDriveState());
-    //  }
+    /** Triggers? */
+    // Trigger hasCoral = manipulator.hasCoralTrigger();
+
+    // public Trigger atElevManiTarget() {
+    //     return new Trigger(() ->
+    //         elevator.atPosition() &&
+    //         diff.atExtenstionSetpoint() &&
+    //         diff.atRotationSetpoint() &&
+    //         atCurrentElevManiState()
+    //     );
+    // }
+
+    // atElevManiTarget().onTrue(new SomeCommand());
+
+    // Trigger hasAlgae = manipulator.hasAlgaeTrigger();
+
     //  public Trigger atElevManiTarget() {
     //      return new Trigger(() -> elevator.atPosition() && diff.atExtenstionSetpoint() && diff.atRotationSetpoint() && atCurrentElevManiState());
     //  }
@@ -414,21 +430,7 @@ public class StateMachine extends SubsystemBase {
     //  public boolean atSafeState() {
     //     return (getCurrentElevManiState() == ElevatorManipulatorState.StartPosition);
     // }
-
-    /**
-     * Get current state robot is in
-     * @return Current state of the robot
-     */
-    // public RobotState getCurrentState() {
-    //     return robotState;
-    // }
-    // public DriveState getCurrentDriveState() {
-    //     return driveState;
-    // }
-    public ElevatorManipulatorState getCurrentElevManiState() {
-        return elevManiState;
-    }  
-
+ 
     /**
      * Get if robot is at current state based on all subsystems being at their setpoint
      * @return True if at current state
@@ -457,61 +459,6 @@ public class StateMachine extends SubsystemBase {
     //     return prevElevManiState;
     // }
 
-
-
-    /**
-     * Set the current state of the robot. Also sets the previous state to where it was before
-     * @param curState State the robot is currently at
-     */
-    // public void setCurrentRobotState(RobotState curState) {
-    //     robotTransitioning = false;
-    //     prevRobotState = robotState;
-    //     robotState = curState;
-    //     System.out.println("Current: " + robotState.toString() + " Prev: " + prevRobotState.toString() + " Goal: "
-    //             + goalRobotState.toString());
-    // }
-    // public void setCurrentDriveState(DriveState curState) {
-    //     driveTransitioning = false;
-    //     prevDriveState = driveState;
-    //     driveState = curState;
-    //     System.out.println("Current: " + driveState.toString() + " Prev: " + prevDriveState.toString() + " Goal: "
-    //             + goalDriveState.toString());
-    // }
-    // public void setCurrentElevManiState(ElevatorManipulatorState curState) {
-    //     elevManiTransitioning = false;
-    //     prevElevManiState = elevManiState;
-    //     elevManiState = curState;
-    //     System.out.println("Current: " + elevManiState.toString() + " Prev: " + prevElevManiState.toString() + " Goal: "
-    //             + goalElevManiState.toString());
-    // }
-
-    // public Command setCurrentRobotStateCommand(RobotState curState) {
-    //     return Commands.runOnce(() -> {
-    //         setCurrentRobotState(curState);
-    //     });
-    // }
-    // public Command setCurrentDriveStateCommand(DriveState curState) {
-    //     return Commands.runOnce(() -> {
-    //         setCurrentDriveState(curState);
-    //     });
-    // }
-    // public Command setCurrentElevManiStateCommand(ElevatorManipulatorState curState) {
-    //     return Commands.runOnce(() -> {
-    //         setCurrentElevManiState(curState);
-    //     });
-    // }
-
-
-    // public boolean atRobotGoal() {
-    //     return goalRobotState == robotState;
-    // }
-    // public boolean atDriveGoal() {
-    //     return goalDriveState == driveState;
-    // }
-    // public boolean atElevManiGoal() {
-    //     return goalElevManiState == elevManiState;
-    // }
-
     /**
      * Cancels current running command or sequence of commands. Also sets current state to cancelled and sets the subsystems to their current position
      */
@@ -537,22 +484,14 @@ public class StateMachine extends SubsystemBase {
 
     /** ----- Goal Commands ------ */
     private void setDriveGoal(DriveState newState) {
-        // if (currentCommand != null) {
-        //     currentCommand.cancel();
-        // }
         goalDriveState = newState;
-        driveTransitioning = false;
+        driveTransitioning = true;
         System.out.println("New DriveGoal: " + newState.toString());
-        // currentState = newState;
     }
     private void setElevManiGoal(ElevatorManipulatorState newState) {
-        // if (currentCommand != null) {
-        //     currentCommand.cancel();
-        // }
         goalElevManiState = newState;
-        elevManiTransitioning = false;
+        elevManiTransitioning = true;
         System.out.println("New Elevstor/Manipultor Goal: " + newState.toString());
-        // currentState = newState;
     }
     public Command setGoalDriveCommand(DriveState newGoal){
         return Commands.runOnce(() -> setDriveGoal(newGoal));
@@ -569,6 +508,56 @@ public class StateMachine extends SubsystemBase {
     }
     /** ------------------------- */
 
+    /** ----- Curret States ------ */
+    public void setCurrentDriveState(DriveState curState) {
+        driveTransitioning = false;
+        prevDriveState = driveState;
+        driveState = curState;
+        System.out.println("Current: " + driveState.toString() + " Prev: " + prevDriveState.toString() + " Goal: "
+                + goalDriveState.toString());
+    }
+    public void setCurrentElevManiState(ElevatorManipulatorState curState) {
+        elevManiTransitioning = false;
+        prevElevManiState = elevManiState;
+        elevManiState = curState;
+        System.out.println("Current: " + elevManiState.toString() + " Prev: " + prevElevManiState.toString() + " Goal: "
+                + goalElevManiState.toString());
+    }
+
+    public Command setCurrentDriveStateCommand(DriveState curState) {
+        return Commands.runOnce(() -> {
+            setCurrentDriveState(curState);
+        });
+    }
+    public Command setCurrentElevManiStateCommand(ElevatorManipulatorState curState) {
+        return Commands.runOnce(() -> {
+            setCurrentElevManiState(curState);
+        });
+    }
+    public DriveState getCurrentDriveState() {
+        return driveState;
+    }
+    public ElevatorManipulatorState getCurrentElevManiState() {
+        return elevManiState;
+    } 
+    /** ------------------------- */
+
+
+    public void reachedDriveGoal() {
+       goalDriveState = driveState;
+    }
+    public void reachedElevManiGoal() {
+       goalElevManiState = elevManiState;
+    }
+    public Command reachedDriveGoalCommand(){
+        return Commands.runOnce(() -> atDriveGoal());
+    }
+    public Command reachedElevManiGoalCommand(){
+        return Commands.runOnce(() -> atElevManiGoal());
+    }
+    public boolean atDriveGoal() {return goalDriveState == driveState;}
+    public boolean atElevManiGoal() {return elevManiState == goalElevManiState;}
+    
 
 
     /**
@@ -643,7 +632,7 @@ public class StateMachine extends SubsystemBase {
         isDisabled = disabled;
     }
 
-
+    //safely switch between commands manualy cancelling the old one if its running while sheduling the new one
     public Command safeSwitch(Command oldCmd, Command newCmd) {
     return new InstantCommand(() -> {
         if (oldCmd.isScheduled()) {
@@ -658,6 +647,7 @@ public class StateMachine extends SubsystemBase {
             switch (goalDriveState) {
         case Teleop:
             currentDriveCommand = new TeleopDrive(this, drive, pose, driverController);
+            atDriveGoal();
             break;
         case FollowPath:
             currentDriveCommand = new FollowPathDrive(this, drive, pose, driverController);
@@ -691,6 +681,74 @@ public class StateMachine extends SubsystemBase {
 
     }
 
+    public void elevManiStateMachine(){
+        //Manage Elevator/Manipulator State Machine
+            switch (goalElevManiState) {
+        case StartPosition:
+                //when robot is started and is enabled, auto or teleop, it should instantly go into safe coral travel position
+                setCurrentElevManiState(ElevatorManipulatorState.StartPosition);
+                if(!isDisabled() && getCurrentElevManiState() == ElevatorManipulatorState.StartPosition){
+                    setElevManiGoal(ElevatorManipulatorState.SafeCoralTravel);
+                }
+            break;
+        case IntakeCoral:
+                
+                m_graphCommand.setTargetNode(intakeCoral);
+            break;
+        case L1:
+                m_graphCommand.setTargetNode(scoreL1);
+                //Move elevator to L1 prep position
+            break;
+        case L2:
+                m_graphCommand.setTargetNode(scoreL2);
+                //Move elevator to L2 prep position
+            break;
+        case L3:
+                m_graphCommand.setTargetNode(scoreL3);
+                //Move elevator to L3 prep position
+            break;
+        case L4:
+                m_graphCommand.setTargetNode(scoreL4);
+                //Move elevator to L4 prep position
+            break;
+        case AlgaeL2:
+                //Final position before intake algaeL2
+            break;
+        case AlgaeL3:
+                //Final position before intake algaeL3
+            break;
+        case Processor:
+                //Basicaly same as safe travel with algae postion
+            break;
+        case Barge:
+                //Get into position to score into barge
+            break;
+        case Climb:
+                //Get into position to preapare to engage climber out, after which it is enaged
+            break;
+        case SafeCoralTravel:
+                //whether robot has or not coral, safe travel with coral position
+                m_graphCommand.setTargetNode(safeCoralTravel);
+                //some extra code to know if robot is at position or not
+
+                //will set robot to intake by default if it doesnt have coral
+                if(!hasCoral() && atElevManiGoal()){
+                    setElevManiGoal(ElevatorManipulatorState.IntakeCoral);
+                }
+
+            break;
+        case Manual:
+                //Get into safe position before going down to safe travel
+            break;
+        case Reset:
+                //Should cancel all of the running commands, stop the robot and get everything into safe travel position
+            break;
+        default:
+            System.out.println("Unknown State!!!!!!!!!!");
+            break;
+        }
+    }
+
     
 
     @Override
@@ -705,55 +763,16 @@ public class StateMachine extends SubsystemBase {
 
         if(DriverStation.isEnabled()){
 
-            switch (goalElevManiState) {
-                case StartPosition:
-                        //Initial robot poisiton when turned on
-                    break;
-                case IntakeCoral:
-                    setGoalDriveCommand(DriveState.CoralStation);
-                    break;
-                case L1:
-                    setGoalDriveCommand(DriveState.ReefRelative);
-                    break;
-                case L2:
-                    
-                    break;
-                case L3:
-                    
-                    break;
-                case L4:
-                    
-                    break;
-                case AlgaeL2:
-                    
-                    break;
-                case AlgaeL3:
-                    
-                    break;
-                case Processor:
-                    setGoalDriveCommand(DriveState.ProcessorRelative);
-                    break;
-                case Barge:
-                    setGoalDriveCommand(DriveState.Teleop);
-                    break;
-                case Climb:
-                    setGoalDriveCommand(DriveState.Teleop);
-                    break;
-                case Manual:
-                        //Get into safe position before going down to safe travel
-                    break;
-                case Reset:
+            elevManiStateMachine();
+            driveStateMachine();
 
-                    break;
-                default:
-                    System.out.println("Unknown State!!!!!!!!!!");
-                    break;
-                }
+            //runs commands for each state machine if the command has changed
+            if(olfElevManiCommand != currentElevManiCommand && currentElevManiCommand != null){
+                safeSwitch(olfElevManiCommand, currentElevManiCommand);
+                olfElevManiCommand = currentElevManiCommand;
+            }
             
-
-            if (oldDriveCommmand != currentDriveCommand && currentDriveCommand != null){
-                driveStateMachine();
-                            
+            if (oldDriveCommmand != currentDriveCommand && currentDriveCommand != null){        
                 safeSwitch(oldDriveCommmand, currentDriveCommand);
                 oldDriveCommmand = currentDriveCommand;
             }

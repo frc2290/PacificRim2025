@@ -22,7 +22,7 @@ import frc.robot.commands.Positions.L2Position;
 import frc.robot.commands.Positions.L3Position;
 import frc.robot.commands.Positions.L4Position;
 import frc.robot.commands.Positions.ProcessorPosition;
-import frc.robot.commands.Positions.TravelPosition;
+
 import frc.robot.commands.Waits.SetGoalWait;
 import frc.utils.LEDEffects;
 import frc.utils.LEDUtility;
@@ -399,7 +399,7 @@ public class StateSubsystem extends SubsystemBase {
         if (goalState != currentState && !isTransitioning() && atCurrentState() && DriverStation.isEnabled()) {
             switch (goalState) {
                 case TravelPosition:
-                    currentCommand = new TravelPosition(diff, elevator, this);
+                    //currentCommand = new TravelPosition(diff, elevator, this);
                     break;
                 case IntakePosition:
                     currentCommand = new IntakePosition(diff, elevator, this);
@@ -423,7 +423,7 @@ public class StateSubsystem extends SubsystemBase {
                 case ClimbPosition:
                     currentCommand = new ClimbPosition(elevator, this);
                     if (currentState != PositionState.TravelPosition) {
-                        currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
+                        //currentCommand = currentCommand.beforeStarting(new TravelPosition(diff, elevator, this));
                     }
                     break;
                 case AlgaeL3Position:
