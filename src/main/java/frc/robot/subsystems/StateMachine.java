@@ -30,7 +30,7 @@ import frc.utils.PoseEstimatorSubsystem;
 public class StateMachine extends SubsystemBase {
 
     //Place to import csubsystems and commmands
-    private GraphCommand m_graphCommand;
+    private GraphCommand m_graphCommand = new GraphCommand();
     private FlytDashboardV2 dashboard;
     private ElevatorSubsystem elevator;
     private DifferentialSubsystem diff;
@@ -286,7 +286,7 @@ public class StateMachine extends SubsystemBase {
         driverController = m_driverController;
 
         dashboard = new FlytDashboardV2("StateMachine");
-        m_graphCommand = new GraphCommand();
+        
 
         //Graph Command setup
         m_graphCommand.setGraphRootNode(startPosition); //rood node
