@@ -633,14 +633,19 @@ public class StateMachine extends SubsystemBase {
     }
 
     //safely switch between commands manualy cancelling the old one if its running while sheduling the new one
+
+
     public Command safeSwitch(Command oldCmd, Command newCmd) {
-    return new InstantCommand(() -> {
-        if (oldCmd.isScheduled()) {
-            oldCmd.cancel();
-        }
-        newCmd.schedule();
-    });
-}
+        return new InstantCommand(() -> {
+            if (oldCmd != null && oldCmd.isScheduled()) {
+                oldCmd.cancel();
+            }
+            if (newCmd != null) {
+                newCmd.schedule();
+            }
+        });
+    }
+    
 
     public void driveStateMachine(){
         //Manage Drive State Machine
@@ -648,7 +653,7 @@ public class StateMachine extends SubsystemBase {
         case Teleop:
             currentDriveCommand = new TeleopDrive(this, drive, pose, driverController);
             atDriveGoal();
-            break;
+            setCurrentDriveState(DriveState.Teleop);
         case FollowPath:
             currentDriveCommand = new FollowPathDrive(this, drive, pose, driverController);
             break;
@@ -766,16 +771,16 @@ public class StateMachine extends SubsystemBase {
             elevManiStateMachine();
             driveStateMachine();
 
-            //runs commands for each state machine if the command has changed
-            if(olfElevManiCommand != currentElevManiCommand && currentElevManiCommand != null){
-                safeSwitch(olfElevManiCommand, currentElevManiCommand);
-                olfElevManiCommand = currentElevManiCommand;
-            }
-            
-            if (oldDriveCommmand != currentDriveCommand && currentDriveCommand != null){        
-                safeSwitch(oldDriveCommmand, currentDriveCommand);
+            if (oldDriveCommmand != currentDriveCommand && currentDriveCommand != null) {
+                safeSwitch(oldDriveCommmand, currentDriveCommand).schedule();
                 oldDriveCommmand = currentDriveCommand;
             }
+            
+            // if (oldElevManiCommand != currentElevManiCommand && currentElevManiCommand != null) {
+            //     safeSwitch(oldElevManiCommand, currentElevManiCommand).schedule();
+            //     oldElevManiCommand = currentElevManiCommand;
+            // }
+            
 
         }
        
