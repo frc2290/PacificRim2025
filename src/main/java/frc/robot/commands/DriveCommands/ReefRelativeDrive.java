@@ -7,17 +7,16 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ReefRelativeDrive extends Command {
 
     //imports
-    private StateMachine stateMachine;
+    private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
-    private PoseEstimatorSubsystem poseEstimator;
+    private PoseEstimatorSubsystem pose;
     private XboxController driverController;
 
     //pid
@@ -33,19 +32,19 @@ public class ReefRelativeDrive extends Command {
     /*
      * Command to drive robot with active angling towards reef (usualy has note)
      **/
-    public ReefRelativeDrive(StateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
+    public ReefRelativeDrive(DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController, DriveStateMachine m_driverMachine) {
 
-        stateMachine = m_state;
+        stateMachine = m_driverMachine;
+        pose = m_pose;
         drive = m_drive;
-        poseEstimator = m_poseEstimator;
         driverController = m_driverController;
 
-        rotPid = m_drive.getRotPidController();
-        xPid = m_drive.getXPidController();
-        yPid = m_drive.getYPidController();
+        rotPid = drive.getRotPidController();
+        xPid = drive.getXPidController();
+        yPid = drive.getYPidController();
 
         // Use addRequirements() here to declare subsystem dependencies.
-        addRequirements(m_drive);
+        addRequirements(drive);
     }
 
     // Called when the command is initially scheduled. Not used right now
@@ -76,8 +75,8 @@ public class ReefRelativeDrive extends Command {
                 rotPower,
                 true);
         }else{
-            rotTarget = poseEstimator.turnToTarget(VisionConstants.reefCenter);
-            rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
+            rotTarget = pose.turnToTarget(VisionConstants.reefCenter);
+            rotSpeed = rotPid.calculate(pose.getDegrees(), rotTarget);
             drive.drive(xPower, yPower, rotSpeed, true);
         }
     }

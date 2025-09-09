@@ -6,14 +6,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class FollowPathDrive extends Command{
 
-        //imports
-    private StateMachine stateMachine;
+    //imports
+    private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
@@ -31,19 +31,18 @@ public class FollowPathDrive extends Command{
     /*
      * Command to align neareest reef (usually has note)
      **/
-    public FollowPathDrive(StateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
-
-        stateMachine = m_state;
-        drive = m_drive;
+    public FollowPathDrive(DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController, DriveStateMachine m_driverMachine) {
+        stateMachine = m_driverMachine;
         poseEstimator = m_poseEstimator;
+        drive = m_drive;
         driverController = m_driverController;
 
-        rotPid = m_drive.getRotPidController();
-        xPid = m_drive.getXPidController();
-        yPid = m_drive.getYPidController();
+        rotPid = drive.getRotPidController();
+        xPid = drive.getXPidController();
+        yPid = drive.getYPidController();
 
         // Use addRequirements() here to declare subsystem dependencies.
-        addRequirements(m_drive);
+        addRequirements(drive);
     }
 
     // Called when the command is initially scheduled. Not used right now

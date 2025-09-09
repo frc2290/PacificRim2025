@@ -7,15 +7,14 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ReefAlignDrive extends Command {
 
     //imports
-    private StateMachine stateMachine;
+    private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
@@ -33,19 +32,19 @@ public class ReefAlignDrive extends Command {
     /*
      * Command to align neareest reef (usually has note)
      **/
-    public ReefAlignDrive(StateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
+    public ReefAlignDrive(DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController, DriveStateMachine m_driverMachine) {
 
-        stateMachine = m_state;
-        drive = m_drive;
+        stateMachine = m_driverMachine;
         poseEstimator = m_poseEstimator;
+        drive = m_drive;
         driverController = m_driverController;
 
-        rotPid = m_drive.getRotPidController();
-        xPid = m_drive.getXPidController();
-        yPid = m_drive.getYPidController();
+        rotPid = drive.getRotPidController();
+        xPid = drive.getXPidController();
+        yPid = drive.getYPidController();
 
         // Use addRequirements() here to declare subsystem dependencies.
-        addRequirements(m_drive);
+        addRequirements(drive);
     }
 
     // Called when the command is initially scheduled. Not used right now
@@ -77,7 +76,7 @@ public class ReefAlignDrive extends Command {
                 true);
         }else{
 
-            targetPose = poseEstimator.getClosestBranch(stateMachine.getRightScore());
+            targetPose = poseEstimator.getClosestBranch(stateMachine.isRightReefAlignment());
             poseEstimator.setTargetPose(targetPose);
             //targetPose = poseEstimator.getTargetPose();
 
@@ -94,10 +93,10 @@ public class ReefAlignDrive extends Command {
 
             // LED Setting
             // if (poseEstimator.atTargetPose(diff.hasLaserCanDistance()) && stateSubsystem.atCurrentState()) {
-            //     stateSubsystem.setDriveState(DriveState.ReefScore);
-            // } else {
-            //     stateSubsystem.setDriveState(DriveState.ReefScoreMove);
-            // }
+            //      stateMachine.setDriveState(DriveState.ReefScore);
+            //  } else {
+            //      stateMachine.setDriveState(DriveState.ReefScoreMove);
+            //  }
         }
 
     }

@@ -3,9 +3,11 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
 import org.littletonrobotics.urcl.URCL;
-
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -14,137 +16,151 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ElevatorManipulatorStateMachine;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateMachine.DriveState;
-import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.StateMachineCoordinator;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
+ * each mode, as described in the TimedRobot documentation.
  */
 public class Robot extends TimedRobot {
-  private Command m_autonomousCommand;
+    private Command autonomousCommand;
+    private RobotContainer robotContainer;
+    
+    // Hardware subsystems
+    private final LEDUtility ledUtility = new LEDUtility(0);
+    private final XboxController driverController = new XboxController(0);
+    private final DriveSubsystem driveSubsystem = new DriveSubsystem();
+    private final PoseEstimatorSubsystem poseEstimator = new PoseEstimatorSubsystem(driveSubsystem);
+    private final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+    private final ManipulatorSubsystem manipulatorSubsystem = new ManipulatorSubsystem();
+    private final DifferentialSubsystem differentialSubsystem = new DifferentialSubsystem();
+    private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
+    
+    // State machines
+    private ElevatorManipulatorStateMachine elevManiStateMachine;
+    private DriveStateMachine driveStateMachine;
+    private StateMachineCoordinator stateMachineCoordinator;
 
-  private RobotContainer m_robotContainer;
-  
-  private final LEDUtility m_ledUtility = new LEDUtility(0);
-  private XboxController m_driver = new XboxController(0);
-  // The robot's subsystems
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
-  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
-  private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
-  private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateMachine m_state = new StateMachine(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility, m_driver);
-
-  public Robot() {
-    CanBridge.runTCP();
-  }
-
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  @Override
-  public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state, m_driver);
-    DataLogManager.start();
-
-    URCL.start();
-
-    // If logging only to DataLog
-    URCL.start(DataLogManager.getLog());
-  }
-
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
-    CommandScheduler.getInstance().run();
-  }
-
-  /** This function is called once each time the robot enters Disabled mode. */
-  @Override
-  public void disabledInit() {
-    m_state.setDisabled(true);
-  }
-
-  @Override
-  public void disabledPeriodic() {}
-
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
-  @Override
-  public void autonomousInit() {
-    m_state.setAuto(true);
-    m_state.setDisabled(false);
-    m_state.setGoalElevManiCommand(ElevatorManipulatorState.StartPosition); //reset to safe coral travel at start of auto
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    /*
-     * String autoSelected = SmartDashboard.getString("Auto Selector",
-     * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-     * = new MyAutoCommand(); break; case "Default Auto": default:
-     * autonomousCommand = new ExampleCommand(); break; }
-     */
-
-    // schedule the autonomous command (example)
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+    public Robot() {
+        CanBridge.runTCP();
     }
-  }
 
-  /** This function is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {}
+    /**
+     * This function is run when the robot is first started up.
+     */
+    @Override
+    public void robotInit() {
+        // Initialize state machines
+        elevManiStateMachine = new ElevatorManipulatorStateMachine(
+            differentialSubsystem, elevatorSubsystem, manipulatorSubsystem);
+        
+        driveStateMachine = new DriveStateMachine(
+            driveSubsystem, poseEstimator, driverController);
+        
+        stateMachineCoordinator = new StateMachineCoordinator(
+            elevManiStateMachine, driveStateMachine);
 
-  @Override
-  public void teleopInit() {
-    m_state.setAuto(false);
-    m_state.setDisabled(false);
-    m_state.setGoalDriveCommand(DriveState.Teleop);
-    //run reset after autonomus, Idea for later if needed
-    //m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); //from whatever state it was left off in auto, should reset to safe coral travel
+        // Initialize robot container with all subsystems
+        robotContainer = new RobotContainer(
+            ledUtility,
+            driveSubsystem,
+            poseEstimator,
+            elevatorSubsystem,
+            manipulatorSubsystem,
+            differentialSubsystem,
+            climbSubsystem,
+            elevManiStateMachine,
+            driveStateMachine,
+            stateMachineCoordinator,
+            driverController
+        );
 
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    // if (m_autonomousCommand != null) {
-    //   m_autonomousCommand.cancel();
-    // }
-  }
+        // Start data logging
+        DataLogManager.start();
+        URCL.start(DataLogManager.getLog());
+    }
 
-  /** This function is called periodically during operator control. */
-  @Override
-  public void teleopPeriodic() {}
+    /**
+     * This function is called every 20 ms, no matter the mode.
+     */
+    @Override
+    public void robotPeriodic() {
+        CommandScheduler.getInstance().run();
+    }
 
-  @Override
-  public void testInit() {
-    // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
-  }
+    /** This function is called once each time the robot enters Disabled mode. */
+    @Override
+    public void disabledInit() {
+        stateMachineCoordinator.setAutoMode(false);
+        driveStateMachine.requestState(DriveStateMachine.DriveState.Teleop);
+    }
 
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
+    @Override
+    public void disabledPeriodic() {}
+
+    /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+    @Override
+    public void autonomousInit() {
+        stateMachineCoordinator.setAutoMode(true);
+        
+        // Reset to safe starting position
+        elevManiStateMachine.requestState("SafeCoralTravel");
+        driveStateMachine.requestState(DriveStateMachine.DriveState.FollowPath);
+        
+        // Get and schedule autonomous command
+        autonomousCommand = robotContainer.getAutonomousCommand();
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
+        }
+    }
+
+    /** This function is called periodically during autonomous. */
+    @Override
+    public void autonomousPeriodic() {}
+
+    @Override
+    public void teleopInit() {
+        stateMachineCoordinator.setAutoMode(false);
+        
+        // Cancel autonomous command if still running
+        if (autonomousCommand != null && autonomousCommand.isScheduled()) {
+            autonomousCommand.cancel();
+        }
+        
+        // Reset to safe teleop states
+        elevManiStateMachine.requestState("SafeCoralTravel");
+        driveStateMachine.requestState(DriveStateMachine.DriveState.Teleop);
+    }
+
+    /** This function is called periodically during operator control. */
+    @Override
+    public void teleopPeriodic() {}
+
+    @Override
+    public void testInit() {
+        // Cancels all running commands at the start of test mode.
+        CommandScheduler.getInstance().cancelAll();
+        
+        // Reset state machines for testing
+        driveStateMachine.reset();
+        elevManiStateMachine.requestState("SafeCoralTravel");
+    }
+
+    /** This function is called periodically during test mode. */
+    @Override
+    public void testPeriodic() {}
+    
+    /** Emergency stop handler - can be called from anywhere */
+    public void emergencyStop() {
+        driveStateMachine.emergencyStop();
+        elevManiStateMachine.requestState("SafeCoralTravel");
+        DataLogManager.log("EMERGENCY STOP ACTIVATED");
+    }
 }

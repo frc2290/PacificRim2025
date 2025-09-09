@@ -1,6 +1,9 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
 
@@ -8,179 +11,224 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.OIConstants;
-import frc.robot.commands.Auto;
-import frc.robot.commands.Autos.DrivetrainSysId;
-import frc.robot.commands.Autos.Left3Coral;
-import frc.robot.commands.Autos.Middle1Coral;
-import frc.robot.commands.Autos.Right1Coral;
-import frc.robot.commands.Autos.Right2Coral;
-import frc.robot.commands.Autos.Right3Coral;
-import frc.robot.commands.Autos.Test;
-import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.DifferentialSubsystem;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
-import frc.robot.subsystems.StateSubsystem.ManipulatorState;
-import frc.robot.subsystems.StateMachine.DriveState;
-import frc.utils.LEDUtility;
-import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.Auto;
+import frc.robot.commands.Autos.DrivetrainSysId;
+import frc.robot.commands.Autos.Test;
+import frc.robot.subsystems.ClimbSubsystem;
+import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveStateMachine;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ElevatorManipulatorStateMachine;
+import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.utils.LEDUtility;
+import frc.utils.PoseEstimatorSubsystem;
 
-/*
- * This class is where the bulk of the robot should be declared.  Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
- * (including subsystems, commands, and button mappings) should be declared here.
+/**
+ * This class is where the bulk of the robot should be declared.
  */
 public class RobotContainer {
-    private final LEDUtility m_ledUtility;
-    // The robot's subsystems
-    private final DriveSubsystem m_robotDrive;
-    private final PoseEstimatorSubsystem m_poseEstimator;
-    private final ElevatorSubsystem m_elevator;
-    private final ManipulatorSubsystem m_manipulator;
-    private final DifferentialSubsystem m_DiffArm;
-    private final ClimbSubsystem m_climber;
-    private final StateMachine m_state;
-
-    // The driver's controller
-    XboxController m_driverController;
-
-    // Auto Chooser for Dashboard
-    SendableChooser<Command> auto_chooser = new SendableChooser<>();
+    // Subsystems
+    private final LEDUtility ledUtility;
+    private final DriveSubsystem drive;
+    private final PoseEstimatorSubsystem poseEstimator;
+    private final ElevatorSubsystem elevator;
+    private final ManipulatorSubsystem manipulator;
+    private final DifferentialSubsystem diffArm;
+    private final ClimbSubsystem climber;
+    
+    // State Machines
+    private final ElevatorManipulatorStateMachine elevManiStateMachine;
+    private final DriveStateMachine driveStateMachine;
+    private final StateMachineCoordinator stateMachineCoordinator;
+    
+    // Controller
+    private final XboxController driverController;
+    
+    // Auto Chooser
+    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer(LEDUtility _led, DriveSubsystem _drive, PoseEstimatorSubsystem _pose, ElevatorSubsystem _elev,
-            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, StateMachine _state, XboxController _driverController) {
-        m_driverController = _driverController;
-        m_ledUtility = _led;
-        m_robotDrive = _drive;
-        m_poseEstimator = _pose;
-        m_elevator = _elev;
-        m_manipulator = _manip;
-        m_DiffArm = _diff;
-        m_climber = _climb;
-        m_state = _state;
-        // Configure the button bindings
+    public RobotContainer(LEDUtility ledUtility, DriveSubsystem drive, 
+                         PoseEstimatorSubsystem poseEstimator, ElevatorSubsystem elevator,
+                         ManipulatorSubsystem manipulator, DifferentialSubsystem diffArm,
+                         ClimbSubsystem climber, ElevatorManipulatorStateMachine elevManiStateMachine,
+                         DriveStateMachine driveStateMachine, StateMachineCoordinator stateMachineCoordinator,
+                         XboxController driverController) {
+        
+        // Initialize subsystems and state machines
+        this.ledUtility = ledUtility;
+        this.drive = drive;
+        this.poseEstimator = poseEstimator;
+        this.elevator = elevator;
+        this.manipulator = manipulator;
+        this.diffArm = diffArm;
+        this.climber = climber;
+        this.elevManiStateMachine = elevManiStateMachine;
+        this.driveStateMachine = driveStateMachine;
+        this.stateMachineCoordinator = stateMachineCoordinator;
+        this.driverController = driverController;
+
+        // Configure button bindings and setup
         configureButtonBindings();
-
-        m_ledUtility.addStrip("Left", 0, 61);
-        m_ledUtility.addStrip("TopLeft", 62, 71);
-        m_ledUtility.addStrip("Right", 72, 133);
-        m_ledUtility.getStrip("Right").setHelperBool(true);
-        m_ledUtility.addStrip("TopRight", 134, 143);
-        m_ledUtility.setDefault();
-
-        // Build an auto chooser. This will use Commands.none() as the default option.
-        auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
-        auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
-        auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        //auto_chooser.addOption("Right1Coral", new Right1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("Left3Coral", new Left3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("Middle1Coral", new Middle1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        SmartDashboard.putData(auto_chooser);
-
-
-        //m_robotDrive.setDefaultCommand(new AutomatedDrive(m_state, m_robotDrive, m_DiffArm, m_poseEstimator, m_driverController));
+        setupLEDs();
+        setupAutoChooser();
+        configureDefaultCommands();
     }
 
     /**
-     * Use this method to define your button->command mappings. Buttons can be
-     * created by
-     * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
-     * subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
-     * passing it to a
-     * {@link JoystickButton}.
+     * Configure LED strips
+     */
+    private void setupLEDs() {
+        ledUtility.addStrip("Left", 0, 61);
+        ledUtility.addStrip("TopLeft", 62, 71);
+        ledUtility.addStrip("Right", 72, 133);
+        ledUtility.getStrip("Right").setHelperBool(true);
+        ledUtility.addStrip("TopRight", 134, 143);
+        ledUtility.setDefault();
+    }
+
+    /**
+     * Setup autonomous chooser
+     */
+    private void setupAutoChooser() {
+        autoChooser.addOption("Drivetrain SysID", new DrivetrainSysId(drive));
+        //autoChooser.addOption("Test", new Test(poseEstimator, elevManiStateMachine));
+        autoChooser.addOption("Driving", new Auto(drive));
+        
+        // Commented out auto options for future use
+        // autoChooser.addOption("Right1Coral", new Right1Coral(diffArm, poseEstimator, elevManiStateMachine, manipulator));
+        // autoChooser.addOption("RightCoral2", new Right2Coral(diffArm, poseEstimator, elevManiStateMachine, manipulator));
+        // autoChooser.addOption("RightCoral3", new Right3Coral(diffArm, poseEstimator, elevManiStateMachine, manipulator));
+        // autoChooser.addOption("Left3Coral", new Left3Coral(diffArm, poseEstimator, elevManiStateMachine, manipulator));
+        // autoChooser.addOption("Middle1Coral", new Middle1Coral(diffArm, poseEstimator, elevManiStateMachine, manipulator));
+        
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+    }
+
+    /**
+     * Configure default commands for subsystems
+     */
+    private void configureDefaultCommands() {
+        // Drive default command will be handled by DriveStateMachine
+        // Elevator/Manipulator default command handled by GraphCommand
+    }
+
+    /**
+     * Configure button bindings
      */
     private void configureButtonBindings() {
-
         // Button definitions
-        JoystickButton a_button = new JoystickButton(m_driverController, Button.kA.value);
-        JoystickButton b_button = new JoystickButton(m_driverController, Button.kB.value);
-        JoystickButton y_button = new JoystickButton(m_driverController, Button.kY.value);
-        JoystickButton x_button = new JoystickButton(m_driverController, Button.kX.value);
-        JoystickButton left_bumper = new JoystickButton(m_driverController, Button.kLeftBumper.value);
-        JoystickButton right_bumper = new JoystickButton(m_driverController, Button.kRightBumper.value);
-        JoystickButton back_button = new JoystickButton(m_driverController, Button.kBack.value);
-        JoystickButton start_button = new JoystickButton(m_driverController, Button.kStart.value);
-        JoystickButton left_stick = new JoystickButton(m_driverController, Button.kLeftStick.value);
-        JoystickButton right_stick= new JoystickButton(m_driverController, Button.kRightStick.value);
-        Trigger right_trigger = new Trigger(() -> m_driverController.getRightTriggerAxis() > 0.5);
-        Trigger left_trigger = new Trigger(() -> m_driverController.getLeftTriggerAxis() > 0.5);
-        POVButton dpad_up = new POVButton(m_driverController, 0);
-        POVButton dpad_down = new POVButton(m_driverController, 180);
-        POVButton dpad_left = new POVButton(m_driverController, 270);
-        POVButton dpad_right = new POVButton(m_driverController, 90);
-
-        Trigger not_left_stick = left_stick.negate(); // Trigger to check if left stick is not pressed in
-        Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in
-        Trigger on_manual = new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual);
-        Trigger not_on_manual = on_manual.negate();
-
-
-
-
-
-
-
-        // Controller Buttons
-        //extra buttons for different statemachine states HERE
-        not_on_manual.and(a_button).and(not_left_stick).onTrue(m_state.setCurrentDriveStateCommand(DriveState.Teleop)); // Set to L1
-        not_on_manual.and(b_button).and(not_left_stick).onTrue(m_state.setCurrentDriveStateCommand(DriveState.ReefRelative)); // Set to L2
-        not_on_manual.and(y_button).and(not_left_stick).onTrue(m_state.setCurrentDriveStateCommand(DriveState.ProcessorRelative)); // Set to L3
-        not_on_manual.and(x_button).and(not_left_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.L4)); // Set to L3
-        //back_button.onTrue(m_state.cancelCommand()); // Cancel current state  RECHECK
-        //start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls DO WE NEED THIS
-
-        // Controller Bumpers
-        not_on_manual.and(left_bumper).and(not_left_stick).onTrue(m_state.setRightScoreCommand(false)); // Set score to left branch
-        not_on_manual.and(right_bumper).and(not_left_stick).onTrue(m_state.setRightScoreCommand(true)); // Set score to right branch
+        JoystickButton aButton = new JoystickButton(driverController, Button.kA.value);
+        JoystickButton bButton = new JoystickButton(driverController, Button.kB.value);
+        JoystickButton yButton = new JoystickButton(driverController, Button.kY.value);
+        JoystickButton xButton = new JoystickButton(driverController, Button.kX.value);
+        JoystickButton leftBumper = new JoystickButton(driverController, Button.kLeftBumper.value);
+        JoystickButton rightBumper = new JoystickButton(driverController, Button.kRightBumper.value);
+        JoystickButton backButton = new JoystickButton(driverController, Button.kBack.value);
+        JoystickButton startButton = new JoystickButton(driverController, Button.kStart.value);
+        JoystickButton leftStick = new JoystickButton(driverController, Button.kLeftStick.value);
+        JoystickButton rightStick = new JoystickButton(driverController, Button.kRightStick.value);
         
-        // Controller D-Pad
-        dpad_up.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL3)); // Algae L3
-        dpad_down.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL2)); // Algae L2
-        dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); //run intake
+        Trigger rightTrigger = new Trigger(() -> driverController.getRightTriggerAxis() > 0.5);
+        Trigger leftTrigger = new Trigger(() -> driverController.getLeftTriggerAxis() > 0.5);
         
-        // Controller Triggers
-        left_trigger.onTrue(m_state.setGoalDriveCommand(DriveState.ReefAlign)).onFalse(m_state.setGoalDriveCommand(DriveState.ReefRelative));
-        //right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral RECHECK
+        POVButton dpadUp = new POVButton(driverController, 0);
+        POVButton dpadDown = new POVButton(driverController, 180);
+        POVButton dpadLeft = new POVButton(driverController, 270);
+        POVButton dpadRight = new POVButton(driverController, 90);
 
+        // Simplified triggers - complex logic moved to state machines
+        Trigger notManualMode = new Trigger(() -> !elevManiStateMachine.getCurrentState().equals("Manual")).debounce(0.1);
 
-        //Trigger hasCoral = m_manipulator.hasCoralTrigger();
-        //Trigger hasAlgae = m_manipulator.hasAlgaeTrigger();
-        //Trigger isAuto = m_state.isAutoTrigger();
-        //Trigger notAuto = isAuto.negate();
-
-        //IDK what is this, if that is logic, it should be inside state machine
-        //hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
-
-        // Manual controls
-        left_stick.and(start_button).toggleOnTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.Manual)); // Set to manual mode, will turn off once another state is chosen
-        //left_stick.and(start_button).and(on_manual).toggleOnTrue(m_state.setGoalDriveCommand(ElevatorManipulatorState.Reset)); // Set to auto drive mode, will turn off once another state is chosen
-
-        on_manual.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
-        on_manual.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
-        on_manual.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
-        on_manual.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
-        on_manual.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
-        on_manual.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
+        // ===== DRIVE STATE BINDINGS =====
+        notManualMode.and(aButton).onTrue(Commands.runOnce(() -> 
+            driveStateMachine.requestState(DriveStateMachine.DriveState.Teleop)));
         
-        //Other
-        right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen())); // Manual servo open
-        right_stick.and(dpad_right).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading())); // Manual heading reset
+        notManualMode.and(bButton).onTrue(Commands.runOnce(() -> 
+            driveStateMachine.requestState(DriveStateMachine.DriveState.ReefRelative)));
+        
+        notManualMode.and(yButton).onTrue(Commands.runOnce(() -> 
+            driveStateMachine.requestState(DriveStateMachine.DriveState.ProcessorRelative)));
+
+        // ===== ELEVATOR/MANIPULATOR STATE BINDINGS =====
+        notManualMode.and(xButton).onTrue(Commands.runOnce(() -> 
+            elevManiStateMachine.requestState("L4Score")));
+        
+        notManualMode.and(dpadUp).onTrue(Commands.runOnce(() -> 
+            elevManiStateMachine.requestState("AlgaeL3")));
+        
+        notManualMode.and(dpadDown).onTrue(Commands.runOnce(() -> 
+            elevManiStateMachine.requestState("AlgaeL2")));
+
+        // ===== SCORE SIDE SELECTION =====
+        notManualMode.and(leftBumper).onTrue(Commands.runOnce(() -> 
+            driveStateMachine.setAlignmentSide(false))); // Left side
+        
+        notManualMode.and(rightBumper).onTrue(Commands.runOnce(() -> 
+            driveStateMachine.setAlignmentSide(true)));  // Right side
+
+        // ===== MANUAL MODE TOGGLE =====
+        leftStick.and(startButton).toggleOnTrue(Commands.runOnce(() -> 
+            elevManiStateMachine.requestState("Manual")));
+
+        // ===== MANUAL CONTROL BINDINGS =====
+        Trigger manualMode = new Trigger(() -> elevManiStateMachine.getCurrentState().equals("Manual"));
+        
+        manualMode.and(yButton).onTrue(Commands.runOnce(() -> 
+            elevator.incrementElevatorSetpoint(0.025))); // Elevator up
+        
+        manualMode.and(aButton).onTrue(Commands.runOnce(() -> 
+            elevator.incrementElevatorSetpoint(-0.025))); // Elevator down
+        
+        manualMode.and(xButton).onTrue(Commands.runOnce(() -> 
+            diffArm.incrementExtensionSetpoint(5))); // Arm out
+        
+        manualMode.and(bButton).onTrue(Commands.runOnce(() -> 
+            diffArm.incrementExtensionSetpoint(-5))); // Arm in
+        
+        manualMode.and(leftBumper).onTrue(Commands.runOnce(() -> 
+            diffArm.incrementRotationSetpoint(5))); // Rotate out
+        
+        manualMode.and(rightBumper).onTrue(Commands.runOnce(() -> 
+            diffArm.incrementRotationSetpoint(-5))); // Rotate in
+
+        // ===== INTAKE CONTROL =====
+        dpadRight.onTrue(Commands.runOnce(() -> manipulator.runIntake(-0.9)))
+                 .onFalse(Commands.runOnce(() -> manipulator.runIntake(0)));
+
+        // ===== ALIGNMENT CONTROL =====
+        leftTrigger.onTrue(Commands.runOnce(() -> 
+            driveStateMachine.requestState(DriveStateMachine.DriveState.ReefAlign)))
+                  .onFalse(Commands.runOnce(() -> 
+            driveStateMachine.requestState(DriveStateMachine.DriveState.ReefRelative)));
+
+        // ===== UTILITY CONTROLS =====
+        rightStick.and(dpadLeft).onTrue(new InstantCommand(() -> 
+            climber.setServoOpen())); // Servo open
+        
+        rightStick.and(dpadRight).onTrue(new InstantCommand(() -> 
+            drive.zeroHeading())); // Zero heading
+
+        // ===== EMERGENCY CONTROLS =====
+        backButton.onTrue(Commands.runOnce(() -> {
+            driveStateMachine.emergencyStop();
+            elevManiStateMachine.emergencyReturnToSafe();
+        }));
+
+        startButton.and(backButton).onTrue(Commands.runOnce(() -> {
+            driveStateMachine.reset();
+            elevManiStateMachine.requestState("SafeCoralTravel");
+        }));
     }
 
     /**
@@ -189,6 +237,27 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return auto_chooser.getSelected();
+        return autoChooser.getSelected();
+    }
+
+    /**
+     * Get the state machine coordinator for external access
+     */
+    public StateMachineCoordinator getStateMachineCoordinator() {
+        return stateMachineCoordinator;
+    }
+
+    /**
+     * Get the elevator/manipulator state machine for external access
+     */
+    public ElevatorManipulatorStateMachine getElevManiStateMachine() {
+        return elevManiStateMachine;
+    }
+
+    /**
+     * Get the drive state machine for external access
+     */
+    public DriveStateMachine getDriveStateMachine() {
+        return driveStateMachine;
     }
 }
