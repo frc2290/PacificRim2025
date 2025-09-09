@@ -17,10 +17,10 @@ import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateMachine.DriveState;
-import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.ArmStateManager;
+import frc.robot.subsystems.ArmStateManager.ElevatorManipulatorState;
+import frc.robot.subsystems.DriveStateManager;
+import frc.robot.subsystems.DriveStateManager.DriveState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -44,7 +44,8 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateMachine m_state = new StateMachine(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility, m_driver);
+  private final ArmStateManager m_armManager = new ArmStateManager(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility, m_driver);
+  private final DriveStateManager m_driveManager = new DriveStateManager(m_robotDrive, m_poseEstimator, m_driver);
 
   public Robot() {
     CanBridge.runTCP();
@@ -58,7 +59,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state, m_driver);
+    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_armManager, m_driveManager, m_driver);
     DataLogManager.start();
 
     URCL.start();
@@ -86,7 +87,7 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    m_state.setDisabled(true);
+    m_armManager.setDisabled(true);
   }
 
   @Override
@@ -95,9 +96,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_state.setAuto(true);
-    m_state.setDisabled(false);
-    m_state.setGoalElevManiCommand(ElevatorManipulatorState.StartPosition); //reset to safe coral travel at start of auto
+    m_armManager.setDisabled(false);
+    m_armManager.setGoalElevManiCommand(ElevatorManipulatorState.StartPosition).schedule(); // reset to safe coral travel
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -119,11 +119,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_state.setAuto(false);
-    m_state.setDisabled(false);
-    m_state.setGoalDriveCommand(DriveState.Teleop);
+    m_armManager.setDisabled(false);
+    m_driveManager.setGoalDriveCommand(DriveState.Teleop).schedule();
     //run reset after autonomus, Idea for later if needed
-    //m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); //from whatever state it was left off in auto, should reset to safe coral travel
+    //m_armManager.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); // from whatever state it was left off
 
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to

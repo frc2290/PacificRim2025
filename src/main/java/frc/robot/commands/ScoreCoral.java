@@ -6,26 +6,30 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.ArmStateManager;
+import frc.robot.subsystems.ArmStateManager.ElevatorManipulatorState;
 import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveStateManager;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ScoreCoral extends Command {
     private ManipulatorSubsystem manipulator;
     private DifferentialSubsystem diff;
-    private StateSubsystem state;
+    private ArmStateManager arm;
+    private DriveStateManager drive;
     private PoseEstimatorSubsystem pose;
 
     private Timer timer = new Timer();
 
     /** Creates a new ScoreCoral. */
-    public ScoreCoral(ManipulatorSubsystem m_manip, DifferentialSubsystem m_diff, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
+    public ScoreCoral(ManipulatorSubsystem m_manip, DifferentialSubsystem m_diff, ArmStateManager arm,
+                      DriveStateManager drive, PoseEstimatorSubsystem m_pose) {
         manipulator = m_manip;
         diff = m_diff;
-        state = m_state;
+        this.arm = arm;
+        this.drive = drive;
         pose = m_pose;
         // Use addRequirements() here to declare subsystem dependencies.
         //addRequirements(manipulator);
@@ -43,7 +47,10 @@ public class ScoreCoral extends Command {
     @Override
     public void execute() {
         //if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
-        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock() || state.getCurrentState() == PositionState.L1Position || state.getCurrentState() == PositionState.ProcessorPosition) {
+        if ((pose.atTargetPose(diff.hasLaserCanDistance()) && arm.atElevManiGoal())
+                || !drive.getRotationLock()
+                || arm.getCurrentElevManiState() == ElevatorManipulatorState.L1
+                || arm.getCurrentElevManiState() == ElevatorManipulatorState.Processor) {
             manipulator.intake(1);
             if (!timer.isRunning()) {
                 timer.restart();
@@ -60,7 +67,7 @@ public class ScoreCoral extends Command {
         if (!interrupted) {
             manipulator.setCoral(false);
             manipulator.setAlgae(false);
-            state.setGoal(PositionState.IntakePosition);
+            arm.setElevManiGoal(ElevatorManipulatorState.IntakeCoral);
         }
     }
 

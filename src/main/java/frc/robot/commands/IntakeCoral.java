@@ -7,13 +7,10 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCoral extends Command {
     private ManipulatorSubsystem manipulator;
-    private StateSubsystem state;
 
     private Timer currentTimer = new Timer();
     private Timer delayTimer = new Timer();
@@ -22,10 +19,8 @@ public class IntakeCoral extends Command {
     private boolean finished = false;
 
     /** Creates a new IntakeOn. */
-    public IntakeCoral(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
+    public IntakeCoral(ManipulatorSubsystem m_manip) {
         manipulator = m_manip;
-        state = m_state;
-        // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(manipulator);
     }
 
@@ -36,7 +31,7 @@ public class IntakeCoral extends Command {
         delayTimer.reset();
         sawCoral = false;
         finished = false;
-        //state.setGoal(PositionState.IntakePosition);
+        // state manager goal handled elsewhere
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -71,10 +66,7 @@ public class IntakeCoral extends Command {
             manipulator.intake(0);
             manipulator.setCoral(true);
         }
-        // if (!state.isAuto()) {
-        //     state.setDriveState(DriveState.Teleop);
-        //     //state.setGoal(PositionState.TravelPosition);
-        // }
+        // drive state manager updates handled externally
     }
 
     // Returns true when the command should end.

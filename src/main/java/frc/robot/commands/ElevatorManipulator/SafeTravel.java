@@ -6,7 +6,6 @@ import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.Elevator;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.StateMachine;
 
 public class SafeTravel extends Command {
 
@@ -14,13 +13,11 @@ public class SafeTravel extends Command {
     private double diffExt1 = 220;
     DifferentialSubsystem diffArm;
     ElevatorSubsystem elevator;
-    StateMachine stateMachine;
     Integer step = 0;
 
-    public SafeTravel(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateMachine stateMachine) {
+    public SafeTravel(DifferentialSubsystem diffArm, ElevatorSubsystem elevator) {
         this.diffArm = diffArm;
         this.elevator = elevator;
-        this.stateMachine = stateMachine;
 
         addRequirements(diffArm, elevator);
     }
@@ -78,7 +75,7 @@ public class SafeTravel extends Command {
     @Override
     public void end(boolean interrupted) {
         // if (!interrupted) {
-        //     stateMachine.setCurrentState(PositionState.TravelPosition);
+        //     // stateManager could update state here if needed
         // }
     }
 

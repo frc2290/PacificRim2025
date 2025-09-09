@@ -7,13 +7,13 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
+import frc.robot.subsystems.DriveStateManager;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class FollowPathDrive extends Command{
 
         //imports
-    private StateMachine stateMachine;
+    private DriveStateManager driveStateManager;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
@@ -31,9 +31,9 @@ public class FollowPathDrive extends Command{
     /*
      * Command to align neareest reef (usually has note)
      **/
-    public FollowPathDrive(StateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
+    public FollowPathDrive(DriveStateManager m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
-        stateMachine = m_state;
+        driveStateManager = m_state;
         drive = m_drive;
         poseEstimator = m_poseEstimator;
         driverController = m_driverController;
@@ -49,7 +49,7 @@ public class FollowPathDrive extends Command{
     // Called when the command is initially scheduled. Not used right now
     @Override
     public void initialize() {
-        // stateSubsystem.setDriveState(StateMachine.DriveState.REEF_RELATIVE);
+        // stateSubsystem.setDriveState(DriveState.ReefRelative);
         // rotPid.reset();
         // xPid.reset();
         // yPid.reset();
