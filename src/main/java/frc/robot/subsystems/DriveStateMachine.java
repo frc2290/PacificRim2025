@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 
 import frc.robot.subsystems.DriveSubsystem;
+import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
 import frc.robot.commands.DriveCommands.*;
 
@@ -21,6 +22,7 @@ public class DriveStateMachine extends SubsystemBase {
     private final DriveSubsystem drive;
     private final PoseEstimatorSubsystem pose;
     private final XboxController driverController;
+    private final FlytDashboardV2 dashboard;
     
     // State management
     private DriveState currentState = DriveState.Teleop;
@@ -37,10 +39,11 @@ public class DriveStateMachine extends SubsystemBase {
     private boolean rightReefAlignment = true; // true for right reef, false for left
     
     public DriveStateMachine(DriveSubsystem drive, PoseEstimatorSubsystem pose, 
-                           XboxController driverController) {
+        XboxController driverController) {
         this.drive = drive;
         this.pose = pose;
         this.driverController = driverController;
+        this.dashboard = new FlytDashboardV2("DriveStateMachine");
     }
     
     /**

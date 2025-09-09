@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Auto;
 import frc.robot.commands.Autos.DrivetrainSysId;
-import frc.robot.commands.Autos.Test;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveStateMachine;
