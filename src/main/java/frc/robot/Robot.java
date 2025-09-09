@@ -84,6 +84,10 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     m_state.setDisabled(true);
+    if (m_autonomousCommand != null && m_autonomousCommand.isScheduled()) {
+      m_autonomousCommand.cancel();
+    }
+    m_state.cancelCurrentCommand();
   }
 
   @Override
