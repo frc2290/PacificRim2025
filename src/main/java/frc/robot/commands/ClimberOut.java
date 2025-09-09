@@ -7,18 +7,18 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Climber;
 import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.ArmStateManager;
+import frc.robot.subsystems.ArmStateManager.ElevatorManipulatorState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimberOut extends Command {
     private ClimbSubsystem climb;
-    private StateSubsystem state;
+    private ArmStateManager arm;
 
     /** Creates a new ClimberOut. */
-    public ClimberOut(ClimbSubsystem _climb, StateSubsystem _state) {
+    public ClimberOut(ClimbSubsystem _climb, ArmStateManager arm) {
         climb = _climb;
-        state = _state;
+        this.arm = arm;
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(climb);
     }
@@ -26,7 +26,7 @@ public class ClimberOut extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        state.setGoal(PositionState.ClimbPosition);
+        arm.setElevManiGoal(ElevatorManipulatorState.Climb);
         climb.setServoOpen();
         climb.setClimbing(false);
     }
@@ -36,7 +36,7 @@ public class ClimberOut extends Command {
     public void execute() {
         //climb.setServoPos(180);
         //if (climb.getServoPos() > 170) {
-        if (state.atGoal()) {
+        if (arm.atElevManiGoal()) {
             climb.setClimberSetpoint(Climber.climberOutSetpoint);
         }
         //}

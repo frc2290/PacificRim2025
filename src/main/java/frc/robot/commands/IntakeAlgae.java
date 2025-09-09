@@ -7,23 +7,21 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.ArmStateManager;
+import frc.robot.subsystems.ArmStateManager.ElevatorManipulatorState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeAlgae extends Command {
     private ManipulatorSubsystem manipulator;
-    private StateSubsystem state;
+    private ArmStateManager arm;
 
     private Timer currentTimer = new Timer();
     private Timer delayTimer = new Timer();
 
     /** Creates a new IntakeOn. */
-    public IntakeAlgae(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
+    public IntakeAlgae(ManipulatorSubsystem m_manip, ArmStateManager arm) {
         manipulator = m_manip;
-        state = m_state;
-        // Use addRequirements() here to declare subsystem dependencies.
+        this.arm = arm;
         addRequirements(manipulator);
     }
 
@@ -32,7 +30,7 @@ public class IntakeAlgae extends Command {
     public void initialize() {
         currentTimer.reset();
         delayTimer.reset();
-        //state.setGoal(PositionState.IntakePosition);
+        // state manager goal handled elsewhere
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -57,12 +55,9 @@ public class IntakeAlgae extends Command {
         if (!interrupted) {
             manipulator.intake(-0.5);
             manipulator.setAlgae(true);
-            state.setGoal(PositionState.ProcessorPosition);
+            arm.setElevManiGoal(ElevatorManipulatorState.Processor);
         }
-        // if (!state.isAuto()) {
-        //     state.setDriveState(DriveState.Teleop);
-        //     //state.setGoal(PositionState.TravelPosition);
-        // }
+        // drive state manager updates handled externally
     }
 
     // Returns true when the command should end.

@@ -8,14 +8,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateSubsystem.DriveState;
+import frc.robot.subsystems.DriveStateManager;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ReefAlignDrive extends Command {
 
     //imports
-    private StateMachine stateMachine;
+    private DriveStateManager driveStateManager;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
@@ -33,9 +32,9 @@ public class ReefAlignDrive extends Command {
     /*
      * Command to align neareest reef (usually has note)
      **/
-    public ReefAlignDrive(StateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
+    public ReefAlignDrive(DriveStateManager m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
-        stateMachine = m_state;
+        driveStateManager = m_state;
         drive = m_drive;
         poseEstimator = m_poseEstimator;
         driverController = m_driverController;
@@ -51,7 +50,7 @@ public class ReefAlignDrive extends Command {
     // Called when the command is initially scheduled. Not used right now
     @Override
     public void initialize() {
-        // stateSubsystem.setDriveState(StateMachine.DriveState.REEF_RELATIVE);
+        // stateSubsystem.setDriveState(DriveState.ReefRelative);
         // rotPid.reset();
         // xPid.reset();
         // yPid.reset();
@@ -77,7 +76,7 @@ public class ReefAlignDrive extends Command {
                 true);
         }else{
 
-            targetPose = poseEstimator.getClosestBranch(stateMachine.getRightScore());
+            targetPose = poseEstimator.getClosestBranch(driveStateManager.getRightScore());
             poseEstimator.setTargetPose(targetPose);
             //targetPose = poseEstimator.getTargetPose();
 

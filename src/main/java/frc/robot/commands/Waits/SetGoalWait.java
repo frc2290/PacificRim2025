@@ -5,25 +5,25 @@
 package frc.robot.commands.Waits;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.ArmStateManager;
+import frc.robot.subsystems.ArmStateManager.ElevatorManipulatorState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SetGoalWait extends Command {
-  private StateSubsystem state;
-  private PositionState goal;
+  private ArmStateManager arm;
+  private ElevatorManipulatorState goal;
 
   /** Creates a new SetGoalWait. */
-  public SetGoalWait(StateSubsystem _state, PositionState _goal) {
-    state = _state;
-    goal = _goal;
+  public SetGoalWait(ArmStateManager arm, ElevatorManipulatorState goal) {
+    this.arm = arm;
+    this.goal = goal;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    state.setGoal(goal);
+    arm.setElevManiGoal(goal);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -37,6 +37,6 @@ public class SetGoalWait extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return state.atGoal();
+    return arm.atElevManiGoal();
   }
 }
