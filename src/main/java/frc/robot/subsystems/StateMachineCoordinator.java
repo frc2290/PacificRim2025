@@ -2,7 +2,10 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DriverStation;
+<<<<<<< HEAD
 import edu.wpi.first.wpilibj.Timer;
+=======
+>>>>>>> 6c8e26f (added stuff)
 import edu.wpi.first.wpilibj.DataLogManager;
 
 /**

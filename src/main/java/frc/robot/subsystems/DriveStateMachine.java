@@ -8,7 +8,10 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 
 import frc.robot.subsystems.DriveSubsystem;
+<<<<<<< HEAD
 import frc.utils.FlytDashboardV2;
+=======
+>>>>>>> 6c8e26f (added stuff)
 import frc.utils.PoseEstimatorSubsystem;
 import frc.robot.commands.DriveCommands.*;
 
@@ -17,12 +20,18 @@ import frc.robot.commands.DriveCommands.*;
  * Uses simple command switching rather than GraphCommand for drive states
  */
 public class DriveStateMachine extends SubsystemBase {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6c8e26f (added stuff)
     // Subsystems
     private final DriveSubsystem drive;
     private final PoseEstimatorSubsystem pose;
     private final XboxController driverController;
+<<<<<<< HEAD
     private final FlytDashboardV2 dashboard;
+=======
+>>>>>>> 6c8e26f (added stuff)
     
     // State management
     private DriveState currentState = DriveState.Teleop;
@@ -39,12 +48,19 @@ public class DriveStateMachine extends SubsystemBase {
     private boolean rightReefAlignment = true; // true for right reef, false for left
     
     public DriveStateMachine(DriveSubsystem drive, PoseEstimatorSubsystem pose, 
+<<<<<<< HEAD
         XboxController driverController) {
         this.drive = drive;
         this.pose = pose;
         this.driverController = driverController;
         this.dashboard = new FlytDashboardV2("DriveStateMachine");
         
+=======
+                           XboxController driverController) {
+        this.drive = drive;
+        this.pose = pose;
+        this.driverController = driverController;
+>>>>>>> 6c8e26f (added stuff)
     }
     
     /**
@@ -222,11 +238,19 @@ public class DriveStateMachine extends SubsystemBase {
         // Add any additional state tracking logic here
         // For example, check if alignment states are achieving their goals
         
+<<<<<<< HEAD
         // if (currentState == DriveState.ReefAlign && currentCommand instanceof ReefAlignDrive) {
         //     ReefAlignDrive alignCommand = (ReefAlignDrive) currentCommand;
         //     boolean isAligned = alignCommand.isAligned();
         //     // Could use this for LED feedback or other indicators
         // }
+=======
+        if (currentState == DriveState.ReefAlign && currentCommand instanceof ReefAlignDrive) {
+            ReefAlignDrive alignCommand = (ReefAlignDrive) currentCommand;
+            boolean isAligned = alignCommand.isAligned();
+            // Could use this for LED feedback or other indicators
+        }
+>>>>>>> 6c8e26f (added stuff)
     }
     
     /**
@@ -241,7 +265,11 @@ public class DriveStateMachine extends SubsystemBase {
                 return new ReefRelativeDrive(drive, pose, driverController, this);
                 
             case ReefAlign:
+<<<<<<< HEAD
                 return new  ReefRelativeDrive(drive, pose, driverController, this);
+=======
+                return new ReefAlignDrive(drive, pose, driverController, this, rightReefAlignment);
+>>>>>>> 6c8e26f (added stuff)
                 
             case CoralStation:
                 return new CoralStationDrive(drive, pose, driverController, this);
@@ -251,7 +279,11 @@ public class DriveStateMachine extends SubsystemBase {
                 
             case FollowPath:
                 // This would typically be handled by auto commands
+<<<<<<< HEAD
                 return new FollowPathDrive(drive, pose, driverController, this);
+=======
+                return Commands.none().withName("FollowPathPlaceholder");
+>>>>>>> 6c8e26f (added stuff)
                 
             case BargeRelative:
                 return new BargeRelativeDrive(drive, pose, driverController, this);
@@ -260,11 +292,19 @@ public class DriveStateMachine extends SubsystemBase {
                 return new ClimbRelativeDrive(drive, pose, driverController, this);
                 
             case Cancelled:
+<<<<<<< HEAD
                 return Commands.none(); // Return a no-op command for Cancelled
                 
             default:
                 DataLogManager.log("DriveSM: Unknown state " + state);
                 return Commands.none(); // Return a no-op command for unknown states
+=======
+                return new CancelDrive(drive, this);
+                
+            default:
+                DataLogManager.log("DriveSM: Unknown state " + state);
+                return new TeleopDrive(drive, pose, driverController, this);
+>>>>>>> 6c8e26f (added stuff)
         }
     }
     
@@ -276,7 +316,11 @@ public class DriveStateMachine extends SubsystemBase {
         if (currentCommand != null && currentCommand.isScheduled()) {
             currentCommand.cancel();
         }
+<<<<<<< HEAD
         //drive.stop(); // Direct hardware control for safety
+=======
+        drive.stop(); // Direct hardware control for safety
+>>>>>>> 6c8e26f (added stuff)
         currentState = DriveState.Cancelled;
         goalState = DriveState.Cancelled;
         isTransitioning = false;
@@ -293,7 +337,11 @@ public class DriveStateMachine extends SubsystemBase {
         currentState = DriveState.Teleop;
         goalState = DriveState.Teleop;
         isTransitioning = false;
+<<<<<<< HEAD
         //drive.stop(); // Ensure drive is stopped
+=======
+        drive.stop(); // Ensure drive is stopped
+>>>>>>> 6c8e26f (added stuff)
     }
     
     /**
