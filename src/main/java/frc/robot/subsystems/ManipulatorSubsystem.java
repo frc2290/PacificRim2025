@@ -19,6 +19,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -47,6 +48,8 @@ public class ManipulatorSubsystem extends SubsystemBase {
     private SparkFlexSim manipSim;
     private SparkRelativeEncoderSim encoderSim;
     private SparkLimitSwitchSim limitSwitchSim;
+
+    private final Timer coralIntakeTimer = new Timer();
 
     Debouncer coralDebounce = new Debouncer(0.05);
 
@@ -96,6 +99,15 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     public double getOutputCurrent() {
         return manipulatorMotor.getOutputCurrent();
+    }
+
+    /**
+     * Returns the current draw of the manipulator motor.
+     *
+     * @return Manipulator motor output current.
+     */
+    public double getCurrentDraw() {
+        return getOutputCurrent();
     }
 
     public double getMotorPos() {
@@ -161,11 +173,25 @@ public class ManipulatorSubsystem extends SubsystemBase {
                                 <= Constants.SIM_INTAKE_TOLERANCE_METERS;
 
                 if (!hasCoral && atCoralStation) {
-                    hasCoral = true;
-                    limitSwitchSim.setPressed(true);
-                } else if (!hasAlgae && atReef) {
+                    if (!coralIntakeTimer.isRunning()) {
+                        coralIntakeTimer.restart();
+                        limitSwitchSim.setPressed(true);
+                    } else if (coralIntakeTimer.hasElapsed(0.1)) {
+                        hasCoral = true;
+                        limitSwitchSim.setPressed(false);
+                        coralIntakeTimer.stop();
+                    }
+                } else {
+                    limitSwitchSim.setPressed(false);
+                    coralIntakeTimer.stop();
+                }
+
+                if (!hasAlgae && atReef) {
                     hasAlgae = true;
                 }
+            } else {
+                limitSwitchSim.setPressed(false);
+                coralIntakeTimer.stop();
             }
 
             SmartDashboard.putNumber("Manipulator RPM", relEncoder.getVelocity());

@@ -17,6 +17,7 @@ import edu.wpi.first.math.trajectory.ExponentialProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -173,6 +174,15 @@ public class ElevatorSubsystem extends SubsystemBase {
         return (elevatorSetpoint - 0.04) <= getPosition() && getPosition() <= (elevatorSetpoint + 0.04);
     }
 
+    /**
+     * Returns the total current draw of the elevator motors.
+     *
+     * @return Combined output current of left and right motors.
+     */
+    public double getCurrentDraw() {
+        return leftMotor.getOutputCurrent() + rightMotor.getOutputCurrent();
+    }
+
     @Override
     public void periodic() {
         // if (Constants.debugMode) {
@@ -191,13 +201,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && elevatorSim != null) {
-            double volts = leftMotor.getAppliedOutput() * leftMotor.getBusVoltage();
+            double batteryVoltage = RobotController.getBatteryVoltage();
+            leftSim.iterate(leftMotor.getAppliedOutput(), 0.02, batteryVoltage);
+
+            double volts = leftMotor.getAppliedOutput() * batteryVoltage;
             elevatorSim.setInputVoltage(volts);
             elevatorSim.update(0.02);
-            leftEnc.setPosition(elevatorSim.getPositionMeters());
-            leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
 
-            leftSim.iterate(leftMotor.getAppliedOutput(), 0.02, leftMotor.getBusVoltage());
             leftEncoderSim.setPosition(elevatorSim.getPositionMeters());
             leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
 

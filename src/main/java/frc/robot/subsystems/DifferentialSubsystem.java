@@ -198,6 +198,15 @@ public class DifferentialSubsystem extends SubsystemBase {
         rotationSetpoint = setpoint;
     }
 
+    /**
+     * Returns the total current draw of both differential arm motors.
+     *
+     * @return Combined output current of left and right motors.
+     */
+    public double getCurrentDraw() {
+        return leftMotor.getOutputCurrent() + rightMotor.getOutputCurrent();
+    }
+
     public Command setRotationSetpointCommand(double setpoint) {
         return new RotationSetWait(this, setpoint);
         //return Commands.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
