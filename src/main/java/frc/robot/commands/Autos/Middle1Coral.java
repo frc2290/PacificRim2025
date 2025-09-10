@@ -32,7 +32,7 @@ public class Middle1Coral extends SequentialCommandGroup {
         try {
             Timer timer = new Timer();
             // Pull in path from start location to reef
-            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("MiddleCoral1");
+            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("Middle1Coral");
             
             // Create a reset pose command to set starting location (may remove in future)
             Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
@@ -56,7 +56,7 @@ public class Middle1Coral extends SequentialCommandGroup {
                         new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
                         Commands.runOnce(() -> {
                           timer.stop();
-                          System.out.println("MiddleCoral1 Time: " + timer.get());
+                          System.out.println("Middle1Coral Time: " + timer.get());
                         })//,
                         //followPath6
                         //driveSetTeleop,

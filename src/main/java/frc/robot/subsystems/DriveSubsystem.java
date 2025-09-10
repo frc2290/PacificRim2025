@@ -14,11 +14,15 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -58,6 +62,10 @@ public class DriveSubsystem extends SubsystemBase {
     private PIDController xPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
     private PIDController yPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
+    // Simulation state
+    private Field2d field;
+    private Pose2d simPose = new Pose2d();
+
     // Create the SysId routine
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
@@ -87,6 +95,11 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putData("Drive Rot PID", rotPid);
         SmartDashboard.putData("Drive X PID", xPid);
         SmartDashboard.putData("Drive Y PID", yPid);
+
+        if (RobotBase.isSimulation()) {
+            field = new Field2d();
+            SmartDashboard.putData("Field", field);
+        }
     }
 
     public void setGyroAdjustment(double adjustment) {
@@ -96,6 +109,34 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Nothing
+    }
+
+    public Field2d getField() {
+        return field;
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        m_frontLeft.simulationPeriodic();
+        m_frontRight.simulationPeriodic();
+        m_rearLeft.simulationPeriodic();
+        m_rearRight.simulationPeriodic();
+
+        SwerveModuleState[] states = {
+            m_frontLeft.getState(),
+            m_frontRight.getState(),
+            m_rearLeft.getState(),
+            m_rearRight.getState()
+        };
+        ChassisSpeeds speeds = DriveConstants.kDriveKinematics.toChassisSpeeds(states);
+        double dt = 0.02;
+        simPose = simPose.exp(new Twist2d(
+            speeds.vxMetersPerSecond * dt,
+            speeds.vyMetersPerSecond * dt,
+            speeds.omegaRadiansPerSecond * dt));
+        if (field != null) {
+            field.setRobotPose(simPose);
+        }
     }
 
     public void setSlowSpeed() {

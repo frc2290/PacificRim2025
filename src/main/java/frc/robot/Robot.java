@@ -8,7 +8,13 @@ import org.littletonrobotics.urcl.URCL;
 
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -21,6 +27,9 @@ import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
+import frc.utils.VisionSim;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.OIConstants;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -38,10 +47,12 @@ public class Robot extends TimedRobot {
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
+  private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem(m_robotDrive);
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
   private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+  private VisionSim m_frontVisionSim;
+  private VisionSim m_rearVisionSim;
 
   public Robot() {
     CanBridge.runTCP();
@@ -53,15 +64,28 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    if (RobotBase.isSimulation()) {
+      DriverStation.silenceJoystickConnectionWarning(true);
+      DriverStationSim.setJoystickAxisCount(OIConstants.kDriverControllerPort, 6);
+      DriverStationSim.setJoystickButtonCount(OIConstants.kDriverControllerPort, 12);
+      DriverStationSim.setJoystickPOVCount(OIConstants.kDriverControllerPort, 1);
+      new JoystickSim(OIConstants.kDriverControllerPort);
+      DriverStationSim.notifyNewData();
+    }
+
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state);
     DataLogManager.start();
 
-    URCL.start();
-
-    // If logging only to DataLog
+    // Start URCL once, logging to the WPILib DataLog
     URCL.start(DataLogManager.getLog());
+
+    if (RobotBase.isSimulation()) {
+      SmartDashboard.putData("Field", m_robotDrive.getField());
+      m_frontVisionSim = new VisionSim("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT.inverse());
+      m_rearVisionSim = new VisionSim("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT.inverse());
+    }
   }
 
   /**
@@ -78,6 +102,17 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    Pose2d pose = m_robotDrive.getField().getRobotPose();
+    if (m_frontVisionSim != null) {
+      m_frontVisionSim.updateSim(pose, 0.02);
+    }
+    if (m_rearVisionSim != null) {
+      m_rearVisionSim.updateSim(pose, 0.02);
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

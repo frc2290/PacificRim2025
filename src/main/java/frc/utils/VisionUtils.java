@@ -19,7 +19,11 @@ public class VisionUtils extends SubsystemBase {
   }
 
   public PhotonPipelineResult getLatestResult() {
-    return camera.getLatestResult();
+    var results = camera.getAllUnreadResults();
+    if (results.isEmpty()) {
+      return new PhotonPipelineResult();
+    }
+    return results.get(results.size() - 1);
   }
 
   @Override

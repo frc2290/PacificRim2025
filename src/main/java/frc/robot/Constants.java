@@ -53,6 +53,11 @@ public final class Constants {
         public static final double transportSetpoint = 0;
         public static final double climberOutSetpoint = -210;
         public static final double climberInSetpoint = -85;
+
+        // Simulation parameters
+        public static final double kSimGearing = 20.0; // motor to drum ratio
+        public static final double kSimDrumRadiusMeters = 0.02; // m
+        public static final double kSimCarriageMassKg = 5.0; // kg
     }
 
     public static final class Elevator {
@@ -76,10 +81,22 @@ public final class Constants {
 
         public static final double transportSetpoint = 0.3;
         public static final double intakeSetpoint = 0.1;
+
+        // Simulation parameters
+        // Gear reduction from motor to drum: (7/34) * (15/31)
+        public static final double kSimGearing = (7.0 / 34.0) * (15.0 / 31.0);
+        public static final double kSimDrumRadiusMeters = 0.0538; // m
+        public static final double kSimCarriageMassKg = 4.0; // kg
+        public static final double kSimMinHeightMeters = 0.0; // m
+        public static final double kSimMaxHeightMeters = 1.3; // m
     }
 
     public static final class Manipulator {
         public static final int kManipulatorMotorId = 7;
+
+        // Simulation parameters
+        public static final double kSimGearing = 1.0; // ratio
+        public static final double kSimMOI = 5e-4; // kg*m^2
     }
 
     public static final class DifferentialArm {
@@ -125,12 +142,34 @@ public final class Constants {
         };
 
         public static final double[][] l2_3ExtensionData = {
-  
+
             {120, 80},
             {200, 170},
             {330, 170},
             {420, 225}
         };
+
+        // Differential arm simulation parameters (best-fit values)
+        public static final double kSimExtensionMassKg = 1.1292; // kg
+        public static final double kSimRotationMassKg = 2.0412; // kg
+        public static final double kSimRotationInertiaKgM2 = 0.0468219; // kg*m^2
+        public static final double kSimComOffsetMeters = 0.029518; // m
+        public static final double kSimExtensionInclinationRads = 0.523599; // rad
+        public static final double kSimGravity = 9.81; // m/s^2
+        public static final double kSimExtensionViscousDamping = 0.530938; // N*s/m
+        public static final double kSimExtensionCoulombFriction = 65.9326; // N
+        public static final double kSimRotationViscousDamping = 0.375174; // N*m*s/rad
+        public static final double kSimRotationCoulombFriction = 0.31433; // N*m
+        public static final double kSimLinearDriveRadiusMeters = 0.00545674; // m
+        public static final double kSimDifferentialArmRadiusMeters = 0.031831; // m
+        public static final double kSimSensorOffsetRads = 2.13296; // rad
+        public static final double kSimMotorRotorInertia = 6.52157e-7; // kg*m^2
+        public static final double kSimMinExtensionMeters = 0.0; // m
+        public static final double kSimMaxExtensionMeters = 0.5; // m
+        public static final double kSimMinThetaRads = 0.0; // rad
+        public static final double kSimMaxThetaRads = 2 * Math.PI; // rad
+        public static final double kSimStartingExtensionMeters = 0.0; // m
+        public static final double kSimStartingThetaRads = 0.0; // rad
     }
 
     public static final class DriveConstants {
@@ -215,6 +254,9 @@ public final class Constants {
         public static final double kFreeSpeedRpm = 6784;
     }
 
+    /** Radius around a location that counts as "inside" an intake zone in simulation (m). */
+    public static final double SIM_INTAKE_TOLERANCE_METERS = 0.5;
+
     public static final class VisionConstants {
         public static final double CAMERA_HEIGHT_METERS = 0.9144;
         public static final double CAMERA_PITCH_RADIANS = degreesToRadians(45);
@@ -230,6 +272,14 @@ public final class Constants {
         public static final Transform3d APRILTAG_CAMERA2_TO_ROBOT = new Transform3d(
             new Translation3d(0.0015, -0.3279, (0.9473-0.102)),
             new Rotation3d(degreesToRadians(180), degreesToRadians(-45), degreesToRadians(-200)));
+
+        // Simulated camera parameters
+        public static final int CAMERA_RESOLUTION_WIDTH = 960; // pixels
+        public static final int CAMERA_RESOLUTION_HEIGHT = 720; // pixels
+        public static final double CAMERA_FOV_DEGREES = 90; // diagonal field of view
+        public static final double CAMERA_FPS = 20.0; // frames per second
+        public static final double CAMERA_AVG_LATENCY_MS = 30.0; // milliseconds
+        public static final double CAMERA_LATENCY_STDDEV_MS = 5.0; // milliseconds
 
         public static final double FIELD_LENGTH_METERS = 16.54175;
         public static final double FIELD_WIDTH_METERS = 8.0137;

@@ -8,6 +8,13 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.math.system.plant.DCMotor;
+
+import com.revrobotics.sim.SparkFlexSim;
+import com.revrobotics.sim.SparkMaxSim;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
+import com.revrobotics.sim.SparkAbsoluteEncoderSim;
 
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
@@ -42,6 +49,12 @@ public class MAXSwerveModule {
 
     private FlytLogger test = new FlytLogger("Swerve");
 
+    // Simulation members
+    private SparkFlexSim driveSim;
+    private SparkMaxSim turnSim;
+    private SparkRelativeEncoderSim driveEncoderSim;
+    private SparkAbsoluteEncoderSim turnEncoderSim;
+
     /**
      * Constructs a MAXSwerveModule and configures the driving and turning motor,
      * encoder, and PID controller. This configuration is specific to the REV
@@ -69,6 +82,13 @@ public class MAXSwerveModule {
         m_chassisAngularOffset = chassisAngularOffset;
         m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
         m_drivingEncoder.setPosition(0);
+
+        if (RobotBase.isSimulation()) {
+            driveSim = new SparkFlexSim(m_drivingSpark, DCMotor.getNEO(1));
+            turnSim = new SparkMaxSim(m_turningSpark, DCMotor.getNEO(1));
+            driveEncoderSim = driveSim.getRelativeEncoderSim();
+            turnEncoderSim = turnSim.getAbsoluteEncoderSim();
+        }
 
         test.addDoublePublisher("Drive Velocity " + drivingCANId, false, () -> m_drivingEncoder.getVelocity());
         test.addDoublePublisher("Turn Position " + turningCANId, false, () -> m_turningEncoder.getPosition());
@@ -142,5 +162,21 @@ public class MAXSwerveModule {
 
     public void setDriveCoast() {
         m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig.idleMode(IdleMode.kCoast), ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    }
+
+    /** Updates simulation state. */
+    public void simulationPeriodic() {
+        if (RobotBase.isSimulation()) {
+            if (driveSim != null) {
+                driveSim.iterate(m_drivingSpark.getAppliedOutput(), 0.02, m_drivingSpark.getBusVoltage());
+                driveEncoderSim.setPosition(driveSim.getPosition());
+                driveEncoderSim.setVelocity(driveSim.getVelocity());
+            }
+            if (turnSim != null) {
+                turnSim.iterate(m_turningSpark.getAppliedOutput(), 0.02, m_turningSpark.getBusVoltage());
+                turnEncoderSim.setPosition(turnSim.getPosition());
+                turnEncoderSim.setVelocity(turnSim.getVelocity());
+            }
+        }
     }
 }
