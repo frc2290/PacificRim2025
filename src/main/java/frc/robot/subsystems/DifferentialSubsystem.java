@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
+import com.revrobotics.sim.SparkMaxSim;
 
 import au.grapplerobotics.ConfigurationFailedException;
 import au.grapplerobotics.LaserCan;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import frc.utils.DifferentialArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -76,6 +78,8 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     // Simulation members
     private DifferentialArmSim armSim;
+    private SparkMaxSim leftSim;
+    private SparkMaxSim rightSim;
     private SparkRelativeEncoderSim leftEncoderSim;
     private SparkRelativeEncoderSim rightEncoderSim;
 
@@ -132,8 +136,10 @@ public class DifferentialSubsystem extends SubsystemBase {
                     DifferentialArm.kSimMaxThetaRads,
                     DifferentialArm.kSimStartingExtensionMeters,
                     DifferentialArm.kSimStartingThetaRads);
-            leftEncoderSim = new SparkRelativeEncoderSim(leftMotor);
-            rightEncoderSim = new SparkRelativeEncoderSim(rightMotor);
+            leftSim = new SparkMaxSim(leftMotor, DCMotor.getNEO(1));
+            rightSim = new SparkMaxSim(rightMotor, DCMotor.getNEO(1));
+            leftEncoderSim = leftSim.getRelativeEncoderSim();
+            rightEncoderSim = rightSim.getRelativeEncoderSim();
         }
 
         leftArm = leftMotor.getClosedLoopController();
@@ -321,8 +327,12 @@ public class DifferentialSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && armSim != null) {
-            double leftVolts = leftMotor.getAppliedOutput() * leftMotor.getBusVoltage();
-            double rightVolts = rightMotor.getAppliedOutput() * rightMotor.getBusVoltage();
+            double batteryVoltage = RobotController.getBatteryVoltage();
+            leftSim.setBusVoltage(batteryVoltage);
+            rightSim.setBusVoltage(batteryVoltage);
+
+            double leftVolts = leftMotor.getAppliedOutput() * batteryVoltage;
+            double rightVolts = rightMotor.getAppliedOutput() * batteryVoltage;
 
             armSim.setInputVoltage(rightVolts, leftVolts);
             armSim.update(0.02);
@@ -339,6 +349,12 @@ public class DifferentialSubsystem extends SubsystemBase {
 
             SmartDashboard.putNumber("Arm Angle", rotDeg);
             SmartDashboard.putNumber("Arm Extension", armSim.getExtensionPositionMeters());
+            SmartDashboard.putNumber("Arm Extension Velocity", armSim.getExtensionVelocityMetersPerSec());
+            SmartDashboard.putNumber("Arm Angular Velocity", Math.toDegrees(armSim.getRotationVelocityRadsPerSec()));
+            SmartDashboard.putNumber("Arm Left Voltage", leftVolts);
+            SmartDashboard.putNumber("Arm Right Voltage", rightVolts);
+            SmartDashboard.putNumber("Arm Left Current", leftMotor.getOutputCurrent());
+            SmartDashboard.putNumber("Arm Right Current", rightMotor.getOutputCurrent());
         }
     }
 }

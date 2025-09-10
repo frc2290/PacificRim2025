@@ -126,6 +126,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorDash.addDoublePublisher("Duty Cycle", true, () -> leftMotor.getAppliedOutput());
         elevatorDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
         elevatorDash.addDoublePublisher("Current", true, () -> leftMotor.getOutputCurrent());
+        elevatorDash.addDoublePublisher("Velocity", true, () -> leftEnc.getVelocity());
     }
 
     /**
@@ -202,6 +203,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && elevatorSim != null) {
             double batteryVoltage = RobotController.getBatteryVoltage();
+            leftSim.setBusVoltage(batteryVoltage);
             leftSim.iterate(leftMotor.getAppliedOutput(), 0.02, batteryVoltage);
 
             double volts = leftMotor.getAppliedOutput() * batteryVoltage;
@@ -212,6 +214,9 @@ public class ElevatorSubsystem extends SubsystemBase {
             leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
 
             SmartDashboard.putNumber("Elevator Height", elevatorSim.getPositionMeters());
+            SmartDashboard.putNumber("Elevator Velocity", elevatorSim.getVelocityMetersPerSecond());
+            SmartDashboard.putNumber("Elevator Voltage", volts);
+            SmartDashboard.putNumber("Elevator Current", getCurrentDraw());
             SmartDashboard.putBoolean("Elevator At Setpoint", atPosition());
         }
     }
