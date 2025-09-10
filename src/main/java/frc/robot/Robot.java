@@ -27,11 +27,13 @@ import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.Constants;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import frc.utils.VisionSim;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.OIConstants;
+import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -55,6 +57,10 @@ public class Robot extends TimedRobot {
   private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
   private VisionSim m_frontVisionSim;
   private VisionSim m_rearVisionSim;
+
+  private FlytLogger simDash = new FlytLogger("Simulation");
+  private double totalCurrentDraw;
+  private double loadedBatteryVoltage;
 
   public Robot() {
     CanBridge.runTCP();
@@ -89,6 +95,8 @@ public class Robot extends TimedRobot {
       SmartDashboard.putData("Field", m_robotDrive.getField());
       m_frontVisionSim = new VisionSim("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT.inverse());
       m_rearVisionSim = new VisionSim("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT.inverse());
+      simDash.addDoublePublisher("Total Current", false, () -> totalCurrentDraw);
+      simDash.addDoublePublisher("Loaded Voltage", false, () -> loadedBatteryVoltage);
     }
   }
 
@@ -118,13 +126,21 @@ public class Robot extends TimedRobot {
       m_rearVisionSim.updateSim(pose, 0.02);
     }
 
-    double totalCurrent =
+    totalCurrentDraw =
         m_robotDrive.getCurrentDraw()
             + m_elevator.getCurrentDraw()
             + m_manipulator.getCurrentDraw()
             + m_DiffArm.getCurrentDraw()
             + m_climber.getCurrentDraw();
-    RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(totalCurrent));
+    loadedBatteryVoltage = BatterySim.calculateDefaultBatteryLoadedVoltage(totalCurrentDraw);
+    RoboRioSim.setVInVoltage(loadedBatteryVoltage);
+    simDash.update(Constants.debugMode);
+
+    // Generate fresh Driver Station data every cycle so TimedRobot
+    // continues to advance in simulation. Without this, the robot
+    // will only run a single loop and all subsystem simulations will
+    // remain at zero, as seen in AdvantageScope.
+    DriverStationSim.notifyNewData();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
