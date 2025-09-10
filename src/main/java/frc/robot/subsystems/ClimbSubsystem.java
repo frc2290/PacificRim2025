@@ -96,6 +96,21 @@ public class ClimbSubsystem extends SubsystemBase {
         climbDash.addDoublePublisher("Climb Current", true, () -> leftMotor.getOutputCurrent());
     }
 
+    /**
+     * Test-oriented constructor that allows hardware dependencies to be supplied
+     * externally for unit testing.
+     */
+    public ClimbSubsystem(
+            SparkMax leftMotor,
+            SparkClosedLoopController controller,
+            RelativeEncoder leftEnc,
+            Servo servo) {
+        this.leftMotor = leftMotor;
+        this.climber = controller;
+        this.leftEnc = leftEnc;
+        this.servo = servo;
+    }
+
     public boolean getClimbing() {
         return climbing;
     }

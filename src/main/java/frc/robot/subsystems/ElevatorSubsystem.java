@@ -130,6 +130,24 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     /**
+     * Test-oriented constructor that allows hardware dependencies to be supplied
+     * externally for unit testing.
+     */
+    public ElevatorSubsystem(
+            SparkFlex leftMotor,
+            SparkFlex rightMotor,
+            RelativeEncoder leftEnc,
+            SparkClosedLoopController controller) {
+        this.leftMotor = leftMotor;
+        this.rightMotor = rightMotor;
+        this.leftEnc = leftEnc;
+        this.elevator = controller;
+
+        traPidController.reset(elevatorSetpoint);
+        expPidController.setTolerance(0.0, 0.0);
+    }
+
+    /**
      * Change the current setpoint for the Elevator
      * @param setpoint - Desired position for elevator
      */

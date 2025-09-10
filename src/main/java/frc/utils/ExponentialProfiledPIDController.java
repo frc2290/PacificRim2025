@@ -2,6 +2,7 @@ package frc.utils;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.ExponentialProfile;
+import java.util.function.Supplier;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
@@ -16,6 +17,7 @@ public class ExponentialProfiledPIDController {
   private double m_goal;
   private double m_t0;
   private double m_initial;
+  private final Supplier<Double> m_timeSupplier;
 
   private ExponentialProfile.State m_currentSetpoint = new ExponentialProfile.State();
 
@@ -32,11 +34,18 @@ public class ExponentialProfiledPIDController {
    */
   public ExponentialProfiledPIDController(double kP, double kI, double kD,
                                           ExponentialProfile.Constraints constraints) {
+    this(kP, kI, kD, constraints, Timer::getFPGATimestamp);
+  }
+
+  public ExponentialProfiledPIDController(double kP, double kI, double kD,
+                                          ExponentialProfile.Constraints constraints,
+                                          Supplier<Double> timeSupplier) {
     m_controller = new PIDController(kP, kI, kD);
     m_constraints = constraints;
     m_goal = 0.0;
     m_initial = 0.0;
     m_currentSetpoint = new ExponentialProfile.State(m_initial, 0.0);
+    m_timeSupplier = timeSupplier;
   }
 
   /**
@@ -46,7 +55,7 @@ public class ExponentialProfiledPIDController {
    */
   public void setGoal(double goal) {
     m_goal = goal;
-    m_t0 = Timer.getFPGATimestamp();
+    m_t0 = m_timeSupplier.get();
     m_initial = m_currentSetpoint.position;
     m_profile = new ExponentialProfile(m_constraints);
   }
@@ -66,7 +75,7 @@ public class ExponentialProfiledPIDController {
    * @return The control output
    */
   public double calculate(double measurement) {
-    double currentTime = Timer.getFPGATimestamp();
+    double currentTime = m_timeSupplier.get();
     double elapsedTime = currentTime - m_t0;
 
     m_currentSetpoint = m_profile.calculate(

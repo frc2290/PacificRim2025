@@ -83,6 +83,25 @@ public class ManipulatorSubsystem extends SubsystemBase {
         manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
         manipDash.addBoolPublisher("Sees Coral", true, () -> seesCoral());
     }
+
+    /**
+     * Test-oriented constructor allowing hardware dependencies to be supplied
+     * externally for unit testing.
+     */
+    public ManipulatorSubsystem(
+            SparkFlex manipulatorMotor,
+            SparkAbsoluteEncoder manipulatorAbsEncoder,
+            RelativeEncoder relEncoder,
+            SparkLimitSwitch manipulatorLimitSwitch,
+            DriveSubsystem drive,
+            Debouncer coralDebounce) {
+        this.manipulatorMotor = manipulatorMotor;
+        this.manipulatorAbsEncoder = manipulatorAbsEncoder;
+        this.relEncoder = relEncoder;
+        this.manipulatorLimitSwitch = manipulatorLimitSwitch;
+        this.drive = drive;
+        this.coralDebounce = coralDebounce;
+    }
     
     public void intake(double power){
         manipulatorMotor.set(power);

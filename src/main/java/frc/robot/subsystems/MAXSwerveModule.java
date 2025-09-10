@@ -99,6 +99,29 @@ public class MAXSwerveModule {
     }
 
     /**
+     * Test-oriented constructor that allows hardware dependencies to be supplied
+     * externally for unit testing.
+     */
+    public MAXSwerveModule(
+            SparkFlex drivingSpark,
+            SparkMax turningSpark,
+            RelativeEncoder drivingEncoder,
+            AbsoluteEncoder turningEncoder,
+            SparkClosedLoopController drivingClosedLoopController,
+            SparkClosedLoopController turningClosedLoopController,
+            double chassisAngularOffset) {
+        m_drivingSpark = drivingSpark;
+        m_turningSpark = turningSpark;
+        m_drivingEncoder = drivingEncoder;
+        m_turningEncoder = turningEncoder;
+        m_drivingClosedLoopController = drivingClosedLoopController;
+        m_turningClosedLoopController = turningClosedLoopController;
+        m_chassisAngularOffset = chassisAngularOffset;
+        m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
+        m_drivingEncoder.setPosition(0);
+    }
+
+    /**
      * Returns the current state of the module.
      *
      * @return The current state of the module.

@@ -142,6 +142,32 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     }
 
     /**
+     * Test-focused constructor allowing direct injection of pose suppliers without starting
+     * vision threads. This constructor should be used only for unit testing where a
+     * {@link DriveSubsystem} is not available.
+     *
+     * @param rotationSupplier supplier for the robot heading
+     * @param modulePositionSupplier supplier for swerve module positions
+     * @param moduleStateSupplier supplier for swerve module states
+     */
+    public PoseEstimatorSubsystem(
+            Supplier<Rotation2d> rotationSupplier,
+            Supplier<SwerveModulePosition[]> modulePositionSupplier,
+            Supplier<SwerveModuleState[]> moduleStateSupplier) {
+        this.rotationSupplier = rotationSupplier;
+        this.modulePositionSupplier = modulePositionSupplier;
+        this.moduleStateSupplier = moduleStateSupplier;
+
+        poseEstimator = new SwerveDrivePoseEstimator(
+                DriveConstants.kDriveKinematics,
+                rotationSupplier.get(),
+                modulePositionSupplier.get(),
+                new Pose2d(),
+                stateStdDevs,
+                visionMeasurementStdDevs);
+    }
+
+    /**
      * Sets the alliance. This is used to configure the origin of the AprilTag map
      * 
      * @param alliance alliance

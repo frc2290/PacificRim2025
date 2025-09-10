@@ -32,28 +32,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class DriveSubsystem extends SubsystemBase {
 
     // Create MAXSwerveModules
-    private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
-            DriveConstants.kFrontLeftDrivingCanId,
-            DriveConstants.kFrontLeftTurningCanId,
-            DriveConstants.kFrontLeftChassisAngularOffset);
-
-    private final MAXSwerveModule m_frontRight = new MAXSwerveModule(
-            DriveConstants.kFrontRightDrivingCanId,
-            DriveConstants.kFrontRightTurningCanId,
-            DriveConstants.kFrontRightChassisAngularOffset);
-
-    private final MAXSwerveModule m_rearLeft = new MAXSwerveModule(
-            DriveConstants.kRearLeftDrivingCanId,
-            DriveConstants.kRearLeftTurningCanId,
-            DriveConstants.kBackLeftChassisAngularOffset);
-
-    private final MAXSwerveModule m_rearRight = new MAXSwerveModule(
-            DriveConstants.kRearRightDrivingCanId,
-            DriveConstants.kRearRightTurningCanId,
-            DriveConstants.kBackRightChassisAngularOffset);
+    private final MAXSwerveModule m_frontLeft;
+    private final MAXSwerveModule m_frontRight;
+    private final MAXSwerveModule m_rearLeft;
+    private final MAXSwerveModule m_rearRight;
 
     // The gyro sensor
-    private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
+    private final AHRS m_gyro;
     // private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
     private double slowSpeed = 1.0;
@@ -87,8 +72,46 @@ public class DriveSubsystem extends SubsystemBase {
 
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem() {
+        this(
+                new MAXSwerveModule(
+                        DriveConstants.kFrontLeftDrivingCanId,
+                        DriveConstants.kFrontLeftTurningCanId,
+                        DriveConstants.kFrontLeftChassisAngularOffset),
+                new MAXSwerveModule(
+                        DriveConstants.kFrontRightDrivingCanId,
+                        DriveConstants.kFrontRightTurningCanId,
+                        DriveConstants.kFrontRightChassisAngularOffset),
+                new MAXSwerveModule(
+                        DriveConstants.kRearLeftDrivingCanId,
+                        DriveConstants.kRearLeftTurningCanId,
+                        DriveConstants.kBackLeftChassisAngularOffset),
+                new MAXSwerveModule(
+                        DriveConstants.kRearRightDrivingCanId,
+                        DriveConstants.kRearRightTurningCanId,
+                        DriveConstants.kBackRightChassisAngularOffset),
+                new AHRS(NavXComType.kMXP_SPI));
+
         // Usage reporting for MAXSwerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
+    }
+
+    /**
+     * Creates a drive subsystem with injected modules and gyro for testing.
+     *
+     * @param frontLeft  front left swerve module
+     * @param frontRight front right swerve module
+     * @param rearLeft   rear left swerve module
+     * @param rearRight  rear right swerve module
+     * @param gyro       gyro sensor
+     */
+    public DriveSubsystem(MAXSwerveModule frontLeft, MAXSwerveModule frontRight,
+            MAXSwerveModule rearLeft, MAXSwerveModule rearRight, AHRS gyro) {
+        m_frontLeft = frontLeft;
+        m_frontRight = frontRight;
+        m_rearLeft = rearLeft;
+        m_rearRight = rearRight;
+        m_gyro = gyro;
+
         m_gyro.setAngleAdjustment(180);
         rotPid.enableContinuousInput(0, 360);
 
