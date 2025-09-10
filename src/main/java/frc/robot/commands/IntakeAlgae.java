@@ -21,9 +21,15 @@ public class IntakeAlgae extends Command {
 
     /** Creates a new IntakeOn. */
     public IntakeAlgae(ManipulatorSubsystem m_manip, StateSubsystem m_state) {
+        this(m_manip, m_state, new Timer(), new Timer());
+    }
+
+    public IntakeAlgae(
+            ManipulatorSubsystem m_manip, StateSubsystem m_state, Timer current, Timer delay) {
         manipulator = m_manip;
         state = m_state;
-        // Use addRequirements() here to declare subsystem dependencies.
+        currentTimer = current;
+        delayTimer = delay;
         addRequirements(manipulator);
     }
 

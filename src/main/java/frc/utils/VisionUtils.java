@@ -10,12 +10,21 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionUtils extends SubsystemBase {
-  PhotonCamera camera;
-  PhotonPipelineResult detections;
-  
+  private final PhotonCamera camera;
+  private PhotonPipelineResult detections;
+
   /** Creates a new VisionUtils. */
   public VisionUtils(String cameraName) {
-    camera = new PhotonCamera(cameraName);
+    this(new PhotonCamera(cameraName));
+  }
+
+  /**
+   * Creates a new VisionUtils with an injected camera for testing.
+   *
+   * @param camera photon camera instance
+   */
+  public VisionUtils(PhotonCamera camera) {
+    this.camera = camera;
   }
 
   public PhotonPipelineResult getLatestResult() {
@@ -26,9 +35,21 @@ public class VisionUtils extends SubsystemBase {
     return results.get(results.size() - 1);
   }
 
+  public PhotonPipelineResult getDetections() {
+    return detections;
+  }
+
+  public boolean isConnected() {
+    return camera.isConnected();
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    detections = getLatestResult();
+    if (!camera.isConnected()) {
+      detections = new PhotonPipelineResult();
+    } else {
+      detections = getLatestResult();
+    }
   }
 }

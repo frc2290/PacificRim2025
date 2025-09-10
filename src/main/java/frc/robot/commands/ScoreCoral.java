@@ -19,14 +19,24 @@ public class ScoreCoral extends Command {
     private StateSubsystem state;
     private PoseEstimatorSubsystem pose;
 
-    private Timer timer = new Timer();
+    private Timer timer;
 
-    /** Creates a new ScoreCoral. */
+    /**
+     * Creates a new ScoreCoral using real timers.
+     */
     public ScoreCoral(ManipulatorSubsystem m_manip, DifferentialSubsystem m_diff, StateSubsystem m_state, PoseEstimatorSubsystem m_pose) {
+        this(m_manip, m_diff, m_state, m_pose, new Timer());
+    }
+
+    /**
+     * Test-oriented constructor that allows a timer to be supplied for unit testing.
+     */
+    public ScoreCoral(ManipulatorSubsystem m_manip, DifferentialSubsystem m_diff, StateSubsystem m_state, PoseEstimatorSubsystem m_pose, Timer timer) {
         manipulator = m_manip;
         diff = m_diff;
         state = m_state;
         pose = m_pose;
+        this.timer = timer;
         // Use addRequirements() here to declare subsystem dependencies.
         //addRequirements(manipulator);
     }

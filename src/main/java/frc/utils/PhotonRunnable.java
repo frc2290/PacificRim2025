@@ -57,10 +57,24 @@ public class PhotonRunnable implements Runnable {
         this.photonPoseEstimator = photonPoseEstimator;
     }
 
+    /**
+     * Creates a new runnable with injected camera and pose estimator for testing.
+     *
+     * @param camera photon camera instance
+     * @param estimator pose estimator instance
+     * @param headingSupplier supplier of current heading
+     */
+    public PhotonRunnable(PhotonCamera camera, PhotonPoseEstimator estimator, Supplier<Heading> headingSupplier) {
+        this.cameraName = camera.getName();
+        this.heading = headingSupplier;
+        this.photonCamera = camera;
+        this.photonPoseEstimator = estimator;
+    }
+
     @Override
     public void run() {
         // Get AprilTag data
-        if (photonPoseEstimator != null && photonCamera != null) {
+        if (photonPoseEstimator != null && photonCamera != null && photonCamera.isConnected()) {
             List<PhotonPipelineResult> results = photonCamera.getAllUnreadResults();
 
             for (PhotonPipelineResult result : results) {

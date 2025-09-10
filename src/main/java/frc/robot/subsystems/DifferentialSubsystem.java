@@ -180,6 +180,38 @@ public class DifferentialSubsystem extends SubsystemBase {
         differentialDash.addIntegerPublisher("LaserCan Distance", true, () -> laserCanDistance);
     }
 
+    /**
+     * Test-focused constructor that allows hardware dependencies to be supplied
+     * externally for unit testing.
+     *
+     * @param leftMotor  left arm motor
+     * @param rightMotor right arm motor
+     * @param leftEnc    encoder for the left motor
+     * @param rightEnc   encoder for the right motor
+     * @param leftArm    closed-loop controller for the left motor
+     * @param rightArm   closed-loop controller for the right motor
+     * @param laserCan   distance sensor
+     */
+    public DifferentialSubsystem(
+            SparkMax leftMotor,
+            SparkMax rightMotor,
+            RelativeEncoder leftEnc,
+            RelativeEncoder rightEnc,
+            SparkClosedLoopController leftArm,
+            SparkClosedLoopController rightArm,
+            LaserCan laserCan) {
+        this.leftMotor = leftMotor;
+        this.rightMotor = rightMotor;
+        this.leftEnc = leftEnc;
+        this.rightEnc = rightEnc;
+        this.leftArm = leftArm;
+        this.rightArm = rightArm;
+        this.lc = laserCan;
+
+        extensionPid.reset(extensionSetpoint);
+        rotationPid.reset(rotationSetpoint);
+    }
+
     public void extend(double setpoint) {
         leftMotor.set(setpoint);
         rightMotor.set(setpoint);

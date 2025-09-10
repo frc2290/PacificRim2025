@@ -14,7 +14,7 @@ public class PoseUtils {
     }
 
     public static boolean inRange(double range) {
-        return (1 <= range || range <= 6);
+        return 1 <= range && range <= 6;
     }
 
     public static class Heading {

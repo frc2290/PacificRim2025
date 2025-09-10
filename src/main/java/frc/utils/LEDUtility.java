@@ -20,7 +20,12 @@ public class LEDUtility extends SubsystemBase {
 
     /** Creates a new LEDUtility. */
     public LEDUtility(int _port) {
-        addressableLED = new AddressableLED(_port);
+        this(new AddressableLED(_port));
+    }
+
+    /** Creates a new LEDUtility with an injected AddressableLED. */
+    public LEDUtility(AddressableLED led) {
+        addressableLED = led;
         addressableLED.start();
     }
 
@@ -58,12 +63,27 @@ public class LEDUtility extends SubsystemBase {
 
     // DEFAULT LED PATTERN, CHANGE PER SEASON
     public void setDefault() {
-        getStrip("Left").setEffect(LEDEffect.PULSE);
-        getStrip("Left").setColor(LEDEffects.flytBlue);
-        getStrip("Right").setEffect(LEDEffect.PULSE);
-        getStrip("Right").setColor(LEDEffects.flytBlue);
-        getStrip("TopLeft").setEffect(LEDEffect.ALLIANCE);
-        getStrip("TopRight").setEffect(LEDEffect.ALLIANCE);
+        LEDStrip left = getStrip("Left");
+        if (left != null) {
+            left.setEffect(LEDEffect.PULSE);
+            left.setColor(LEDEffects.flytBlue);
+        }
+
+        LEDStrip right = getStrip("Right");
+        if (right != null) {
+            right.setEffect(LEDEffect.PULSE);
+            right.setColor(LEDEffects.flytBlue);
+        }
+
+        LEDStrip topLeft = getStrip("TopLeft");
+        if (topLeft != null) {
+            topLeft.setEffect(LEDEffect.ALLIANCE);
+        }
+
+        LEDStrip topRight = getStrip("TopRight");
+        if (topRight != null) {
+            topRight.setEffect(LEDEffect.ALLIANCE);
+        }
     }
 
     private void setLength(int length) {

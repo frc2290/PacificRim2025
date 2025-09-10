@@ -10,14 +10,15 @@ public class SwerveUtils {
      * @return The new value for {@code _current} after performing the specified step towards the specified target.
      */
     public static double StepTowards(double _current, double _target, double _stepsize) {
-        if (Math.abs(_current - _target) <= _stepsize) {
+        double step = Math.abs(_stepsize);
+        if (Math.abs(_current - _target) <= step) {
             return _target;
         }
         else if (_target < _current) {
-            return _current - _stepsize;
+            return _current - step;
         }
         else {
-            return _current + _stepsize;
+            return _current + step;
         }
     }
 
@@ -32,25 +33,26 @@ public class SwerveUtils {
     public static double StepTowardsCircular(double _current, double _target, double _stepsize) {
         _current = WrapAngle(_current);
         _target = WrapAngle(_target);
+        double step = Math.abs(_stepsize);
 
         double stepDirection = Math.signum(_target - _current);
         double difference = Math.abs(_current - _target);
-        
-        if (difference <= _stepsize) {
+
+        if (difference <= step) {
             return _target;
         }
         else if (difference > Math.PI) { //does the system need to wrap over eventually?
             //handle the special case where you can reach the target in one step while also wrapping
-            if (_current + 2*Math.PI - _target < _stepsize || _target + 2*Math.PI - _current < _stepsize) {
+            if (_current + 2*Math.PI - _target < step || _target + 2*Math.PI - _current < step) {
                 return _target;
             }
             else {
-                return WrapAngle(_current - stepDirection * _stepsize); //this will handle wrapping gracefully
+                return WrapAngle(_current - stepDirection * step); //this will handle wrapping gracefully
             }
 
         }
         else {
-            return _current + stepDirection * _stepsize;
+            return _current + stepDirection * step;
         }
     }
 
