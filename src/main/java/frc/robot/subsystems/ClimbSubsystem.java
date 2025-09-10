@@ -140,6 +140,15 @@ public class ClimbSubsystem extends SubsystemBase {
         return (Climber.climberOutSetpoint - 5) < getClimberPos() && getClimberPos() < (Climber.climberInSetpoint + 5);
     }
 
+    /**
+     * Returns the current draw of the climber motor.
+     *
+     * @return Climber motor output current.
+     */
+    public double getCurrentDraw() {
+        return leftMotor.getOutputCurrent();
+    }
+
     public double getServoPos() {
         return servo.getPosition();
     }

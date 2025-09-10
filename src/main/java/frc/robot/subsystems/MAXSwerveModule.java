@@ -151,6 +151,15 @@ public class MAXSwerveModule {
         m_drivingEncoder.setPosition(0);
     }
 
+    /**
+     * Returns the current draw of both drive and turning motors in this module.
+     *
+     * @return Sum of drive and turning motor currents.
+     */
+    public double getCurrentDraw() {
+        return m_drivingSpark.getOutputCurrent() + m_turningSpark.getOutputCurrent();
+    }
+
     public void runDriveCharacterization(double output) {
         m_drivingClosedLoopController.setReference(output, ControlType.kVoltage);
         m_turningClosedLoopController.setReference(new Rotation2d().plus(Rotation2d.fromRadians(m_chassisAngularOffset)).getRadians(), ControlType.kPosition);

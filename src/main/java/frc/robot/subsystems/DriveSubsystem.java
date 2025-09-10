@@ -115,6 +115,18 @@ public class DriveSubsystem extends SubsystemBase {
         return field;
     }
 
+    /**
+     * Returns the total current draw of all drive modules.
+     *
+     * @return Sum of currents from each swerve module's drive and turn motors.
+     */
+    public double getCurrentDraw() {
+        return m_frontLeft.getCurrentDraw()
+                + m_frontRight.getCurrentDraw()
+                + m_rearLeft.getCurrentDraw()
+                + m_rearRight.getCurrentDraw();
+    }
+
     @Override
     public void simulationPeriodic() {
         m_frontLeft.simulationPeriodic();

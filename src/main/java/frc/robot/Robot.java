@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.JoystickSim;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -70,6 +72,8 @@ public class Robot extends TimedRobot {
       DriverStationSim.setJoystickButtonCount(OIConstants.kDriverControllerPort, 12);
       DriverStationSim.setJoystickPOVCount(OIConstants.kDriverControllerPort, 1);
       new JoystickSim(OIConstants.kDriverControllerPort);
+      DriverStationSim.setAutonomous(false);
+      DriverStationSim.setEnabled(false);
       DriverStationSim.notifyNewData();
     }
 
@@ -113,11 +117,23 @@ public class Robot extends TimedRobot {
     if (m_rearVisionSim != null) {
       m_rearVisionSim.updateSim(pose, 0.02);
     }
+
+    double totalCurrent =
+        m_robotDrive.getCurrentDraw()
+            + m_elevator.getCurrentDraw()
+            + m_manipulator.getCurrentDraw()
+            + m_DiffArm.getCurrentDraw()
+            + m_climber.getCurrentDraw();
+    RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(totalCurrent));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    if (RobotBase.isSimulation()) {
+      DriverStationSim.setEnabled(false);
+      DriverStationSim.notifyNewData();
+    }
     m_state.setDisabled(true);
     if (m_autonomousCommand != null && m_autonomousCommand.isScheduled()) {
       m_autonomousCommand.cancel();
@@ -131,6 +147,11 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    if (RobotBase.isSimulation()) {
+      DriverStationSim.setAutonomous(true);
+      DriverStationSim.setEnabled(true);
+      DriverStationSim.notifyNewData();
+    }
     m_state.setAuto(true);
     m_state.setDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -154,6 +175,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    if (RobotBase.isSimulation()) {
+      DriverStationSim.setAutonomous(false);
+      DriverStationSim.setEnabled(true);
+      DriverStationSim.notifyNewData();
+    }
     m_state.setAuto(false);
     m_state.setDisabled(false);
     m_state.setDriveState(DriveState.Teleop);

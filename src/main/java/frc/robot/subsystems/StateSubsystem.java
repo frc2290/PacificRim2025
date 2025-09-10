@@ -399,7 +399,8 @@ public class StateSubsystem extends SubsystemBase {
          * Inside each case for each state is specific controls to add moves in case it needs to go somewhere else first (Mostly been moved to individual commands)
          * Finally schedules command(s) at the bottom to be executed
          */
-        if (goalState != currentState && !isTransitioning() && atCurrentState() && DriverStation.isEnabled()) {
+        if (goalState != currentState && !isTransitioning() && atCurrentState()
+                && DriverStation.isEnabled()) {
             switch (goalState) {
                 case TravelPosition:
                     currentCommand = new TravelPosition(diff, elevator, this);
