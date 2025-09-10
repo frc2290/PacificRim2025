@@ -25,7 +25,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.utils.DifferentialArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -346,15 +345,6 @@ public class DifferentialSubsystem extends SubsystemBase {
             rightEncoderSim.setPosition(extMM + degreesToMM(rotDeg));
             leftEncoderSim.setVelocity(extVelMM - rotVelMM);
             rightEncoderSim.setVelocity(extVelMM + rotVelMM);
-
-            SmartDashboard.putNumber("Arm Angle", rotDeg);
-            SmartDashboard.putNumber("Arm Extension", armSim.getExtensionPositionMeters());
-            SmartDashboard.putNumber("Arm Extension Velocity", armSim.getExtensionVelocityMetersPerSec());
-            SmartDashboard.putNumber("Arm Angular Velocity", Math.toDegrees(armSim.getRotationVelocityRadsPerSec()));
-            SmartDashboard.putNumber("Arm Left Voltage", leftVolts);
-            SmartDashboard.putNumber("Arm Right Voltage", rightVolts);
-            SmartDashboard.putNumber("Arm Left Current", leftMotor.getOutputCurrent());
-            SmartDashboard.putNumber("Arm Right Current", rightMotor.getOutputCurrent());
         }
     }
 }

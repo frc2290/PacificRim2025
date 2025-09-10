@@ -19,7 +19,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -212,12 +211,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
             leftEncoderSim.setPosition(elevatorSim.getPositionMeters());
             leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
-
-            SmartDashboard.putNumber("Elevator Height", elevatorSim.getPositionMeters());
-            SmartDashboard.putNumber("Elevator Velocity", elevatorSim.getVelocityMetersPerSecond());
-            SmartDashboard.putNumber("Elevator Voltage", volts);
-            SmartDashboard.putNumber("Elevator Current", getCurrentDraw());
-            SmartDashboard.putBoolean("Elevator At Setpoint", atPosition());
         }
     }
 }
