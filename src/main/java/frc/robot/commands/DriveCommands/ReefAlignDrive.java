@@ -9,7 +9,6 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ReefAlignDrive extends Command {

@@ -9,14 +9,6 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
-import frc.robot.commands.Auto;
-import frc.robot.commands.Autos.DrivetrainSysId;
-import frc.robot.commands.Autos.Left3Coral;
-import frc.robot.commands.Autos.Middle1Coral;
-import frc.robot.commands.Autos.Right1Coral;
-import frc.robot.commands.Autos.Right2Coral;
-import frc.robot.commands.Autos.Right3Coral;
-import frc.robot.commands.Autos.Test;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -24,7 +16,6 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
-import frc.robot.subsystems.StateSubsystem.ManipulatorState;
 import frc.robot.subsystems.StateMachine.DriveState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
@@ -82,9 +73,9 @@ public class RobotContainer {
         m_ledUtility.setDefault();
 
         // Build an auto chooser. This will use Commands.none() as the default option.
-        auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
-        auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
-        auto_chooser.addOption("Driving", new Auto(m_robotDrive));
+        //auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
+        //auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
+        //auto_chooser.addOption("Driving", new Auto(m_robotDrive));
         //auto_chooser.addOption("Right1Coral", new Right1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         //auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
         //auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
