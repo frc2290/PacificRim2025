@@ -10,6 +10,7 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
 
 import au.grapplerobotics.ConfigurationFailedException;
 import au.grapplerobotics.LaserCan;
@@ -19,6 +20,10 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotBase;
+import frc.utils.DifferentialArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -69,6 +74,11 @@ public class DifferentialSubsystem extends SubsystemBase {
     double leftCommand;
     double rightCommand;
 
+    // Simulation members
+    private DifferentialArmSim armSim;
+    private SparkRelativeEncoderSim leftEncoderSim;
+    private SparkRelativeEncoderSim rightEncoderSim;
+
     public DifferentialSubsystem() {
         leftMotor = new SparkMax(DifferentialArm.kLeftMotorId, MotorType.kBrushless);
         rightMotor = new SparkMax(DifferentialArm.kRightMotorId, MotorType.kBrushless);
@@ -97,6 +107,34 @@ public class DifferentialSubsystem extends SubsystemBase {
         leftEnc.setPosition(0);
         rightEnc = rightMotor.getEncoder();
         rightEnc.setPosition(0);
+
+        if (RobotBase.isSimulation()) {
+            armSim = new DifferentialArmSim(
+                    DifferentialArm.kSimExtensionMassKg,
+                    DifferentialArm.kSimRotationMassKg,
+                    DifferentialArm.kSimRotationInertiaKgM2,
+                    DifferentialArm.kSimComOffsetMeters,
+                    DifferentialArm.kSimExtensionInclinationRads,
+                    DifferentialArm.kSimGravity,
+                    DifferentialArm.kSimExtensionViscousDamping,
+                    DifferentialArm.kSimExtensionCoulombFriction,
+                    DifferentialArm.kSimRotationViscousDamping,
+                    DifferentialArm.kSimRotationCoulombFriction,
+                    DCMotor.getNEO(1),
+                    DCMotor.getNEO(1),
+                    DifferentialArm.kSimLinearDriveRadiusMeters,
+                    DifferentialArm.kSimDifferentialArmRadiusMeters,
+                    DifferentialArm.kSimSensorOffsetRads,
+                    DifferentialArm.kSimMotorRotorInertia,
+                    DifferentialArm.kSimMinExtensionMeters,
+                    DifferentialArm.kSimMaxExtensionMeters,
+                    DifferentialArm.kSimMinThetaRads,
+                    DifferentialArm.kSimMaxThetaRads,
+                    DifferentialArm.kSimStartingExtensionMeters,
+                    DifferentialArm.kSimStartingThetaRads);
+            leftEncoderSim = new SparkRelativeEncoderSim(leftMotor);
+            rightEncoderSim = new SparkRelativeEncoderSim(rightMotor);
+        }
 
         leftArm = leftMotor.getClosedLoopController();
         rightArm = rightMotor.getClosedLoopController();
@@ -269,5 +307,29 @@ public class DifferentialSubsystem extends SubsystemBase {
         // rightArm.setReference(extendSlew.calculate(extensionSetpoint) +
         // degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
         differentialDash.update(Constants.debugMode);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        if (RobotBase.isSimulation() && armSim != null) {
+            double leftVolts = leftMotor.getAppliedOutput() * leftMotor.getBusVoltage();
+            double rightVolts = rightMotor.getAppliedOutput() * rightMotor.getBusVoltage();
+
+            armSim.setInputVoltage(rightVolts, leftVolts);
+            armSim.update(0.02);
+
+            double extMM = armSim.getExtensionPositionMeters() * 1000;
+            double rotDeg = Math.toDegrees(armSim.getRotationAngleRads());
+            double extVelMM = armSim.getExtensionVelocityMetersPerSec() * 1000;
+            double rotVelMM = degreesToMM(Math.toDegrees(armSim.getRotationVelocityRadsPerSec()));
+
+            leftEncoderSim.setPosition(extMM - degreesToMM(rotDeg));
+            rightEncoderSim.setPosition(extMM + degreesToMM(rotDeg));
+            leftEncoderSim.setVelocity(extVelMM - rotVelMM);
+            rightEncoderSim.setVelocity(extVelMM + rotVelMM);
+
+            SmartDashboard.putNumber("Arm Angle", rotDeg);
+            SmartDashboard.putNumber("Arm Extension", armSim.getExtensionPositionMeters());
+        }
     }
 }

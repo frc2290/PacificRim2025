@@ -14,10 +14,15 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.sim.SparkMaxSim;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -37,6 +42,10 @@ public class ClimbSubsystem extends SubsystemBase {
     private RelativeEncoder leftEnc;
 
     private SparkMaxConfig leftConfig = new SparkMaxConfig();
+
+    // Simulation members
+    private SparkMaxSim climberSim;
+    private SparkRelativeEncoderSim climberEncoderSim;
 
     private double climberSetpoint = 0;
 
@@ -58,6 +67,11 @@ public class ClimbSubsystem extends SubsystemBase {
 
         leftEnc = leftMotor.getEncoder();
         leftEnc.setPosition(0);
+
+        if (RobotBase.isSimulation()) {
+            climberSim = new SparkMaxSim(leftMotor, DCMotor.getNEO(1));
+            climberEncoderSim = climberSim.getRelativeEncoderSim();
+        }
 
         leftConfig.inverted(true)
                 .idleMode(IdleMode.kBrake)
@@ -149,5 +163,15 @@ public class ClimbSubsystem extends SubsystemBase {
         }
         // This method will be called once per scheduler run
         climbDash.update(Constants.debugMode);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        if (RobotBase.isSimulation() && climberSim != null) {
+            climberSim.iterate(leftMotor.getAppliedOutput(), 0.02, leftMotor.getBusVoltage());
+            climberEncoderSim.setPosition(climberSim.getPosition() * Climber.kPositionConversion);
+            climberEncoderSim.setVelocity(climberSim.getVelocity() * Climber.kVelocityConversion);
+            SmartDashboard.putNumber("Climber Sim Pos", getClimberPos());
+        }
     }
 }

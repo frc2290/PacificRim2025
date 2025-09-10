@@ -15,6 +15,10 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.ExponentialProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,6 +27,8 @@ import frc.robot.commands.Waits.ElevatorSetWait;
 import frc.robot.Constants;
 import frc.utils.ExponentialProfiledPIDController;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
+import com.revrobotics.sim.SparkFlexSim;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
 //import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 //import frc.utils.FLYTLib.FLYTMotorLib.SparkFlexController;
 
@@ -47,6 +53,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private FlytLogger elevatorDash = new FlytLogger("Elevator");
 
+    // Simulation members
+    private ElevatorSim elevatorSim;
+    private SparkFlexSim leftSim;
+    private SparkRelativeEncoderSim leftEncoderSim;
+
     private double elevatorSetpoint = 0;
 
     private ExponentialProfiledPIDController expPidController = new ExponentialProfiledPIDController(0.0, 0.0, 0.0, ExponentialProfile.Constraints.fromCharacteristics(0.0, 0.0, 0.0));
@@ -69,6 +80,20 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         leftEnc = leftMotor.getEncoder();
         leftEnc.setPosition(0);
+
+        if (RobotBase.isSimulation()) {
+            elevatorSim = new ElevatorSim(
+                    DCMotor.getNEO(1),
+                    Elevator.kSimGearing,
+                    Elevator.kSimCarriageMassKg,
+                    Elevator.kSimDrumRadiusMeters,
+                    Elevator.kSimMinHeightMeters,
+                    Elevator.kSimMaxHeightMeters,
+                    true,
+                    0.0);
+            leftSim = new SparkFlexSim(leftMotor, DCMotor.getNEO(1));
+            leftEncoderSim = leftSim.getRelativeEncoderSim();
+        }
 
         leftConfig.inverted(true)
                     .idleMode(IdleMode.kBrake)
@@ -161,5 +186,23 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevator.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);//, elevFeed);
         //elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
         elevatorDash.update(Constants.debugMode);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        if (RobotBase.isSimulation() && elevatorSim != null) {
+            double volts = leftMotor.getAppliedOutput() * leftMotor.getBusVoltage();
+            elevatorSim.setInputVoltage(volts);
+            elevatorSim.update(0.02);
+            leftEnc.setPosition(elevatorSim.getPositionMeters());
+            leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
+
+            leftSim.iterate(leftMotor.getAppliedOutput(), 0.02, leftMotor.getBusVoltage());
+            leftEncoderSim.setPosition(elevatorSim.getPositionMeters());
+            leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
+
+            SmartDashboard.putNumber("Elevator Height", elevatorSim.getPositionMeters());
+            SmartDashboard.putBoolean("Elevator At Setpoint", atPosition());
+        }
     }
 }
