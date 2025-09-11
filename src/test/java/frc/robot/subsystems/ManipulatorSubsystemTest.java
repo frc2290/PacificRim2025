@@ -27,7 +27,6 @@ class ManipulatorSubsystemTest {
     @Mock private SparkAbsoluteEncoder absEncoder;
     @Mock private RelativeEncoder relEncoder;
     @Mock private SparkLimitSwitch limitSwitch;
-    @Mock private DriveSubsystem drive;
 
     private ManipulatorSubsystem manipulator;
 
@@ -36,7 +35,7 @@ class ManipulatorSubsystemTest {
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().unregisterAllSubsystems();
         CommandScheduler.getInstance().enable();
-        manipulator = new ManipulatorSubsystem(motor, absEncoder, relEncoder, limitSwitch, drive, new Debouncer(0.0));
+        manipulator = new ManipulatorSubsystem(motor, absEncoder, relEncoder, limitSwitch, new Debouncer(0.0));
     }
 
     @AfterEach

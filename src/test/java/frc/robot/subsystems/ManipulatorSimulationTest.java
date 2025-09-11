@@ -5,30 +5,27 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.Timer;
-import frc.robot.FieldConstants;
+import edu.wpi.first.wpilibj.simulation.SimHooks;
+import edu.wpi.first.math.filter.Debouncer;
 
 public class ManipulatorSimulationTest {
     @Test
     public void limitSwitchSequenceToggles() {
         assertTrue(HAL.initialize(500, 0));
 
-        DriveSubsystem drive = new DriveSubsystem();
-        ManipulatorSubsystem manip = new ManipulatorSubsystem(drive);
+        ManipulatorSubsystem manip = new ManipulatorSubsystem();
 
         assertTrue(manip.hasCoral());
         manip.setCoral(false);
+        manip.coralDebounce = new Debouncer(0.0);
 
-        drive.getField().setRobotPose(FieldConstants.CoralStation.leftCenterFace);
+        manip.intake(1.0);
         manip.simulationPeriodic();
-
-        Timer.delay(0.06);
         assertTrue(manip.seesCoral());
 
-        Timer.delay(0.06);
+        SimHooks.stepTiming(0.11);
         manip.simulationPeriodic();
 
-        Timer.delay(0.06);
         assertFalse(manip.seesCoral());
         assertTrue(manip.hasCoral());
     }
