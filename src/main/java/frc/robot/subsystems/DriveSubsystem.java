@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -56,6 +58,9 @@ public class DriveSubsystem extends SubsystemBase {
     private final SimDeviceSim navxSim = RobotBase.isSimulation() ? new SimDeviceSim("navX-Sensor[0]") : null;
     private final SimDouble navxYaw = navxSim != null ? navxSim.getDouble("Yaw") : null;
     private double lastSimTimestamp;
+
+    // AdvantageScope publishers
+    private final StructArrayPublisher<SwerveModuleState> moduleStatePublisher;
 
     // Create the SysId routine
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
@@ -121,6 +126,11 @@ public class DriveSubsystem extends SubsystemBase {
         m_gyro.setAngleAdjustment(180);
         rotPid.enableContinuousInput(0, 360);
 
+        moduleStatePublisher =
+            NetworkTableInstance.getDefault()
+                .getStructArrayTopic("Drive/ModuleStates", SwerveModuleState.struct)
+                .publish();
+
         SmartDashboard.putData("Drive Rot PID", rotPid);
         SmartDashboard.putData("Drive X PID", xPid);
         SmartDashboard.putData("Drive Y PID", yPid);
@@ -138,7 +148,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Nothing
+        if (RobotBase.isReal()) {
+            moduleStatePublisher.set(getModuleStates());
+        }
     }
 
     public Field2d getField() {
@@ -187,6 +199,8 @@ public class DriveSubsystem extends SubsystemBase {
         if (field != null) {
             field.setRobotPose(simPose);
         }
+
+        moduleStatePublisher.set(states);
     }
 
     public void setSlowSpeed() {
