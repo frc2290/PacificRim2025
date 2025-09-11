@@ -7,13 +7,13 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ProcessorRelativeDrive extends Command{
         //imports
-    private StateMachine stateMachine;
+    private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
@@ -31,7 +31,7 @@ public class ProcessorRelativeDrive extends Command{
     /*
      * Command to drive robot with active angling towards reef (usualy has note)
      **/
-    public ProcessorRelativeDrive(StateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
+    public ProcessorRelativeDrive(DriveStateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
         stateMachine = m_state;
         drive = m_drive;
