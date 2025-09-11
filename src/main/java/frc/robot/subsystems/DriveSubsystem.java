@@ -18,18 +18,21 @@ import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.ModuleConstants;
+import frc.utils.SwerveDriveSim;
+import frc.utils.SwerveModuleSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -41,6 +44,8 @@ public class DriveSubsystem extends SubsystemBase {
     private final MAXSwerveModule m_frontRight;
     private final MAXSwerveModule m_rearLeft;
     private final MAXSwerveModule m_rearRight;
+
+    private final MAXSwerveModule[] m_modules;
 
     // The gyro sensor
     private final AHRS m_gyro;
@@ -58,6 +63,7 @@ public class DriveSubsystem extends SubsystemBase {
     private final SimDeviceSim navxSim = RobotBase.isSimulation() ? new SimDeviceSim("navX-Sensor[0]") : null;
     private final SimDouble navxYaw = navxSim != null ? navxSim.getDouble("Yaw") : null;
     private double lastSimTimestamp;
+    private SwerveDriveSim swerveSim;
 
     // AdvantageScope publishers
     private final StructArrayPublisher<SwerveModuleState> moduleStatePublisher;
@@ -121,6 +127,7 @@ public class DriveSubsystem extends SubsystemBase {
         m_frontRight = frontRight;
         m_rearLeft = rearLeft;
         m_rearRight = rearRight;
+        m_modules = new MAXSwerveModule[] { m_frontLeft, m_frontRight, m_rearLeft, m_rearRight };
         m_gyro = gyro;
 
         m_gyro.setAngleAdjustment(180);
@@ -139,6 +146,30 @@ public class DriveSubsystem extends SubsystemBase {
             field = new Field2d();
             SmartDashboard.putData("Field", field);
             lastSimTimestamp = Timer.getFPGATimestamp();
+
+            SwerveModuleSim[] sims = new SwerveModuleSim[m_modules.length];
+            for (int i = 0; i < m_modules.length; i++) {
+                MAXSwerveModule module = m_modules[i];
+                sims[i] = new SwerveModuleSim(
+                    ModuleConstants.kDriveMotor,
+                    ModuleConstants.kDrivingMotorReduction,
+                    ModuleConstants.kWheelDiameterMeters / 2.0,
+                    ModuleConstants.kDriveEfficiency,
+                    module.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
+                    ModuleConstants.kSteerReduction,
+                    module.getDriveSim(),
+                    null,
+                    module.getTurnSim(),
+                    null);
+            }
+
+            swerveSim = new SwerveDriveSim(
+                java.util.List.of(sims),
+                DriveConstants.kModuleTranslations,
+                DriveConstants.kRobotMassKg,
+                DriveConstants.kRobotMomentOfInertia,
+                DriveConstants.kLinearDampingCoeff,
+                DriveConstants.kAngularDampingCoeff);
         }
     }
 
@@ -157,41 +188,45 @@ public class DriveSubsystem extends SubsystemBase {
         return field;
     }
 
+    /** Returns the ground-truth pose from the drivetrain simulator. */
+    public Pose2d getSimPose() {
+        return simPose;
+    }
+
     /**
      * Returns the total current draw of all drive modules.
      *
      * @return Sum of currents from each swerve module's drive and turn motors.
      */
     public double getCurrentDraw() {
-        return m_frontLeft.getCurrentDraw()
-                + m_frontRight.getCurrentDraw()
-                + m_rearLeft.getCurrentDraw()
-                + m_rearRight.getCurrentDraw();
+        double total = 0.0;
+        for (MAXSwerveModule module : m_modules) {
+            total += module.getCurrentDraw();
+        }
+        return total;
     }
 
     @Override
     public void simulationPeriodic() {
-        m_frontLeft.simulationPeriodic();
-        m_frontRight.simulationPeriodic();
-        m_rearLeft.simulationPeriodic();
-        m_rearRight.simulationPeriodic();
+        if (swerveSim == null) {
+            return;
+        }
 
-        SwerveModuleState[] states = {
-            m_frontLeft.getState(),
-            m_frontRight.getState(),
-            m_rearLeft.getState(),
-            m_rearRight.getState()
-        };
-        ChassisSpeeds speeds = DriveConstants.kDriveKinematics.toChassisSpeeds(states);
+        double[] driveSetpoints = new double[m_modules.length];
+        double[] steerSetpoints = new double[m_modules.length];
+        for (int i = 0; i < m_modules.length; i++) {
+            SwerveModuleState desired = m_modules[i].getDesiredState();
+            driveSetpoints[i] = desired.speedMetersPerSecond;
+            steerSetpoints[i] = desired.angle.getRadians();
+        }
+
         double now = Timer.getFPGATimestamp();
         double dt = now - lastSimTimestamp;
         lastSimTimestamp = now;
-        simPose = simPose.exp(new Twist2d(
-            speeds.vxMetersPerSecond * dt,
-            speeds.vyMetersPerSecond * dt,
-            speeds.omegaRadiansPerSecond * dt));
-        // Sync simulated gyro heading with the integrated pose so pose estimation
-        // uses the correct orientation.
+
+        swerveSim.update(RobotController.getBatteryVoltage(), driveSetpoints, steerSetpoints, dt);
+        simPose = swerveSim.getPose();
+
         if (navxYaw != null) {
             navxYaw.set(simPose.getRotation().getDegrees());
         }
@@ -200,7 +235,7 @@ public class DriveSubsystem extends SubsystemBase {
             field.setRobotPose(simPose);
         }
 
-        moduleStatePublisher.set(states);
+        moduleStatePublisher.set(getModuleStates());
     }
 
     public void setSlowSpeed() {
@@ -268,10 +303,9 @@ public class DriveSubsystem extends SubsystemBase {
                         : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
-        m_frontLeft.setDesiredState(swerveModuleStates[0]);
-        m_frontRight.setDesiredState(swerveModuleStates[1]);
-        m_rearLeft.setDesiredState(swerveModuleStates[2]);
-        m_rearRight.setDesiredState(swerveModuleStates[3]);
+        for (int i = 0; i < m_modules.length; i++) {
+            m_modules[i].setDesiredState(swerveModuleStates[i]);
+        }
     }
 
     public void driveChassisSpeeds(ChassisSpeeds speeds) {
@@ -280,10 +314,9 @@ public class DriveSubsystem extends SubsystemBase {
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
-        m_frontLeft.setDesiredState(swerveModuleStates[0]);
-        m_frontRight.setDesiredState(swerveModuleStates[1]);
-        m_rearLeft.setDesiredState(swerveModuleStates[2]);
-        m_rearRight.setDesiredState(swerveModuleStates[3]);
+        for (int i = 0; i < m_modules.length; i++) {
+            m_modules[i].setDesiredState(swerveModuleStates[i]);
+        }
     }
 
     /**
@@ -304,29 +337,24 @@ public class DriveSubsystem extends SubsystemBase {
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 desiredStates, DriveConstants.kMaxSpeedMetersPerSecond);
-        m_frontLeft.setDesiredState(desiredStates[0]);
-        m_frontRight.setDesiredState(desiredStates[1]);
-        m_rearLeft.setDesiredState(desiredStates[2]);
-        m_rearRight.setDesiredState(desiredStates[3]);
+        for (int i = 0; i < m_modules.length; i++) {
+            m_modules[i].setDesiredState(desiredStates[i]);
+        }
     }
 
     public SwerveModuleState[] getModuleStates() {
-        SwerveModuleState[] states = new SwerveModuleState[] {
-                m_frontLeft.getState(),
-                m_frontRight.getState(),
-                m_rearLeft.getState(),
-                m_rearRight.getState()
-        };
+        SwerveModuleState[] states = new SwerveModuleState[m_modules.length];
+        for (int i = 0; i < m_modules.length; i++) {
+            states[i] = m_modules[i].getState();
+        }
         return states;
     }
 
     public SwerveModulePosition[] getModulePositions() {
-        SwerveModulePosition[] positions = new SwerveModulePosition[] {
-                m_frontLeft.getPosition(),
-                m_frontRight.getPosition(),
-                m_rearLeft.getPosition(),
-                m_rearRight.getPosition()
-        };
+        SwerveModulePosition[] positions = new SwerveModulePosition[m_modules.length];
+        for (int i = 0; i < m_modules.length; i++) {
+            positions[i] = m_modules[i].getPosition();
+        }
         return positions;
     }
 

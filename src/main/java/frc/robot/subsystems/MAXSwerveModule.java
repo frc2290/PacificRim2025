@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.math.system.plant.DCMotor;
 
 import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.sim.SparkMaxSim;
@@ -31,6 +30,7 @@ import com.revrobotics.RelativeEncoder;
 
 import frc.robot.Configs;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
+import frc.robot.Constants.ModuleConstants;
 
 public class MAXSwerveModule {
     private final SparkFlex m_drivingSpark;
@@ -48,6 +48,8 @@ public class MAXSwerveModule {
     private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.13569, 2.2311);
 
     private FlytLogger test = new FlytLogger("Swerve");
+
+    private static final double kSteerGearRatio = ModuleConstants.kSteerReduction; // ~46.45:1
 
     // Simulation members
     private SparkFlexSim driveSim;
@@ -84,8 +86,8 @@ public class MAXSwerveModule {
         m_drivingEncoder.setPosition(0);
 
         if (RobotBase.isSimulation()) {
-            driveSim = new SparkFlexSim(m_drivingSpark, DCMotor.getNEO(1));
-            turnSim = new SparkMaxSim(m_turningSpark, DCMotor.getNEO(1));
+            driveSim = new SparkFlexSim(m_drivingSpark, ModuleConstants.kDriveMotor);
+            turnSim = new SparkMaxSim(m_turningSpark, ModuleConstants.kSteerMotor);
             driveEncoderSim = driveSim.getRelativeEncoderSim();
             turnEncoderSim = turnSim.getAbsoluteEncoderSim();
         }
@@ -206,9 +208,28 @@ public class MAXSwerveModule {
             }
             if (turnSim != null) {
                 turnSim.iterate(m_turningSpark.getAppliedOutput(), 0.02, m_turningSpark.getBusVoltage());
-                turnEncoderSim.setPosition(turnSim.getPosition());
-                turnEncoderSim.setVelocity(turnSim.getVelocity());
+                double rotorPos = turnSim.getPosition();
+                double rotorVel = turnSim.getVelocity();
+                double moduleAngle = rotorPos / kSteerGearRatio * 2.0 * Math.PI;
+                double moduleVel = rotorVel / kSteerGearRatio * 2.0 * Math.PI;
+                turnEncoderSim.setPosition(moduleAngle);
+                turnEncoderSim.setVelocity(moduleVel);
             }
         }
+    }
+
+    /** Returns the internal SparkFlexSim for drive motor, if available. */
+    public SparkFlexSim getDriveSim() {
+        return driveSim;
+    }
+
+    /** Returns the internal SparkMaxSim for steer motor, if available. */
+    public SparkMaxSim getTurnSim() {
+        return turnSim;
+    }
+
+    /** Returns the most recently commanded state for this module. */
+    public SwerveModuleState getDesiredState() {
+        return m_desiredState;
     }
 }

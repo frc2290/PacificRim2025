@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.system.plant.DCMotor;
 
 import static edu.wpi.first.math.util.Units.degreesToRadians;
 
@@ -183,11 +184,20 @@ public final class Constants {
         // Distance between centers of right and left wheels on robot
         public static final double kWheelBase = Units.inchesToMeters(26.5);
         // Distance between front and back wheels on robot
-        public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
+        public static final Translation2d[] kModuleTranslations = {
                 new Translation2d(kWheelBase / 2, kTrackWidth / 2),
                 new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
                 new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-                new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+                new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
+        };
+        public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
+
+        // Physical properties used for simulation
+        public static final double kRobotMassKg = 50.0;
+        public static final double kLinearDampingCoeff = 0.2;
+        public static final double kAngularDampingCoeff = 0.05;
+        public static final double kRobotMomentOfInertia =
+                kRobotMassKg * (kWheelBase * kWheelBase + kTrackWidth * kTrackWidth) / 12.0;
 
         // Angular offsets of the modules relative to the chassis in radians
         public static final double kFrontLeftChassisAngularOffset = (-Math.PI / 2);
@@ -224,6 +234,14 @@ public final class Constants {
         public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
         public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters)
                 / kDrivingMotorReduction;
+
+        // Steering and efficiency parameters
+        public static final double kSteerReduction = 9424.0 / 203.0;
+        public static final double kDriveEfficiency = 0.92;
+
+        // Motor models used for simulation
+        public static final DCMotor kDriveMotor = DCMotor.getNeoVortex(1);
+        public static final DCMotor kSteerMotor = DCMotor.getNeo550(1);
     }
 
     public static final class OIConstants {
