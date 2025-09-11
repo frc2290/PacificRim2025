@@ -12,7 +12,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
 
 
-public class TeleopDrive extends Command {
+public class ManualDrive extends Command {
 
     //imports
     private DriveStateMachine stateMachine;
@@ -33,7 +33,7 @@ public class TeleopDrive extends Command {
     /*
      * Command to just drive the with field oriented controls, default command for the the drive
      **/
-    public TeleopDrive(DriveStateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
+    public ManualDrive(DriveStateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
         stateMachine = m_state;
         drive = m_drive;

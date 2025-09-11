@@ -123,7 +123,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     //m_state.setAuto(false);
     m_driveStateMachine.setDisabled(false);
-    m_driveStateMachine.setTeleopCommand();
+    m_driveStateMachine.setManualCommand();
     //run reset after autonomus, Idea for later if needed
     //m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); //from whatever state it was left off in auto, should reset to safe coral travel
 

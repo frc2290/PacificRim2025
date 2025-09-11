@@ -8,9 +8,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.CoralStationDrive;
+import frc.robot.commands.DriveCommands.ManualDrive;
 import frc.robot.commands.DriveCommands.ProcessorRelativeDrive;
 import frc.robot.commands.DriveCommands.ReefRelativeDrive;
-import frc.robot.commands.DriveCommands.TeleopDrive;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class DriveStateMachine extends SubsystemBase {
@@ -77,10 +77,10 @@ public class DriveStateMachine extends SubsystemBase {
     private void initializeGraphCommand() {
         // Create all graph command nodes
         manualNode = m_graphCommand.new GraphCommandNode(
-            "Teleop", 
-            new TeleopDrive(this, drive, pose, driverController),
-            new PrintCommand("Arrived at Teleop state"),
-            new PrintCommand("Arrived at Teleop state"));
+            "Manual", 
+            new ManualDrive(this, drive, pose, driverController),
+            new PrintCommand("Arrived at Manual state"),
+            new PrintCommand("Arrived at Manual state"));
         
         // followPathNode = m_graphCommand.new GraphCommandNode(
         //     "FollowPath", 
@@ -131,15 +131,15 @@ public class DriveStateMachine extends SubsystemBase {
         //     new PrintCommand("Arrived at Cancelled state"));
 
         // Graph Command setup
-        m_graphCommand.setGraphRootNode(teleopNode);
+        m_graphCommand.setGraphRootNode(manualNode);
         
         // Define transitions between drive states
         //teleopNode.AddNode(followPathNode, 1.0);
         //teleopNode.AddNode(bargeRelativeNode, 1.0);
         //teleopNode.AddNode(climbRelativeNode, 1.0);
-        teleopNode.AddNode(processorRelativeNode, 1.0);
-        teleopNode.AddNode(coralStationNode, 1.0);
-        teleopNode.AddNode(reefRelativeNode, 1.0);
+        manualNode.AddNode(processorRelativeNode, 1.0);
+        manualNode.AddNode(coralStationNode, 1.0);
+        manualNode.AddNode(reefRelativeNode, 1.0);
         //teleopNode.AddNode(reefAlignNode, 1.0);
         //teleopNode.AddNode(cancelledNode, 1.0);
         
@@ -152,13 +152,13 @@ public class DriveStateMachine extends SubsystemBase {
         //climbRelativeNode.AddNode(teleopNode, 1.0);
         //climbRelativeNode.AddNode(cancelledNode, 1.0);
         
-        processorRelativeNode.AddNode(teleopNode, 1.0);
+        processorRelativeNode.AddNode(manualNode, 1.0);
         //processorRelativeNode.AddNode(cancelledNode, 1.0);
         
-        coralStationNode.AddNode(teleopNode, 1.0);
+        coralStationNode.AddNode(manualNode, 1.0);
         //coralStationNode.AddNode(cancelledNode, 1.0);
         
-        reefRelativeNode.AddNode(teleopNode, 1.0);
+        reefRelativeNode.AddNode(manualNode, 1.0);
         //reefRelativeNode.AddNode(reefAlignNode, 1.0);
         //reefRelativeNode.AddNode(cancelledNode, 1.0);
         
@@ -201,8 +201,8 @@ public class DriveStateMachine extends SubsystemBase {
     
 
     /** ----- State Transition Commands ----- */
-    public Command setTeleopCommand() {
-        return new InstantCommand(() -> m_graphCommand.setTargetNode(teleopNode));
+    public Command setManualCommand() {
+        return new InstantCommand(() -> m_graphCommand.setTargetNode(manualNode));
     }
 
     public Command setFollowPathCommand() {
@@ -241,7 +241,7 @@ public class DriveStateMachine extends SubsystemBase {
     /** ----- State Getters ----- */
     public DriveState getCurrentState() {
         GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
-        if (currentNode == teleopNode) return DriveState.TELEOP;
+        if (currentNode == manualNode) return DriveState.MANUAL;
         if (currentNode == followPathNode) return DriveState.FOLLOW_PATH;
         if (currentNode == bargeRelativeNode) return DriveState.BARGE_RELATIVE;
         if (currentNode == climbRelativeNode) return DriveState.CLIMB_RELATIVE;
@@ -250,15 +250,17 @@ public class DriveStateMachine extends SubsystemBase {
         if (currentNode == reefRelativeNode) return DriveState.REEF_RELATIVE;
         if (currentNode == reefAlignNode) return DriveState.REEF_ALIGN;
         if (currentNode == cancelledNode) return DriveState.CANCELLED;
-        return DriveState.TELEOP; // Default
+        return DriveState.MANUAL; // Default
     }
 
     public boolean isTransitioning() {
         return m_graphCommand.isTransitioning();
     }
 
+    
+
     @Override
     public void periodic() {
-        // The GraphCommand (set as default command) handles all state transitions automatically
+        // This method will be called once per scheduler run
     }
 }
