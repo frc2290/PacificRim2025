@@ -16,7 +16,6 @@ import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.sim.SparkLimitSwitchSim;
 
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -27,8 +26,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.Manipulator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.FieldConstants;
 
 public class ManipulatorSubsystem extends SubsystemBase {
 
@@ -39,9 +36,6 @@ public class ManipulatorSubsystem extends SubsystemBase {
     private RelativeEncoder relEncoder;
 
     private SparkLimitSwitch manipulatorLimitSwitch;
-
-    // Reference to drivetrain for pose checks in simulation
-    private final DriveSubsystem drive;
 
     // Simulation members
     private SparkFlexSim manipSim;
@@ -57,8 +51,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     private FlytLogger manipDash = new FlytLogger("Manipulator");
 
-    public ManipulatorSubsystem (DriveSubsystem drive){
-        this.drive = drive;
+    public ManipulatorSubsystem (){
         manipulatorMotor = new SparkFlex(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
 
         manipulatorConfig.idleMode(IdleMode.kBrake)
@@ -76,12 +69,12 @@ public class ManipulatorSubsystem extends SubsystemBase {
             limitSwitchSim = new SparkLimitSwitchSim(manipulatorMotor, true);
         }
 
-        manipDash.addDoublePublisher("Motor Pos", true, () -> getMotorPos());
-        manipDash.addBoolPublisher("Got Coral", false, () -> hasCoral());
-        manipDash.addBoolPublisher("Got Algae", true, () -> hasAlgae());
-        manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
-        manipDash.addBoolPublisher("Sees Coral", true, () -> seesCoral());
-        manipDash.addDoublePublisher("RPM", true, () -> relEncoder.getVelocity());
+        manipDash.addDoublePublisher("Motor Pos", true, this::getMotorPos);
+        manipDash.addBoolPublisher("Got Coral", false, this::hasCoral);
+        manipDash.addBoolPublisher("Got Algae", true, this::hasAlgae);
+        manipDash.addDoublePublisher("Manip Current", true, this::getOutputCurrent);
+        manipDash.addBoolPublisher("Sees Coral", true, this::seesCoral);
+        manipDash.addDoublePublisher("RPM", true, this::getRPM);
     }
 
     /**
@@ -93,13 +86,11 @@ public class ManipulatorSubsystem extends SubsystemBase {
             SparkAbsoluteEncoder manipulatorAbsEncoder,
             RelativeEncoder relEncoder,
             SparkLimitSwitch manipulatorLimitSwitch,
-            DriveSubsystem drive,
             Debouncer coralDebounce) {
         this.manipulatorMotor = manipulatorMotor;
         this.manipulatorAbsEncoder = manipulatorAbsEncoder;
         this.relEncoder = relEncoder;
         this.manipulatorLimitSwitch = manipulatorLimitSwitch;
-        this.drive = drive;
         this.coralDebounce = coralDebounce;
     }
     
@@ -117,6 +108,9 @@ public class ManipulatorSubsystem extends SubsystemBase {
     }
 
     public double getOutputCurrent() {
+        if (RobotBase.isSimulation() && manipSim != null) {
+            return manipSim.getMotorCurrent();
+        }
         return manipulatorMotor.getOutputCurrent();
     }
 
@@ -130,11 +124,25 @@ public class ManipulatorSubsystem extends SubsystemBase {
     }
 
     public double getMotorPos() {
+        if (RobotBase.isSimulation() && encoderSim != null) {
+            return encoderSim.getPosition();
+        }
         return relEncoder.getPosition();
     }
 
+    public double getRPM() {
+        if (RobotBase.isSimulation() && encoderSim != null) {
+            return encoderSim.getVelocity();
+        }
+        return relEncoder.getVelocity();
+    }
+
     public void resetMotorPos() {
-        relEncoder.setPosition(0);
+        if (RobotBase.isSimulation() && encoderSim != null) {
+            encoderSim.setPosition(0);
+        } else {
+            relEncoder.setPosition(0);
+        }
     }
 
     public boolean hasCoral() {
@@ -162,7 +170,13 @@ public class ManipulatorSubsystem extends SubsystemBase {
     }
 
     public boolean seesCoral() {
-        return coralDebounce.calculate(manipulatorLimitSwitch.isPressed());
+        boolean pressed;
+        if (RobotBase.isSimulation() && limitSwitchSim != null) {
+            pressed = limitSwitchSim.getPressed();
+        } else {
+            pressed = manipulatorLimitSwitch.isPressed();
+        }
+        return coralDebounce.calculate(pressed);
     }
 
     @Override
@@ -177,36 +191,15 @@ public class ManipulatorSubsystem extends SubsystemBase {
             encoderSim.setPosition(manipSim.getPosition());
             encoderSim.setVelocity(manipSim.getVelocity());
 
-            // Use robot pose to determine game-piece acquisition
-            if (drive != null && drive.getField() != null) {
-                Pose2d pose = drive.getField().getRobotPose();
-
-                boolean atCoralStation =
-                        pose.getTranslation().getDistance(FieldConstants.CoralStation.leftCenterFace.getTranslation())
-                                        <= Constants.SIM_INTAKE_TOLERANCE_METERS
-                                || pose.getTranslation().getDistance(FieldConstants.CoralStation.rightCenterFace.getTranslation())
-                                        <= Constants.SIM_INTAKE_TOLERANCE_METERS;
-
-                boolean atReef =
-                        pose.getTranslation().getDistance(FieldConstants.Reef.center)
-                                <= Constants.SIM_INTAKE_TOLERANCE_METERS;
-
-                if (!hasCoral && atCoralStation) {
-                    if (!coralIntakeTimer.isRunning()) {
-                        coralIntakeTimer.restart();
-                        limitSwitchSim.setPressed(true);
-                    } else if (coralIntakeTimer.hasElapsed(0.1)) {
-                        hasCoral = true;
-                        limitSwitchSim.setPressed(false);
-                        coralIntakeTimer.stop();
-                    }
-                } else {
+            // Time-based simulation of coral intake
+            if (!hasCoral && Math.abs(manipulatorMotor.get()) > 0.05) {
+                if (!coralIntakeTimer.isRunning()) {
+                    coralIntakeTimer.restart();
+                    limitSwitchSim.setPressed(true);
+                } else if (coralIntakeTimer.hasElapsed(0.1)) {
+                    hasCoral = true;
                     limitSwitchSim.setPressed(false);
                     coralIntakeTimer.stop();
-                }
-
-                if (!hasAlgae && atReef) {
-                    hasAlgae = true;
                 }
             } else {
                 limitSwitchSim.setPressed(false);

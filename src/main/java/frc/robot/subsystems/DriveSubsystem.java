@@ -13,6 +13,8 @@ import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
+import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,6 +24,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
@@ -50,6 +53,9 @@ public class DriveSubsystem extends SubsystemBase {
     // Simulation state
     private Field2d field;
     private Pose2d simPose = new Pose2d();
+    private final SimDeviceSim navxSim = RobotBase.isSimulation() ? new SimDeviceSim("navX-Sensor[0]") : null;
+    private final SimDouble navxYaw = navxSim != null ? navxSim.getDouble("Yaw") : null;
+    private double lastSimTimestamp;
 
     // Create the SysId routine
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
@@ -122,6 +128,7 @@ public class DriveSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             field = new Field2d();
             SmartDashboard.putData("Field", field);
+            lastSimTimestamp = Timer.getFPGATimestamp();
         }
     }
 
@@ -164,11 +171,19 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getState()
         };
         ChassisSpeeds speeds = DriveConstants.kDriveKinematics.toChassisSpeeds(states);
-        double dt = 0.02;
+        double now = Timer.getFPGATimestamp();
+        double dt = now - lastSimTimestamp;
+        lastSimTimestamp = now;
         simPose = simPose.exp(new Twist2d(
             speeds.vxMetersPerSecond * dt,
             speeds.vyMetersPerSecond * dt,
             speeds.omegaRadiansPerSecond * dt));
+        // Sync simulated gyro heading with the integrated pose so pose estimation
+        // uses the correct orientation.
+        if (navxYaw != null) {
+            navxYaw.set(simPose.getRotation().getDegrees());
+        }
+
         if (field != null) {
             field.setRobotPose(simPose);
         }
