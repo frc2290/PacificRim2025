@@ -56,9 +56,14 @@ public final class Constants {
         public static final double climberInSetpoint = -85;
 
         // Simulation parameters
-        public static final double kSimGearing = 20.0; // motor to drum ratio
-        public static final double kSimDrumRadiusMeters = 0.02; // m
-        public static final double kSimCarriageMassKg = 5.0; // kg
+        // Gear reduction between motor and climber arm
+        public static final double kSimGearing = 250.0;
+        // Approximate length of the climber arm (meters)
+        public static final double kSimArmLengthMeters = 0.25;
+        // Mass of the arm when deploying (kg)
+        public static final double kSimDeployMassKg = 5.0;
+        // Mass of the arm plus robot when retracting (kg)
+        public static final double kSimRetractMassKg = 55.0;
     }
 
     public static final class Elevator {

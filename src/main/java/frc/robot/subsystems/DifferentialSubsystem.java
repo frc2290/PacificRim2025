@@ -23,7 +23,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.math.util.Units;
 import frc.utils.DifferentialArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -357,29 +359,46 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (RobotBase.isSimulation() && armSim != null) {
-            double batteryVoltage = RobotController.getBatteryVoltage();
-            leftSim.setBusVoltage(batteryVoltage);
-            rightSim.setBusVoltage(batteryVoltage);
+        if (RobotBase.isSimulation() && armSim != null && leftSim != null && rightSim != null) {
+            double busVoltage = RoboRioSim.getVInVoltage();
 
-            double leftVolts = leftMotor.getAppliedOutput() * batteryVoltage;
-            double rightVolts = rightMotor.getAppliedOutput() * batteryVoltage;
+            double leftVolts = leftSim.getAppliedOutput() * busVoltage;
+            double rightVolts = rightSim.getAppliedOutput() * busVoltage;
 
-            // Provide voltage inputs and update the arm simulation
             armSim.setInputVoltage(rightVolts, leftVolts);
             armSim.update(0.02);
 
-            // Get simulated physics values
             double extMeters = armSim.getExtensionPositionMeters();
             double rotRads = armSim.getRotationAngleRads();
             double extVelMps = armSim.getExtensionVelocityMetersPerSec();
             double rotVelRps = armSim.getRotationVelocityRadsPerSec();
 
-            // Update the simulated encoders based on the arm's state
-            leftEncoderSim.setPosition(extMeters / DifferentialArm.kSimLinearDriveRadiusMeters - rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters);
-            rightEncoderSim.setPosition(extMeters / DifferentialArm.kSimLinearDriveRadiusMeters + rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters);
-            leftEncoderSim.setVelocity(extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters - rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters);
-            rightEncoderSim.setVelocity(extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters + rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters);
+            double leftRadPerSec =
+                extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters
+                    - rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters;
+            double rightRadPerSec =
+                extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters
+                    + rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters;
+
+            double leftRPM = Units.radiansPerSecondToRotationsPerMinute(leftRadPerSec);
+            double rightRPM = Units.radiansPerSecondToRotationsPerMinute(rightRadPerSec);
+
+            leftSim.iterate(leftRPM, busVoltage, 0.02);
+            rightSim.iterate(rightRPM, busVoltage, 0.02);
+            leftEncoderSim.setPosition(
+                Units.radiansToRotations(
+                    extMeters / DifferentialArm.kSimLinearDriveRadiusMeters
+                        - rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters));
+            rightEncoderSim.setPosition(
+                Units.radiansToRotations(
+                    extMeters / DifferentialArm.kSimLinearDriveRadiusMeters
+                        + rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters));
+            leftEncoderSim.setVelocity(leftRPM);
+            rightEncoderSim.setVelocity(rightRPM);
+
+            RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(
+                    armSim.getTotalCurrentAbsAmps()));
         }
     }
 }

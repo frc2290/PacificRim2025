@@ -22,6 +22,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -45,6 +48,9 @@ public class ClimbSubsystem extends SubsystemBase {
     // Simulation members
     private SparkMaxSim climberSim;
     private SparkRelativeEncoderSim climberEncoderSim;
+    private SingleJointedArmSim deploySim;
+    private SingleJointedArmSim retractSim;
+    private SingleJointedArmSim armSim;
 
     private double climberSetpoint = 0;
 
@@ -55,6 +61,7 @@ public class ClimbSubsystem extends SubsystemBase {
     private SlewRateLimiter climberSlew = new SlewRateLimiter(vSlewrate);
 
     private boolean climbing = false;
+    private boolean ratchetEngaged = false;
 
     private FlytLogger climbDash = new FlytLogger("Climb");
 
@@ -70,6 +77,37 @@ public class ClimbSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             climberSim = new SparkMaxSim(leftMotor, DCMotor.getNEO(1));
             climberEncoderSim = climberSim.getRelativeEncoderSim();
+
+            double deployMOI =
+                SingleJointedArmSim.estimateMOI(
+                    Climber.kSimArmLengthMeters, Climber.kSimDeployMassKg);
+            double retractMOI =
+                SingleJointedArmSim.estimateMOI(
+                    Climber.kSimArmLengthMeters, Climber.kSimRetractMassKg);
+
+            deploySim =
+                new SingleJointedArmSim(
+                    DCMotor.getNEO(1),
+                    Climber.kSimGearing,
+                    deployMOI,
+                    Climber.kSimArmLengthMeters,
+                    -Math.PI / 2.0,
+                    Math.PI / 2.0,
+                    true,
+                    0.0);
+
+            retractSim =
+                new SingleJointedArmSim(
+                    DCMotor.getNEO(1),
+                    Climber.kSimGearing,
+                    retractMOI,
+                    Climber.kSimArmLengthMeters,
+                    -Math.PI / 2.0,
+                    Math.PI / 2.0,
+                    true,
+                    0.0);
+
+            armSim = deploySim;
         }
 
         leftConfig.inverted(true)
@@ -119,7 +157,13 @@ public class ClimbSubsystem extends SubsystemBase {
     }
 
     public void setClimberSpeed(double speed) {
+        if (ratchetEngaged && speed < 0) {
+            speed = 0;
+        }
         leftMotor.set(speed);
+        if (RobotBase.isSimulation() && climberSim != null) {
+            climberSim.setAppliedOutput(speed);
+        }
     }
 
     public void stopClimberMotor() {
@@ -160,6 +204,9 @@ public class ClimbSubsystem extends SubsystemBase {
      * @return Climber motor output current.
      */
     public double getCurrentDraw() {
+        if (RobotBase.isSimulation() && armSim != null) {
+            return armSim.getCurrentDrawAmps();
+        }
         return leftMotor.getOutputCurrent();
     }
 
@@ -173,10 +220,16 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public void setServoClose() {
         servo.setAngle(servoClosed);
+        ratchetEngaged = true;
     }
 
     public void setServoOpen() {
         servo.setAngle(servoOpen);
+        ratchetEngaged = false;
+    }
+
+    public boolean isRatchetEngaged() {
+        return ratchetEngaged;
     }
 
     @Override
@@ -190,10 +243,34 @@ public class ClimbSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (RobotBase.isSimulation() && climberSim != null) {
-            climberSim.iterate(leftMotor.getAppliedOutput(), 0.02, leftMotor.getBusVoltage());
-            climberEncoderSim.setPosition(climberSim.getPosition() * Climber.kPositionConversion);
-            climberEncoderSim.setVelocity(climberSim.getVelocity() * Climber.kVelocityConversion);
+        if (RobotBase.isSimulation() && climberSim != null && armSim != null) {
+            double busVoltage = RoboRioSim.getVInVoltage();
+            double appliedVoltage = climberSim.getAppliedOutput() * busVoltage;
+            boolean retracting = appliedVoltage < 0.0;
+
+            SingleJointedArmSim targetSim = retracting ? retractSim : deploySim;
+            if (armSim != targetSim) {
+                targetSim.setState(armSim.getAngleRads(), armSim.getVelocityRadPerSec());
+                armSim = targetSim;
+            }
+
+            if (ratchetEngaged && !retracting) {
+                armSim.setState(armSim.getAngleRads(), 0.0);
+            } else {
+                armSim.setInputVoltage(appliedVoltage);
+                armSim.update(0.02);
+            }
+
+            double rotorRPM =
+                Units.radiansPerSecondToRotationsPerMinute(
+                    armSim.getVelocityRadPerSec() * Climber.kSimGearing);
+            climberSim.iterate(rotorRPM, busVoltage, 0.02);
+            climberEncoderSim.setPosition(
+                Units.radiansToRotations(armSim.getAngleRads() * Climber.kSimGearing));
+            climberEncoderSim.setVelocity(rotorRPM);
+
+            RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
         }
     }
 }
