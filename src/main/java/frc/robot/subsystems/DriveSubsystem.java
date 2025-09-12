@@ -298,11 +298,17 @@ public class DriveSubsystem extends SubsystemBase {
         double batteryVoltage = RobotController.getBatteryVoltage();
         SwerveModuleSim.ModuleForce[] forces = new SwerveModuleSim.ModuleForce[m_moduleSims.length];
         var speeds = swerveDriveSim.getSpeeds();
+        double[] offsets = {
+            DriveConstants.kFrontLeftChassisAngularOffset,
+            DriveConstants.kFrontRightChassisAngularOffset,
+            DriveConstants.kBackLeftChassisAngularOffset,
+            DriveConstants.kBackRightChassisAngularOffset
+        };
         for (int i = 0; i < m_moduleSims.length; i++) {
             SwerveModuleState desired = m_modules[i].getDesiredState();
             forces[i] = m_moduleSims[i].update(
                 desired.speedMetersPerSecond,
-                desired.angle.getRadians(),
+                desired.angle.getRadians() - offsets[i],
                 batteryVoltage,
                 speeds.vxMetersPerSecond,
                 speeds.vyMetersPerSecond,
