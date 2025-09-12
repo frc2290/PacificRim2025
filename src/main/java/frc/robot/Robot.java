@@ -60,6 +60,7 @@ public class Robot extends TimedRobot {
   private FlytLogger simDash = new FlytLogger("Simulation");
   private double totalCurrentDraw;
   private double loadedBatteryVoltage;
+  private double m_simulatedBatteryVoltage;
 
   public Robot() {
     if (RobotBase.isReal()) {
@@ -111,7 +112,15 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void simulationInit() {
+    m_simulatedBatteryVoltage = 12.0;
+    RoboRioSim.setVInVoltage(m_simulatedBatteryVoltage);
+  }
+
+  @Override
   public void simulationPeriodic() {
+    RoboRioSim.setVInVoltage(m_simulatedBatteryVoltage);
+
     // Allow subsystems to run their individual simulation logic
     if (m_robotContainer != null) {
       m_robotContainer.simulationPeriodic();
@@ -133,16 +142,11 @@ public class Robot extends TimedRobot {
           Timer.getFPGATimestamp());
     }
 
-    totalCurrentDraw =
-        m_robotDrive.getCurrentDraw()
-            + m_elevator.getCurrentDraw()
-            + m_manipulator.getCurrentDraw()
-            + m_DiffArm.getCurrentDraw()
-            + m_climber.getCurrentDraw();
-    loadedBatteryVoltage = BatterySim.calculateDefaultBatteryLoadedVoltage(totalCurrentDraw);
-    RoboRioSim.setVInVoltage(loadedBatteryVoltage);
+    double drawnCurrent = RoboRioSim.getVInCurrent();
+    totalCurrentDraw = drawnCurrent;
+    loadedBatteryVoltage = BatterySim.calculateDefaultBatteryLoadedVoltage(drawnCurrent);
+    m_simulatedBatteryVoltage = loadedBatteryVoltage;
     simDash.update(Constants.debugMode);
-
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
