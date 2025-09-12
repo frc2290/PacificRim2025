@@ -16,8 +16,11 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.ExponentialProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -55,6 +58,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     // Simulation members
     private SparkFlexSim leftSim;
     private SparkRelativeEncoderSim leftEncoderSim;
+    private ElevatorSim elevatorModel;
 
     private double elevatorSetpoint = 0;
 
@@ -82,6 +86,16 @@ public class ElevatorSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             leftSim = new SparkFlexSim(leftMotor, DCMotor.getNEO(1));
             leftEncoderSim = leftSim.getRelativeEncoderSim();
+            elevatorModel =
+                new ElevatorSim(
+                    DCMotor.getNEO(2),
+                    1.0 / Elevator.kSimGearing,
+                    Elevator.kSimCarriageMassKg,
+                    Elevator.kSimDrumRadiusMeters,
+                    Elevator.kSimMinHeightMeters,
+                    Elevator.kSimMaxHeightMeters,
+                    true,
+                    0.0);
         }
 
         leftConfig.inverted(true)
@@ -187,6 +201,9 @@ public class ElevatorSubsystem extends SubsystemBase {
      * @return Combined output current of left and right motors.
      */
     public double getCurrentDraw() {
+        if (RobotBase.isSimulation() && elevatorModel != null) {
+            return elevatorModel.getCurrentDrawAmps();
+        }
         return leftMotor.getOutputCurrent() + rightMotor.getOutputCurrent();
     }
 
@@ -207,25 +224,27 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (RobotBase.isSimulation() && leftSim != null) {
-            double batteryVoltage = RobotController.getBatteryVoltage();
-            leftSim.setBusVoltage(batteryVoltage);
+        if (RobotBase.isSimulation() && leftSim != null && elevatorModel != null) {
+            double busVoltage = RoboRioSim.getVInVoltage();
 
-            // Update the motor simulation
-            leftSim.iterate(leftMotor.getAppliedOutput(), 0.02, batteryVoltage);
+            elevatorModel.setInputVoltage(leftSim.getAppliedOutput() * busVoltage);
+            elevatorModel.update(0.02);
 
-            // Physics calculation
-            double gravityForce = Elevator.kSimCarriageMassKg * 9.81;
-            double motorTorque = DCMotor.getNEO(1).KtNMPerAmp * leftSim.getMotorCurrent();
-            double drumRadius = Elevator.kSimDrumRadiusMeters;
-            double netForce = (motorTorque / drumRadius * Elevator.kSimGearing) - gravityForce;
-            double acceleration = netForce / Elevator.kSimCarriageMassKg;
-            double newVelocity = leftEncoderSim.getVelocity() + acceleration * 0.02;
-            double newPosition = leftEncoderSim.getPosition() + newVelocity * 0.02;
+            double motorOmega =
+                elevatorModel.getVelocityMetersPerSecond() / Elevator.kSimDrumRadiusMeters
+                    / Elevator.kSimGearing;
+            double motorAngle =
+                elevatorModel.getPositionMeters() / Elevator.kSimDrumRadiusMeters
+                    / Elevator.kSimGearing;
+            double rotorRPM = Units.radiansPerSecondToRotationsPerMinute(motorOmega);
 
-            // Update the simulated encoder
-            leftEncoderSim.setPosition(newPosition);
-            leftEncoderSim.setVelocity(newVelocity);
+            leftSim.iterate(rotorRPM, busVoltage, 0.02);
+            leftEncoderSim.setPosition(Units.radiansToRotations(motorAngle));
+            leftEncoderSim.setVelocity(rotorRPM);
+
+            RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(
+                    elevatorModel.getCurrentDrawAmps()));
         }
     }
 }

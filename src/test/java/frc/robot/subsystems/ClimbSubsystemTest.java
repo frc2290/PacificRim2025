@@ -131,4 +131,11 @@ class ClimbSubsystemTest {
         when(servo.getPosition()).thenReturn(0.25);
         assertEquals(0.25, climb.getServoPos(), 1e-9);
     }
+
+    @Test
+    void ratchetPreventsDeploySpeed() {
+        climb.setServoClose();
+        climb.setClimberSpeed(-0.5);
+        verify(motor).set(0.0);
+    }
 }

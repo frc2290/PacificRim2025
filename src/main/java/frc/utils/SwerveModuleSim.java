@@ -10,6 +10,8 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 /**
  * Simulation model for a single swerve module.  This class is responsible for
@@ -42,6 +44,7 @@ public class SwerveModuleSim {
   private final SparkClosedLoopController m_steerController;
   private final SparkRelativeEncoderSim m_driveEncoderSim;
   private final SparkAbsoluteEncoderSim m_steerEncoderSim;
+  private final DCMotorSim m_steerModel;
 
   // Open-loop output used when no Spark simulation is provided.
   private double m_openLoopOutput = 0.0;
@@ -131,22 +134,33 @@ public class SwerveModuleSim {
     m_steerController = steerControllerFinal;
     m_driveEncoderSim = driveSim != null ? driveSim.getRelativeEncoderSim() : null;
     m_steerEncoderSim = steerSimFinal != null ? steerSimFinal.getAbsoluteEncoderSim() : null;
+    m_steerModel =
+        steerMotor != null
+            ? new DCMotorSim(
+                LinearSystemId.createDCMotorSystem(steerMotor, 0.01, m_steerGearRatio),
+                steerMotor)
+            : null;
 
     m_azimuth = 0.0;
     m_steerVelocity = 0.0;
   }
 
-  /** Updates the steering state using the {@link SparkMaxSim}'s internal model. */
+  /** Updates the steering state and mirrors it to attached Spark simulators. */
   private void updateSteer(double steerSetpoint, double busVoltage, double dt) {
-    if (m_steerSim != null) {
+    if (m_steerSim != null && m_steerModel != null) {
       if (m_steerController != null) {
         m_steerController.setReference(steerSetpoint, ControlType.kPosition);
       }
-      m_steerSim.iterate(m_steerSim.getAppliedOutput(), dt, busVoltage);
-      double rotorPos = m_steerSim.getPosition();
-      double rotorVel = m_steerSim.getVelocity();
-      m_azimuth = rotorPos / m_steerGearRatio * 2.0 * Math.PI;
-      m_steerVelocity = rotorVel / m_steerGearRatio * 2.0 * Math.PI;
+
+      double appliedVolts = m_steerSim.getAppliedOutput() * busVoltage;
+      m_steerModel.setInputVoltage(appliedVolts);
+      m_steerModel.update(dt);
+
+      m_azimuth = m_steerModel.getAngularPositionRad();
+      m_steerVelocity = m_steerModel.getAngularVelocityRadPerSec();
+
+      double rotorRPM = m_steerModel.getAngularVelocityRPM() * m_steerGearRatio;
+      m_steerSim.iterate(rotorRPM, busVoltage, dt);
       if (m_steerEncoderSim != null) {
         m_steerEncoderSim.setPosition(m_azimuth + m_encoderOffset);
         m_steerEncoderSim.setVelocity(m_steerVelocity);
@@ -235,15 +249,16 @@ public class SwerveModuleSim {
    * Mirrors the final wheel kinematics to the simulated drive encoders.
    */
   public void updateDriveSensor(double vRoll, double dt, double busVoltage) {
+    // Convert wheel linear speed to motor units
+    double distPerRot = 2 * Math.PI * m_wheelRadius / m_driveGearRatio; // meters per motor rotation
+    double motorRPM = (vRoll / distPerRot) * 60.0;
     if (m_driveEncoderSim != null) {
-      // Convert wheel linear speed to motor rotations and RPM for the encoder sim
-      double distPerRot = 2 * Math.PI * m_wheelRadius / m_driveGearRatio; // meters per motor rotation
       double newPos = m_driveEncoderSim.getPosition() + (vRoll * dt) / distPerRot; // motor rotations
       m_driveEncoderSim.setPosition(newPos);
-      m_driveEncoderSim.setVelocity((vRoll / distPerRot) * 60.0); // motor RPM
+      m_driveEncoderSim.setVelocity(motorRPM); // motor RPM
     }
     if (m_driveSim != null) {
-      m_driveSim.iterate(m_driveSim.getAppliedOutput(), dt, busVoltage);
+      m_driveSim.iterate(motorRPM, busVoltage, dt);
     }
   }
 

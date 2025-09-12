@@ -17,7 +17,11 @@ import com.revrobotics.sim.SparkLimitSwitchSim;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -41,6 +45,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     private SparkFlexSim manipSim;
     private SparkRelativeEncoderSim encoderSim;
     private SparkLimitSwitchSim limitSwitchSim;
+    private DCMotorSim motorModel;
 
     private final Timer coralIntakeTimer = new Timer();
 
@@ -64,9 +69,14 @@ public class ManipulatorSubsystem extends SubsystemBase {
         manipulatorLimitSwitch = manipulatorMotor.getForwardLimitSwitch();
 
         if (RobotBase.isSimulation()) {
-            manipSim = new SparkFlexSim(manipulatorMotor, DCMotor.getNEO(1));
+            var gearbox = DCMotor.getNEO(1);
+            manipSim = new SparkFlexSim(manipulatorMotor, gearbox);
             encoderSim = manipSim.getRelativeEncoderSim();
             limitSwitchSim = new SparkLimitSwitchSim(manipulatorMotor, true);
+            motorModel =
+                new DCMotorSim(
+                    LinearSystemId.createDCMotorSystem(gearbox, 0.001, 1.0),
+                    gearbox);
         }
 
         manipDash.addDoublePublisher("Motor Pos", true, this::getMotorPos);
@@ -186,10 +196,15 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (RobotBase.isSimulation() && manipSim != null) {
-            manipSim.iterate(manipulatorMotor.getAppliedOutput(), 0.02, manipulatorMotor.getBusVoltage());
-            encoderSim.setPosition(manipSim.getPosition());
-            encoderSim.setVelocity(manipSim.getVelocity());
+        if (RobotBase.isSimulation() && manipSim != null && motorModel != null) {
+            double busVoltage = RoboRioSim.getVInVoltage();
+            motorModel.setInputVoltage(manipSim.getAppliedOutput() * busVoltage);
+            motorModel.update(0.02);
+
+            double rotorRPM = motorModel.getAngularVelocityRPM();
+            manipSim.iterate(rotorRPM, busVoltage, 0.02);
+            encoderSim.setPosition(motorModel.getAngularPositionRotations());
+            encoderSim.setVelocity(rotorRPM);
 
             // Time-based simulation of coral intake
             if (!hasCoral && Math.abs(manipulatorMotor.get()) > 0.05) {
@@ -205,6 +220,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
                 limitSwitchSim.setPressed(false);
                 coralIntakeTimer.stop();
             }
+
+            RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(
+                    motorModel.getCurrentDrawAmps()));
         }
     }
 
