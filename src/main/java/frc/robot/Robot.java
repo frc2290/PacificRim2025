@@ -65,7 +65,9 @@ public class Robot extends TimedRobot {
   private double loadedBatteryVoltage;
 
   public Robot() {
-    CanBridge.runTCP();
+    if (RobotBase.isReal()) {
+      CanBridge.runTCP();
+    }
   }
 
   /**
@@ -80,8 +82,8 @@ public class Robot extends TimedRobot {
       DriverStationSim.setJoystickButtonCount(OIConstants.kDriverControllerPort, 12);
       DriverStationSim.setJoystickPOVCount(OIConstants.kDriverControllerPort, 1);
       new JoystickSim(OIConstants.kDriverControllerPort);
-      DriverStationSim.setAutonomous(false);
-      DriverStationSim.setEnabled(false);
+      DriverStationSim.setAutonomous(true);
+      DriverStationSim.setEnabled(true);
       DriverStationSim.notifyNewData();
     }
 
