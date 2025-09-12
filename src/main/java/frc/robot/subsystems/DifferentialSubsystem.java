@@ -24,8 +24,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.math.util.Units;
 import frc.utils.DifferentialArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -362,6 +360,9 @@ public class DifferentialSubsystem extends SubsystemBase {
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && armSim != null && leftSim != null && rightSim != null) {
             double busVoltage = RobotController.getBatteryVoltage();
+            if (busVoltage <= 0.0) {
+                return;
+            }
 
             double leftVolts = leftSim.getAppliedOutput() * busVoltage;
             double rightVolts = rightSim.getAppliedOutput() * busVoltage;
@@ -397,9 +398,6 @@ public class DifferentialSubsystem extends SubsystemBase {
             leftEncoderSim.setVelocity(leftRPM);
             rightEncoderSim.setVelocity(rightRPM);
 
-            RoboRioSim.setVInVoltage(
-                BatterySim.calculateDefaultBatteryLoadedVoltage(
-                    armSim.getTotalCurrentAbsAmps()));
         }
     }
 }

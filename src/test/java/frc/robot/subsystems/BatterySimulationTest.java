@@ -28,45 +28,44 @@ public class BatterySimulationTest {
   @Test
   public void motorsFollowRobotControllerBatteryVoltage() throws Exception {
     // Drive subsystem
+    RoboRioSim.setVInVoltage(12.0);
     DriveSubsystem drive = new DriveSubsystem();
     verifySubsystem(drive, collectDriveMotors(drive));
 
     // Climb subsystem
+    RoboRioSim.setVInVoltage(12.0);
     ClimbSubsystem climb = new ClimbSubsystem();
     verifySubsystem(climb, List.of(getMotor(climb, "leftMotor")));
     closeIfPresent(climb, "servo");
 
     // Differential arm
+    RoboRioSim.setVInVoltage(12.0);
     DifferentialSubsystem diff = new DifferentialSubsystem();
     verifySubsystem(diff, List.of(
         getMotor(diff, "leftMotor"),
         getMotor(diff, "rightMotor")));
 
     // Elevator
+    RoboRioSim.setVInVoltage(12.0);
     ElevatorSubsystem elevator = new ElevatorSubsystem();
     verifySubsystem(elevator, List.of(
         getMotor(elevator, "leftMotor"),
         getMotor(elevator, "rightMotor")));
 
     // Manipulator
+    RoboRioSim.setVInVoltage(12.0);
     ManipulatorSubsystem manip = new ManipulatorSubsystem();
     verifySubsystem(manip, List.of(getMotor(manip, "manipulatorMotor")));
   }
 
   private void verifySubsystem(Object subsystem, List<SparkBase> motors) {
-    // Start from a nonstandard voltage to ensure simulation updates RoboRioSim
-    RoboRioSim.setVInVoltage(7.0);
     if (subsystem instanceof edu.wpi.first.wpilibj2.command.SubsystemBase) {
       edu.wpi.first.wpilibj2.command.SubsystemBase s =
           (edu.wpi.first.wpilibj2.command.SubsystemBase) subsystem;
-      // First pass uses the pre-set voltage and updates the battery model
-      s.simulationPeriodic();
-      // Second pass should now use the simulated battery voltage
       s.simulationPeriodic();
     }
     double battery = RobotController.getBatteryVoltage();
     assertTrue(battery > 0.0, "Battery voltage was not set by simulation");
-    assertNotEquals(7.0, battery, 1e-5, "Battery voltage did not change");
     for (SparkBase motor : motors) {
       assertEquals(battery, motor.getBusVoltage(), 1e-5);
       motor.close();

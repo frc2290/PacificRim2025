@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 
 public class DriveSubsystemSimulationTest {
   @BeforeAll
@@ -20,6 +21,7 @@ public class DriveSubsystemSimulationTest {
 
   @Test
   public void estimatorTracksGroundTruth() {
+    RoboRioSim.setVInVoltage(12.0);
     DriveSubsystem drive = new DriveSubsystem();
     PoseEstimatorSubsystem estimator = new PoseEstimatorSubsystem(
         drive::newHeading,
