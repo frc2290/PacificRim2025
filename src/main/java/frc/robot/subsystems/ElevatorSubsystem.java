@@ -18,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -225,7 +226,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && leftSim != null && elevatorModel != null) {
-            double busVoltage = RoboRioSim.getVInVoltage();
+            double busVoltage = RobotController.getBatteryVoltage();
 
             elevatorModel.setInputVoltage(leftSim.getAppliedOutput() * busVoltage);
             elevatorModel.update(0.02);
