@@ -23,6 +23,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.math.util.Units;
@@ -360,7 +361,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && armSim != null && leftSim != null && rightSim != null) {
-            double busVoltage = RoboRioSim.getVInVoltage();
+            double busVoltage = RobotController.getBatteryVoltage();
 
             double leftVolts = leftSim.getAppliedOutput() * busVoltage;
             double rightVolts = rightSim.getAppliedOutput() * busVoltage;

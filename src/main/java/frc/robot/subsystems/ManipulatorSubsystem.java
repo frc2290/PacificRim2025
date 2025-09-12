@@ -19,6 +19,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -197,7 +198,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         if (RobotBase.isSimulation() && manipSim != null && motorModel != null) {
-            double busVoltage = RoboRioSim.getVInVoltage();
+            double busVoltage = RobotController.getBatteryVoltage();
             motorModel.setInputVoltage(manipSim.getAppliedOutput() * busVoltage);
             motorModel.update(0.02);
 
