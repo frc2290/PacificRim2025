@@ -99,6 +99,18 @@ class MAXSwerveModuleTest {
     }
 
     @Test
+    void getDesiredStateReturnsCorrectedState() {
+        MAXSwerveModule module = newModule(0.25);
+        SwerveModuleState desired = new SwerveModuleState(2.0, Rotation2d.fromRadians(1.0));
+
+        module.setDesiredState(desired);
+
+        SwerveModuleState commanded = module.getDesiredState();
+        assertEquals(2.0, commanded.speedMetersPerSecond);
+        assertEquals(1.25, commanded.angle.getRadians(), 1e-9);
+    }
+
+    @Test
     void resetEncodersZerosDriveEncoder() {
         MAXSwerveModule module = newModule(0.0);
         reset(drivingEncoder);
@@ -113,6 +125,31 @@ class MAXSwerveModuleTest {
 
         MAXSwerveModule module = newModule(0.0);
         assertEquals(11.5, module.getCurrentDraw(), 1e-9);
+    }
+
+    @Test
+    void setDesiredStateCommandsNegativeSpeed() {
+        MAXSwerveModule module = newModule(0.0);
+        SwerveModuleState desired = new SwerveModuleState(-3.0, new Rotation2d());
+
+        module.setDesiredState(desired);
+
+        verify(driveController).setReference(-3.0, ControlType.kVelocity);
+        verify(turnController).setReference(0.0, ControlType.kPosition);
+    }
+
+    @Test
+    void setDesiredStateOptimizesOverNinetyDegrees() {
+        when(turningEncoder.getPosition()).thenReturn(0.0);
+        MAXSwerveModule module = newModule(0.0);
+        SwerveModuleState desired = new SwerveModuleState(1.0, Rotation2d.fromRadians(Math.PI));
+
+        module.setDesiredState(desired);
+
+        verify(driveController).setReference(-1.0, ControlType.kVelocity);
+        ArgumentCaptor<Double> angleCaptor = ArgumentCaptor.forClass(Double.class);
+        verify(turnController).setReference(angleCaptor.capture(), eq(ControlType.kPosition));
+        assertEquals(0.0, angleCaptor.getValue(), 1e-9);
     }
 
     @Test
