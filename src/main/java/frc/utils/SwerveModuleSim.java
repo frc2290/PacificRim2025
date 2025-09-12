@@ -51,6 +51,21 @@ public class SwerveModuleSim {
   private double m_azimuth;
   private double m_steerVelocity;
 
+  // Offset to apply when mirroring the absolute encoder (rad). This lets the
+  // simulated absolute encoder match the robot's expected zeroing convention
+  // where absolute = relative + chassisAngularOffset.
+  private double m_encoderOffset = 0.0;
+
+  /** Sets the absolute encoder offset (radians). */
+  public void setEncoderOffset(double offset) {
+    m_encoderOffset = offset;
+    // Immediately mirror with the new offset so initial state is consistent
+    if (m_steerEncoderSim != null) {
+      m_steerEncoderSim.setPosition(m_azimuth + m_encoderOffset);
+      m_steerEncoderSim.setVelocity(m_steerVelocity);
+    }
+  }
+
   /**
    * Record containing the longitudinal force vector produced by the wheel and the
    * corresponding rolling speed used to generate it.
@@ -133,7 +148,7 @@ public class SwerveModuleSim {
       m_azimuth = rotorPos / m_steerGearRatio * 2.0 * Math.PI;
       m_steerVelocity = rotorVel / m_steerGearRatio * 2.0 * Math.PI;
       if (m_steerEncoderSim != null) {
-        m_steerEncoderSim.setPosition(m_azimuth);
+        m_steerEncoderSim.setPosition(m_azimuth + m_encoderOffset);
         m_steerEncoderSim.setVelocity(m_steerVelocity);
       }
     } else {

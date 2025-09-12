@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.utils.SwerveDriveSim;
@@ -67,6 +68,15 @@ public class DriveSubsystem extends SubsystemBase {
 
     // AdvantageScope publishers
     private final StructArrayPublisher<SwerveModuleState> moduleStatePublisher;
+    private final DoublePublisher cmdVxPublisher;
+    private final DoublePublisher cmdVyPublisher;
+    private final DoublePublisher cmdOmegaPublisher;
+    private final DoublePublisher actVxPublisher;
+    private final DoublePublisher actVyPublisher;
+    private final DoublePublisher actOmegaPublisher;
+
+    // Store last commanded speeds (robot frame)
+    private ChassisSpeeds m_lastCommandedSpeeds = new ChassisSpeeds();
 
     // Create the SysId routine
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
@@ -138,6 +148,15 @@ public class DriveSubsystem extends SubsystemBase {
                 .getStructArrayTopic("Drive/ModuleStates", SwerveModuleState.struct)
                 .publish();
 
+        // Chassis speeds publishers (m/s and rad/s) under Drive/Commanded and Drive/Actual
+        var nt = NetworkTableInstance.getDefault();
+        cmdVxPublisher = nt.getDoubleTopic("Drive/Commanded/Vx").publish();
+        cmdVyPublisher = nt.getDoubleTopic("Drive/Commanded/Vy").publish();
+        cmdOmegaPublisher = nt.getDoubleTopic("Drive/Commanded/Omega").publish();
+        actVxPublisher = nt.getDoubleTopic("Drive/Actual/Vx").publish();
+        actVyPublisher = nt.getDoubleTopic("Drive/Actual/Vy").publish();
+        actOmegaPublisher = nt.getDoubleTopic("Drive/Actual/Omega").publish();
+
         SmartDashboard.putData("Drive Rot PID", rotPid);
         SmartDashboard.putData("Drive X PID", xPid);
         SmartDashboard.putData("Drive Y PID", yPid);
@@ -203,6 +222,14 @@ public class DriveSubsystem extends SubsystemBase {
                     m_rearRight.getTurningController())
             };
 
+            // Align simulated absolute encoders so that modules are "forward"
+            // relative to the robot at startup (relative angle = 0 for all).
+            // This matches the REV offset convention used by MAXSwerveModule.
+            m_moduleSims[0].setEncoderOffset(DriveConstants.kFrontLeftChassisAngularOffset);
+            m_moduleSims[1].setEncoderOffset(DriveConstants.kFrontRightChassisAngularOffset);
+            m_moduleSims[2].setEncoderOffset(DriveConstants.kBackLeftChassisAngularOffset);
+            m_moduleSims[3].setEncoderOffset(DriveConstants.kBackRightChassisAngularOffset);
+
             swerveDriveSim = new SwerveDriveSim(
                 java.util.List.of(m_moduleSims),
                 DriveConstants.kModuleTranslations,
@@ -226,6 +253,12 @@ public class DriveSubsystem extends SubsystemBase {
         if (RobotBase.isReal()) {
             m_odometry.update(m_gyro.getRotation2d(), getModulePositions());
             moduleStatePublisher.set(getModuleStates());
+
+            // Publish actual chassis speeds computed from current module states
+            var actual = DriveConstants.kDriveKinematics.toChassisSpeeds(getModuleStates());
+            actVxPublisher.set(actual.vxMetersPerSecond);
+            actVyPublisher.set(actual.vyMetersPerSecond);
+            actOmegaPublisher.set(actual.omegaRadiansPerSecond);
         }
     }
 
@@ -289,6 +322,12 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         moduleStatePublisher.set(getModuleStates());
+
+        // Publish actual chassis speeds (from module states in sim as well)
+        var actual = DriveConstants.kDriveKinematics.toChassisSpeeds(getModuleStates());
+        actVxPublisher.set(actual.vxMetersPerSecond);
+        actVyPublisher.set(actual.vyMetersPerSecond);
+        actOmegaPublisher.set(actual.omegaRadiansPerSecond);
     }
 
     public void setSlowSpeed() {
@@ -349,11 +388,17 @@ public class DriveSubsystem extends SubsystemBase {
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
         double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
 
-        var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
-                fieldRelative
+        ChassisSpeeds commanded = fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
                                 Rotation2d.fromDegrees(-m_gyro.getAngle()))
-                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered);
+        m_lastCommandedSpeeds = commanded;
+        // Publish commanded chassis speeds
+        cmdVxPublisher.set(commanded.vxMetersPerSecond);
+        cmdVyPublisher.set(commanded.vyMetersPerSecond);
+        cmdOmegaPublisher.set(commanded.omegaRadiansPerSecond);
+
+        var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(commanded);
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
         for (int i = 0; i < m_modules.length; i++) {
@@ -364,6 +409,12 @@ public class DriveSubsystem extends SubsystemBase {
     public void driveChassisSpeeds(ChassisSpeeds speeds) {
         // System.out.println(speeds.vxMetersPerSecond + " " + speeds.vyMetersPerSecond
         // + " " + speeds.omegaRadiansPerSecond);
+        m_lastCommandedSpeeds = speeds;
+        // Publish commanded chassis speeds
+        cmdVxPublisher.set(speeds.vxMetersPerSecond);
+        cmdVyPublisher.set(speeds.vyMetersPerSecond);
+        cmdOmegaPublisher.set(speeds.omegaRadiansPerSecond);
+
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
