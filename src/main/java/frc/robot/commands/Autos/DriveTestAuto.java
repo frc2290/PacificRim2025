@@ -9,6 +9,7 @@ import frc.utils.PoseEstimatorSubsystem;
 /** Auto to drive forward while printing chassis speeds and pose. */
 public class DriveTestAuto extends SequentialCommandGroup {
   public DriveTestAuto(DriveSubsystem drive, PoseEstimatorSubsystem pose) {
+    addRequirements(drive);
     addCommands(
         Commands.runOnce(() -> System.out.println("Starting Drive Test")),
         Commands.run(() -> {
