@@ -13,11 +13,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -78,13 +75,6 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     if (RobotBase.isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);
-      DriverStationSim.setJoystickAxisCount(OIConstants.kDriverControllerPort, 6);
-      DriverStationSim.setJoystickButtonCount(OIConstants.kDriverControllerPort, 12);
-      DriverStationSim.setJoystickPOVCount(OIConstants.kDriverControllerPort, 1);
-      new JoystickSim(OIConstants.kDriverControllerPort);
-      DriverStationSim.setAutonomous(true);
-      DriverStationSim.setEnabled(true);
-      DriverStationSim.notifyNewData();
     }
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
@@ -153,23 +143,11 @@ public class Robot extends TimedRobot {
     RoboRioSim.setVInVoltage(loadedBatteryVoltage);
     simDash.update(Constants.debugMode);
 
-    // Generate fresh Driver Station data every cycle so TimedRobot
-    // continues to advance in simulation. Without this, the robot
-    // will only run a single loop and all subsystem simulations will
-    // remain at zero, as seen in AdvantageScope.
-    DriverStationSim.notifyNewData();
-
-    // Advance the global simulation time by 20 ms
-    SimHooks.stepTiming(0.02);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    if (RobotBase.isSimulation()) {
-      DriverStationSim.setEnabled(false);
-      DriverStationSim.notifyNewData();
-    }
     m_state.setDisabled(true);
     if (m_autonomousCommand != null && m_autonomousCommand.isScheduled()) {
       m_autonomousCommand.cancel();
@@ -183,11 +161,6 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    if (RobotBase.isSimulation()) {
-      DriverStationSim.setAutonomous(true);
-      DriverStationSim.setEnabled(true);
-      DriverStationSim.notifyNewData();
-    }
     m_state.setAuto(true);
     m_state.setDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -211,11 +184,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    if (RobotBase.isSimulation()) {
-      DriverStationSim.setAutonomous(false);
-      DriverStationSim.setEnabled(true);
-      DriverStationSim.notifyNewData();
-    }
     m_state.setAuto(false);
     m_state.setDisabled(false);
     m_state.setDriveState(DriveState.Teleop);
