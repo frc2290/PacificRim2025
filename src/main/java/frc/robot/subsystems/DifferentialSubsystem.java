@@ -365,18 +365,21 @@ public class DifferentialSubsystem extends SubsystemBase {
             double leftVolts = leftMotor.getAppliedOutput() * batteryVoltage;
             double rightVolts = rightMotor.getAppliedOutput() * batteryVoltage;
 
+            // Provide voltage inputs and update the arm simulation
             armSim.setInputVoltage(rightVolts, leftVolts);
             armSim.update(0.02);
 
-            double extMM = armSim.getExtensionPositionMeters() * 1000;
-            double rotDeg = Math.toDegrees(armSim.getRotationAngleRads());
-            double extVelMM = armSim.getExtensionVelocityMetersPerSec() * 1000;
-            double rotVelMM = degreesToMM(Math.toDegrees(armSim.getRotationVelocityRadsPerSec()));
+            // Get simulated physics values
+            double extMeters = armSim.getExtensionPositionMeters();
+            double rotRads = armSim.getRotationAngleRads();
+            double extVelMps = armSim.getExtensionVelocityMetersPerSec();
+            double rotVelRps = armSim.getRotationVelocityRadsPerSec();
 
-            leftEncoderSim.setPosition(extMM - degreesToMM(rotDeg));
-            rightEncoderSim.setPosition(extMM + degreesToMM(rotDeg));
-            leftEncoderSim.setVelocity(extVelMM - rotVelMM);
-            rightEncoderSim.setVelocity(extVelMM + rotVelMM);
+            // Update the simulated encoders based on the arm's state
+            leftEncoderSim.setPosition(extMeters / DifferentialArm.kSimLinearDriveRadiusMeters - rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters);
+            rightEncoderSim.setPosition(extMeters / DifferentialArm.kSimLinearDriveRadiusMeters + rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters);
+            leftEncoderSim.setVelocity(extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters - rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters);
+            rightEncoderSim.setVelocity(extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters + rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters);
         }
     }
 }
