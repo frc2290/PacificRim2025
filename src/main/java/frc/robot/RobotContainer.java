@@ -203,4 +203,17 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return auto_chooser.getSelected();
     }
+
+    /**
+     * Runs each subsystem's simulation update. This is called from
+     * {@link Robot#simulationPeriodic()} to advance the physics model when
+     * running in simulation.
+     */
+    public void simulationPeriodic() {
+        m_robotDrive.simulationPeriodic();
+        m_elevator.simulationPeriodic();
+        m_manipulator.simulationPeriodic();
+        m_DiffArm.simulationPeriodic();
+        m_climber.simulationPeriodic();
+    }
 }

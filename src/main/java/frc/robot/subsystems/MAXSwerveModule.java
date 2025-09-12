@@ -49,8 +49,6 @@ public class MAXSwerveModule {
 
     private FlytLogger test = new FlytLogger("Swerve");
 
-    private static final double kSteerGearRatio = ModuleConstants.kSteerReduction; // ~46.45:1
-
     // Simulation members
     private SparkFlexSim driveSim;
     private SparkMaxSim turnSim;
@@ -196,26 +194,6 @@ public class MAXSwerveModule {
 
     public void setDriveCoast() {
         m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig.idleMode(IdleMode.kCoast), ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    }
-
-    /** Updates simulation state. */
-    public void simulationPeriodic() {
-        if (RobotBase.isSimulation()) {
-            if (driveSim != null) {
-                driveSim.iterate(m_drivingSpark.getAppliedOutput(), 0.02, m_drivingSpark.getBusVoltage());
-                driveEncoderSim.setPosition(driveSim.getPosition());
-                driveEncoderSim.setVelocity(driveSim.getVelocity());
-            }
-            if (turnSim != null) {
-                turnSim.iterate(m_turningSpark.getAppliedOutput(), 0.02, m_turningSpark.getBusVoltage());
-                double rotorPos = turnSim.getPosition();
-                double rotorVel = turnSim.getVelocity();
-                double moduleAngle = rotorPos / kSteerGearRatio * 2.0 * Math.PI;
-                double moduleVel = rotorVel / kSteerGearRatio * 2.0 * Math.PI;
-                turnEncoderSim.setPosition(moduleAngle);
-                turnEncoderSim.setVelocity(moduleVel);
-            }
-        }
     }
 
     /** Returns the internal SparkFlexSim for drive motor, if available. */

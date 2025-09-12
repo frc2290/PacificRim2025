@@ -18,7 +18,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -54,7 +53,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     private FlytLogger elevatorDash = new FlytLogger("Elevator");
 
     // Simulation members
-    private ElevatorSim elevatorSim;
     private SparkFlexSim leftSim;
     private SparkRelativeEncoderSim leftEncoderSim;
 
@@ -82,15 +80,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftEnc.setPosition(0);
 
         if (RobotBase.isSimulation()) {
-            elevatorSim = new ElevatorSim(
-                    DCMotor.getNEO(1),
-                    Elevator.kSimGearing,
-                    Elevator.kSimCarriageMassKg,
-                    Elevator.kSimDrumRadiusMeters,
-                    Elevator.kSimMinHeightMeters,
-                    Elevator.kSimMaxHeightMeters,
-                    true,
-                    0.0);
             leftSim = new SparkFlexSim(leftMotor, DCMotor.getNEO(1));
             leftEncoderSim = leftSim.getRelativeEncoderSim();
         }
@@ -218,17 +207,25 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (RobotBase.isSimulation() && elevatorSim != null) {
+        if (RobotBase.isSimulation() && leftSim != null) {
             double batteryVoltage = RobotController.getBatteryVoltage();
             leftSim.setBusVoltage(batteryVoltage);
+
+            // Update the motor simulation
             leftSim.iterate(leftMotor.getAppliedOutput(), 0.02, batteryVoltage);
 
-            double volts = leftMotor.getAppliedOutput() * batteryVoltage;
-            elevatorSim.setInputVoltage(volts);
-            elevatorSim.update(0.02);
+            // Physics calculation
+            double gravityForce = Elevator.kSimCarriageMassKg * 9.81;
+            double motorTorque = DCMotor.getNEO(1).KtNMPerAmp * leftSim.getMotorCurrent();
+            double drumRadius = Elevator.kSimDrumRadiusMeters;
+            double netForce = (motorTorque / drumRadius * Elevator.kSimGearing) - gravityForce;
+            double acceleration = netForce / Elevator.kSimCarriageMassKg;
+            double newVelocity = leftEncoderSim.getVelocity() + acceleration * 0.02;
+            double newPosition = leftEncoderSim.getPosition() + newVelocity * 0.02;
 
-            leftEncoderSim.setPosition(elevatorSim.getPositionMeters());
-            leftEncoderSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
+            // Update the simulated encoder
+            leftEncoderSim.setPosition(newPosition);
+            leftEncoderSim.setVelocity(newVelocity);
         }
     }
 }

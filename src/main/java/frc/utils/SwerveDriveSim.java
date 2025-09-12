@@ -1,6 +1,7 @@
 package frc.utils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -76,12 +77,13 @@ public class SwerveDriveSim {
   }
 
   /**
-   * Performs one simulation tick.
+   * Performs one simulation tick by commanding each module with the supplied setpoints
+   * and integrating the resulting chassis motion.
    *
-   * @param busVoltage   battery voltage supplied to the controllers
+   * @param busVoltage    battery voltage supplied to the controllers
    * @param driveSetpoints array of drive velocity setpoints (m/s) per module
    * @param steerSetpoints array of steer angle setpoints (rad) per module
-   * @param dt           timestep in seconds
+   * @param dt            timestep in seconds
    */
   public void update(double busVoltage, double[] driveSetpoints, double[] steerSetpoints, double dt) {
     int n = m_modules.size();
@@ -89,7 +91,6 @@ public class SwerveDriveSim {
       throw new IllegalArgumentException("Setpoint array length must match module count");
     }
 
-    // Step 2 output from each module
     SwerveModuleSim.ModuleForce[] forces = new SwerveModuleSim.ModuleForce[n];
     for (int i = 0; i < n; i++) {
       forces[i] = m_modules.get(i).update(
@@ -101,6 +102,22 @@ public class SwerveDriveSim {
           m_omega,
           m_modulePos[i],
           dt);
+    }
+
+    update(forces, busVoltage, dt);
+  }
+
+  /**
+   * Performs one simulation tick using precomputed module forces.
+   *
+   * @param forces     array of longitudinal forces from each module
+   * @param busVoltage current battery voltage for sensor mirroring
+   * @param dt         timestep in seconds
+   */
+  public void update(SwerveModuleSim.ModuleForce[] forces, double busVoltage, double dt) {
+    int n = m_modules.size();
+    if (forces.length != n) {
+      throw new IllegalArgumentException("Force array length must match module count");
     }
 
     // Step 3: integrate for unconstrained twist
@@ -156,6 +173,11 @@ public class SwerveDriveSim {
       double vRoll = vcx * tX + vcy * tY;
       m_modules.get(i).updateDriveSensor(vRoll, dt, busVoltage);
     }
+  }
+
+  /** Returns the robot's current yaw rotation. */
+  public Rotation2d getRotation2d() {
+    return m_pose.getRotation();
   }
 }
 

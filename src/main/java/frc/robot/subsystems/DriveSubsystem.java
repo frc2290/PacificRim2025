@@ -20,10 +20,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -58,12 +58,12 @@ public class DriveSubsystem extends SubsystemBase {
     private PIDController yPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
     // Simulation state
-    private Field2d field;
-    private Pose2d simPose = new Pose2d();
+    private Field2d m_field;
     private final SimDeviceSim navxSim = RobotBase.isSimulation() ? new SimDeviceSim("navX-Sensor[0]") : null;
     private final SimDouble navxYaw = navxSim != null ? navxSim.getDouble("Yaw") : null;
-    private double lastSimTimestamp;
-    private SwerveDriveSim swerveSim;
+    private final SwerveDriveSim swerveDriveSim;
+    private final SwerveModuleSim[] m_moduleSims;
+    private final SwerveDriveOdometry m_odometry;
 
     // AdvantageScope publishers
     private final StructArrayPublisher<SwerveModuleState> moduleStatePublisher;
@@ -142,34 +142,78 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putData("Drive X PID", xPid);
         SmartDashboard.putData("Drive Y PID", yPid);
 
-        if (RobotBase.isSimulation()) {
-            field = new Field2d();
-            SmartDashboard.putData("Field", field);
-            lastSimTimestamp = Timer.getFPGATimestamp();
+        m_odometry = new SwerveDriveOdometry(
+            DriveConstants.kDriveKinematics,
+            new Rotation2d(),
+            new SwerveModulePosition[] {
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition()
+            });
 
-            SwerveModuleSim[] sims = new SwerveModuleSim[m_modules.length];
-            for (int i = 0; i < m_modules.length; i++) {
-                MAXSwerveModule module = m_modules[i];
-                sims[i] = new SwerveModuleSim(
+        if (RobotBase.isSimulation()) {
+            m_field = new Field2d();
+            SmartDashboard.putData("Field", m_field);
+
+            m_moduleSims = new SwerveModuleSim[] {
+                new SwerveModuleSim(
                     ModuleConstants.kDriveMotor,
                     ModuleConstants.kDrivingMotorReduction,
                     ModuleConstants.kWheelDiameterMeters / 2.0,
                     ModuleConstants.kDriveEfficiency,
-                    module.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
+                    m_frontLeft.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
                     ModuleConstants.kSteerReduction,
-                    module.getDriveSim(),
-                    module.getDrivingController(),
-                    module.getTurnSim(),
-                    module.getTurningController());
-            }
+                    m_frontLeft.getDriveSim(),
+                    m_frontLeft.getDrivingController(),
+                    m_frontLeft.getTurnSim(),
+                    m_frontLeft.getTurningController()),
+                new SwerveModuleSim(
+                    ModuleConstants.kDriveMotor,
+                    ModuleConstants.kDrivingMotorReduction,
+                    ModuleConstants.kWheelDiameterMeters / 2.0,
+                    ModuleConstants.kDriveEfficiency,
+                    m_frontRight.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
+                    ModuleConstants.kSteerReduction,
+                    m_frontRight.getDriveSim(),
+                    m_frontRight.getDrivingController(),
+                    m_frontRight.getTurnSim(),
+                    m_frontRight.getTurningController()),
+                new SwerveModuleSim(
+                    ModuleConstants.kDriveMotor,
+                    ModuleConstants.kDrivingMotorReduction,
+                    ModuleConstants.kWheelDiameterMeters / 2.0,
+                    ModuleConstants.kDriveEfficiency,
+                    m_rearLeft.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
+                    ModuleConstants.kSteerReduction,
+                    m_rearLeft.getDriveSim(),
+                    m_rearLeft.getDrivingController(),
+                    m_rearLeft.getTurnSim(),
+                    m_rearLeft.getTurningController()),
+                new SwerveModuleSim(
+                    ModuleConstants.kDriveMotor,
+                    ModuleConstants.kDrivingMotorReduction,
+                    ModuleConstants.kWheelDiameterMeters / 2.0,
+                    ModuleConstants.kDriveEfficiency,
+                    m_rearRight.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
+                    ModuleConstants.kSteerReduction,
+                    m_rearRight.getDriveSim(),
+                    m_rearRight.getDrivingController(),
+                    m_rearRight.getTurnSim(),
+                    m_rearRight.getTurningController())
+            };
 
-            swerveSim = new SwerveDriveSim(
-                java.util.List.of(sims),
+            swerveDriveSim = new SwerveDriveSim(
+                java.util.List.of(m_moduleSims),
                 DriveConstants.kModuleTranslations,
                 DriveConstants.kRobotMassKg,
                 DriveConstants.kRobotMomentOfInertia,
                 DriveConstants.kLinearDampingCoeff,
                 DriveConstants.kAngularDampingCoeff);
+        } else {
+            m_field = null;
+            m_moduleSims = null;
+            swerveDriveSim = null;
         }
     }
 
@@ -180,17 +224,23 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         if (RobotBase.isReal()) {
+            m_odometry.update(m_gyro.getRotation2d(), getModulePositions());
             moduleStatePublisher.set(getModuleStates());
         }
     }
 
     public Field2d getField() {
-        return field;
+        return m_field;
+    }
+
+    /** Returns the current estimated pose. */
+    public Pose2d getPose() {
+        return m_odometry.getPoseMeters();
     }
 
     /** Returns the ground-truth pose from the drivetrain simulator. */
     public Pose2d getSimPose() {
-        return simPose;
+        return swerveDriveSim != null ? swerveDriveSim.getPose() : new Pose2d();
     }
 
     /**
@@ -208,31 +258,34 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (swerveSim == null) {
+        if (swerveDriveSim == null) {
             return;
         }
 
-        double[] driveSetpoints = new double[m_modules.length];
-        double[] steerSetpoints = new double[m_modules.length];
-        for (int i = 0; i < m_modules.length; i++) {
+        double batteryVoltage = RobotController.getBatteryVoltage();
+        SwerveModuleSim.ModuleForce[] forces = new SwerveModuleSim.ModuleForce[m_moduleSims.length];
+        var speeds = swerveDriveSim.getSpeeds();
+        for (int i = 0; i < m_moduleSims.length; i++) {
             SwerveModuleState desired = m_modules[i].getDesiredState();
-            driveSetpoints[i] = desired.speedMetersPerSecond;
-            steerSetpoints[i] = desired.angle.getRadians();
+            forces[i] = m_moduleSims[i].update(
+                desired.speedMetersPerSecond,
+                desired.angle.getRadians(),
+                batteryVoltage,
+                speeds.vxMetersPerSecond,
+                speeds.vyMetersPerSecond,
+                speeds.omegaRadiansPerSecond,
+                DriveConstants.kModuleTranslations[i],
+                0.02);
         }
 
-        double now = Timer.getFPGATimestamp();
-        double dt = now - lastSimTimestamp;
-        lastSimTimestamp = now;
+        swerveDriveSim.update(forces, batteryVoltage, 0.02);
 
-        swerveSim.update(RobotController.getBatteryVoltage(), driveSetpoints, steerSetpoints, dt);
-        simPose = swerveSim.getPose();
+        m_odometry.update(
+            swerveDriveSim.getRotation2d(),
+            getModulePositions());
 
-        if (navxYaw != null) {
-            navxYaw.set(simPose.getRotation().getDegrees());
-        }
-
-        if (field != null) {
-            field.setRobotPose(simPose);
+        if (m_field != null) {
+            m_field.setRobotPose(getPose());
         }
 
         moduleStatePublisher.set(getModuleStates());
