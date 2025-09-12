@@ -236,9 +236,11 @@ public class SwerveModuleSim {
    */
   public void updateDriveSensor(double vRoll, double dt, double busVoltage) {
     if (m_driveEncoderSim != null) {
-      double newPos = m_driveEncoderSim.getPosition() + vRoll * dt;
+      // Convert wheel linear speed to motor rotations and RPM for the encoder sim
+      double distPerRot = 2 * Math.PI * m_wheelRadius / m_driveGearRatio; // meters per motor rotation
+      double newPos = m_driveEncoderSim.getPosition() + (vRoll * dt) / distPerRot; // motor rotations
       m_driveEncoderSim.setPosition(newPos);
-      m_driveEncoderSim.setVelocity(vRoll);
+      m_driveEncoderSim.setVelocity((vRoll / distPerRot) * 60.0); // motor RPM
     }
     if (m_driveSim != null) {
       m_driveSim.iterate(m_driveSim.getAppliedOutput(), dt, busVoltage);

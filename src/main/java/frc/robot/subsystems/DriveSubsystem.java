@@ -313,6 +313,10 @@ public class DriveSubsystem extends SubsystemBase {
 
         swerveDriveSim.update(forces, batteryVoltage, 0.02);
 
+        if (navxYaw != null) {
+            navxYaw.set(swerveDriveSim.getRotation2d().getDegrees());
+        }
+
         m_odometry.update(
             swerveDriveSim.getRotation2d(),
             getModulePositions());
