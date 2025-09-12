@@ -15,6 +15,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -32,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.PoseUtils.Heading;
@@ -96,18 +98,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                 stateStdDevs,
                 visionMeasurementStdDevs);
 
-        if (RobotBase.isSimulation()) {
-            PhotonCamera.setVersionCheckEnabled(false);
-            photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
-            photonNotifier = new Notifier(photonEstimator);
-            photonNotifier.setName("PhotonRunnable");
-            photonNotifier.startPeriodic(0.01);
-
-            photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT, () -> getHeading());
-            photonNotifier2 = new Notifier(photonEstimator2);
-            photonNotifier2.setName("PhotonRunnable2");
-            photonNotifier2.startPeriodic(0.01);
-        } else {
+        if (!RobotBase.isSimulation()) {
             if (new PhotonCamera("FrontCamera").isConnected()) {
                 photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
                 photonNotifier = new Notifier(photonEstimator);
@@ -125,6 +116,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             } else {
                 System.out.println("RearCamera not connected; vision disabled");
             }
+        } else {
+            PhotonCamera.setVersionCheckEnabled(false);
         }
 
         try {
@@ -165,6 +158,31 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                 new Pose2d(),
                 stateStdDevs,
                 visionMeasurementStdDevs);
+    }
+
+    /**
+     * Incorporate a raw vision pipeline result into the pose estimator.
+     *
+     * @param visionResult latest pipeline result from a camera
+     * @param cameraToRobot transform from the camera to the robot frame
+     * @param timestamp acquisition timestamp in seconds
+     */
+    public void addVisionMeasurement(
+            PhotonPipelineResult visionResult, Transform3d cameraToRobot, double timestamp) {
+        if (visionResult.hasTargets()) {
+            var bestTarget = visionResult.getBestTarget();
+            var tagPose = FieldConstants.AprilTagLayoutType.OFFICIAL
+                    .getLayout()
+                    .getTagPose(bestTarget.getFiducialId());
+            if (tagPose.isPresent()) {
+                var robotPose = tagPose
+                        .get()
+                        .transformBy(bestTarget.getBestCameraToTarget().inverse())
+                        .transformBy(cameraToRobot);
+                poseEstimator.addVisionMeasurement(
+                        robotPose.toPose2d(), timestamp, visionMeasurementStdDevs);
+            }
+        }
     }
 
     /**

@@ -228,6 +228,16 @@ public class MAXSwerveModule {
         return turnSim;
     }
 
+    /** Returns the closed-loop controller for the driving motor. */
+    public SparkClosedLoopController getDrivingController() {
+        return m_drivingClosedLoopController;
+    }
+
+    /** Returns the closed-loop controller for the turning motor. */
+    public SparkClosedLoopController getTurningController() {
+        return m_turningClosedLoopController;
+    }
+
     /** Returns the most recently commanded state for this module. */
     public SwerveModuleState getDesiredState() {
         return m_desiredState;

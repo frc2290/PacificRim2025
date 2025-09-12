@@ -10,6 +10,8 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 
 /** Simple wrapper around PhotonVision simulation objects. */
@@ -17,6 +19,7 @@ public class VisionSim {
     private final PhotonCamera camera;
     private final PhotonCameraSim cameraSim;
     private final VisionSystemSim visionSim;
+    private final SwerveDriveKinematics KINEMATICS = DriveConstants.kDriveKinematics;
 
     public VisionSim(String cameraName, Transform3d robotToCamera) {
         camera = new PhotonCamera(cameraName);

@@ -158,9 +158,9 @@ public class DriveSubsystem extends SubsystemBase {
                     module.getTurnSim() != null ? ModuleConstants.kSteerMotor : null,
                     ModuleConstants.kSteerReduction,
                     module.getDriveSim(),
-                    null,
+                    module.getDrivingController(),
                     module.getTurnSim(),
-                    null);
+                    module.getTurningController());
             }
 
             swerveSim = new SwerveDriveSim(

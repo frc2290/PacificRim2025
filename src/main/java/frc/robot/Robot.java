@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -121,9 +122,17 @@ public class Robot extends TimedRobot {
     Pose2d pose = m_robotDrive.getField().getRobotPose();
     if (m_frontVisionSim != null) {
       m_frontVisionSim.updateSim(pose, 0.02);
+      m_poseEstimator.addVisionMeasurement(
+          m_frontVisionSim.getCamera().getLatestResult(),
+          VisionConstants.APRILTAG_CAMERA_TO_ROBOT,
+          Timer.getFPGATimestamp());
     }
     if (m_rearVisionSim != null) {
       m_rearVisionSim.updateSim(pose, 0.02);
+      m_poseEstimator.addVisionMeasurement(
+          m_rearVisionSim.getCamera().getLatestResult(),
+          VisionConstants.APRILTAG_CAMERA2_TO_ROBOT,
+          Timer.getFPGATimestamp());
     }
 
     totalCurrentDraw =
