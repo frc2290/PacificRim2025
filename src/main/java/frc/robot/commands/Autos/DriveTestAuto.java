@@ -15,7 +15,8 @@ public class DriveTestAuto extends SequentialCommandGroup {
     addCommands(
         Commands.runOnce(() -> System.out.println("Starting Drive Test")),
         Commands.run(() -> {
-          drive.drive(1.0, 0.0, 0.0, false);
+          // Drive at a reduced speed to keep the test manageable
+          drive.drive(0.1, 0.0, 0.0, false);
           double now = Timer.getFPGATimestamp();
           if (now - lastPrint[0] > 0.2) {
             lastPrint[0] = now;
