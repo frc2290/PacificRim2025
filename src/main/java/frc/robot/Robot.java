@@ -129,17 +129,23 @@ public class Robot extends TimedRobot {
     Pose2d pose = m_robotDrive.getField().getRobotPose();
     if (m_frontVisionSim != null) {
       m_frontVisionSim.updateSim(pose, 0.02);
-      m_poseEstimator.addVisionMeasurement(
-          m_frontVisionSim.getCamera().getLatestResult(),
-          VisionConstants.APRILTAG_CAMERA_TO_ROBOT,
-          Timer.getFPGATimestamp());
+      var results = m_frontVisionSim.getCamera().getAllUnreadResults();
+      if (!results.isEmpty()) {
+        m_poseEstimator.addVisionMeasurement(
+            results.get(results.size() - 1),
+            VisionConstants.APRILTAG_CAMERA_TO_ROBOT,
+            Timer.getFPGATimestamp());
+      }
     }
     if (m_rearVisionSim != null) {
       m_rearVisionSim.updateSim(pose, 0.02);
-      m_poseEstimator.addVisionMeasurement(
-          m_rearVisionSim.getCamera().getLatestResult(),
-          VisionConstants.APRILTAG_CAMERA2_TO_ROBOT,
-          Timer.getFPGATimestamp());
+      var results = m_rearVisionSim.getCamera().getAllUnreadResults();
+      if (!results.isEmpty()) {
+        m_poseEstimator.addVisionMeasurement(
+            results.get(results.size() - 1),
+            VisionConstants.APRILTAG_CAMERA2_TO_ROBOT,
+            Timer.getFPGATimestamp());
+      }
     }
 
     double drawnCurrent = RoboRioSim.getVInCurrent();
