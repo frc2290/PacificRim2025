@@ -17,9 +17,10 @@ public final class Configs {
             double drivingFactor = ModuleConstants.kWheelDiameterMeters * Math.PI
                     / ModuleConstants.kDrivingMotorReduction;
             double turningFactor = 2 * Math.PI;
-            double drivingVelocityFeedForward = 0.13569; //1 / ModuleConstants.kDriveWheelFreeSpeedRps;//(2.2311/12.0); //0.13569; //1 / ModuleConstants.kDriveWheelFreeSpeedRps;
+            double drivingVelocityFeedForward = 1.0 / ModuleConstants.kDriveWheelFreeSpeedRps;
+            // Feedforward is expressed as percent output per meter-per-second so a
+            // setpoint equal to the wheel free speed results in full output.
             //double turnPositionFeedforward = 0.31697;
-
             drivingConfig
                     .idleMode(IdleMode.kBrake)
                     .smartCurrentLimit(50);
