@@ -9,6 +9,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -34,6 +35,7 @@ public class SwerveModuleSim {
   private final double m_driveGearRatio;
   private final double m_wheelRadius;
   private final double m_driveEfficiency;
+  private final double m_currentLimit;
 
   private final DCMotor m_steerMotor;
   private final double m_steerGearRatio;
@@ -58,6 +60,9 @@ public class SwerveModuleSim {
   // simulated absolute encoder match the robot's expected zeroing convention
   // where absolute = relative + chassisAngularOffset.
   private double m_encoderOffset = 0.0;
+
+  // Last calculated drive current (amps)
+  private double m_current = 0.0;
 
   /** Sets the absolute encoder offset (radians). */
   public void setEncoderOffset(double offset) {
@@ -112,11 +117,13 @@ public class SwerveModuleSim {
       SparkFlexSim driveSim,
       SparkClosedLoopController driveController,
       SparkMaxSim steerSim,
-      SparkClosedLoopController steerController) {
+      SparkClosedLoopController steerController,
+      double currentLimit) {
     m_driveMotor = driveMotor;
     m_driveGearRatio = driveGearRatio;
     m_wheelRadius = wheelRadius;
     m_driveEfficiency = driveEfficiency;
+    m_currentLimit = currentLimit;
     m_steerMotor = steerMotor;
     m_steerGearRatio = steerGearRatio;
 
@@ -143,6 +150,32 @@ public class SwerveModuleSim {
 
     m_azimuth = 0.0;
     m_steerVelocity = 0.0;
+  }
+
+  /** Overload without current limiting. */
+  public SwerveModuleSim(
+      DCMotor driveMotor,
+      double driveGearRatio,
+      double wheelRadius,
+      double driveEfficiency,
+      DCMotor steerMotor,
+      double steerGearRatio,
+      SparkFlexSim driveSim,
+      SparkClosedLoopController driveController,
+      SparkMaxSim steerSim,
+      SparkClosedLoopController steerController) {
+    this(
+        driveMotor,
+        driveGearRatio,
+        wheelRadius,
+        driveEfficiency,
+        steerMotor,
+        steerGearRatio,
+        driveSim,
+        driveController,
+        steerSim,
+        steerController,
+        Double.POSITIVE_INFINITY);
   }
 
   /** Updates the steering state and mirrors it to attached Spark simulators. */
@@ -222,6 +255,9 @@ public class SwerveModuleSim {
     double motorSpeed = m_driveGearRatio * vRoll / m_wheelRadius; // rad/s
     double backEMF = motorSpeed / m_driveMotor.KvRadPerSecPerVolt;
     double current = (driveVolts - backEMF) / m_driveMotor.rOhms;
+    current = MathUtil.clamp(current, -m_currentLimit, m_currentLimit);
+    m_current = current;
+
     double torque = m_driveMotor.KtNMPerAmp * current;
     double force = m_driveEfficiency * m_driveGearRatio * torque / m_wheelRadius;
 
@@ -265,6 +301,11 @@ public class SwerveModuleSim {
   /** Returns the current wheel azimuth in radians. */
   public double getAzimuth() {
     return m_azimuth;
+  }
+
+  /** Returns the last calculated drive current draw in amps. */
+  public double getCurrentDraw() {
+    return Math.abs(m_current);
   }
 }
 

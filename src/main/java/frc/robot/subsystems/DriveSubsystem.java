@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
@@ -74,6 +75,9 @@ public class DriveSubsystem extends SubsystemBase {
     private final DoublePublisher actVxPublisher;
     private final DoublePublisher actVyPublisher;
     private final DoublePublisher actOmegaPublisher;
+    private final DoubleArrayPublisher moduleCurrentPublisher;
+    private final DoubleArrayPublisher moduleOutputPublisher;
+    private final DoublePublisher batteryVoltagePublisher;
 
     // Store last commanded speeds (robot frame)
     private ChassisSpeeds m_lastCommandedSpeeds = new ChassisSpeeds();
@@ -156,6 +160,9 @@ public class DriveSubsystem extends SubsystemBase {
         actVxPublisher = nt.getDoubleTopic("Drive/Actual/Vx").publish();
         actVyPublisher = nt.getDoubleTopic("Drive/Actual/Vy").publish();
         actOmegaPublisher = nt.getDoubleTopic("Drive/Actual/Omega").publish();
+        moduleCurrentPublisher = nt.getDoubleArrayTopic("Drive/ModuleCurrents").publish();
+        moduleOutputPublisher = nt.getDoubleArrayTopic("Drive/AppliedOutputs").publish();
+        batteryVoltagePublisher = nt.getDoubleTopic("Drive/BatteryVoltage").publish();
 
         SmartDashboard.putData("Drive Rot PID", rotPid);
         SmartDashboard.putData("Drive X PID", xPid);
@@ -186,7 +193,8 @@ public class DriveSubsystem extends SubsystemBase {
                     m_frontLeft.getDriveSim(),
                     m_frontLeft.getDrivingController(),
                     m_frontLeft.getTurnSim(),
-                    m_frontLeft.getTurningController()),
+                    m_frontLeft.getTurningController(),
+                    ModuleConstants.kDriveCurrentLimitAmps),
                 new SwerveModuleSim(
                     ModuleConstants.kDriveMotor,
                     ModuleConstants.kDrivingMotorReduction,
@@ -197,7 +205,8 @@ public class DriveSubsystem extends SubsystemBase {
                     m_frontRight.getDriveSim(),
                     m_frontRight.getDrivingController(),
                     m_frontRight.getTurnSim(),
-                    m_frontRight.getTurningController()),
+                    m_frontRight.getTurningController(),
+                    ModuleConstants.kDriveCurrentLimitAmps),
                 new SwerveModuleSim(
                     ModuleConstants.kDriveMotor,
                     ModuleConstants.kDrivingMotorReduction,
@@ -208,7 +217,8 @@ public class DriveSubsystem extends SubsystemBase {
                     m_rearLeft.getDriveSim(),
                     m_rearLeft.getDrivingController(),
                     m_rearLeft.getTurnSim(),
-                    m_rearLeft.getTurningController()),
+                    m_rearLeft.getTurningController(),
+                    ModuleConstants.kDriveCurrentLimitAmps),
                 new SwerveModuleSim(
                     ModuleConstants.kDriveMotor,
                     ModuleConstants.kDrivingMotorReduction,
@@ -219,7 +229,8 @@ public class DriveSubsystem extends SubsystemBase {
                     m_rearRight.getDriveSim(),
                     m_rearRight.getDrivingController(),
                     m_rearRight.getTurnSim(),
-                    m_rearRight.getTurningController())
+                    m_rearRight.getTurningController(),
+                    ModuleConstants.kDriveCurrentLimitAmps)
             };
 
             // Align simulated absolute encoders so that modules are "forward"
@@ -260,6 +271,9 @@ public class DriveSubsystem extends SubsystemBase {
             actVxPublisher.set(actual.vxMetersPerSecond);
             actVyPublisher.set(actual.vyMetersPerSecond);
             actOmegaPublisher.set(actual.omegaRadiansPerSecond);
+            moduleCurrentPublisher.set(getModuleCurrents());
+            moduleOutputPublisher.set(getDriveAppliedOutputs());
+            batteryVoltagePublisher.set(RobotController.getBatteryVoltage());
         }
     }
 
@@ -283,6 +297,18 @@ public class DriveSubsystem extends SubsystemBase {
      * @return Sum of currents from each swerve module's drive and turn motors.
      */
     public double getCurrentDraw() {
+        if (m_moduleSims != null
+                && m_frontLeft.getDriveSim() != null
+                && m_frontRight.getDriveSim() != null
+                && m_rearLeft.getDriveSim() != null
+                && m_rearRight.getDriveSim() != null) {
+            double total = 0.0;
+            for (SwerveModuleSim sim : m_moduleSims) {
+                total += sim.getCurrentDraw();
+            }
+            return total;
+        }
+
         double total = 0.0;
         for (MAXSwerveModule module : m_modules) {
             total += module.getCurrentDraw();
@@ -302,6 +328,18 @@ public class DriveSubsystem extends SubsystemBase {
 
     /** Returns the current draw of each module. */
     public double[] getModuleCurrents() {
+        if (m_moduleSims != null
+                && m_frontLeft.getDriveSim() != null
+                && m_frontRight.getDriveSim() != null
+                && m_rearLeft.getDriveSim() != null
+                && m_rearRight.getDriveSim() != null) {
+            double[] currents = new double[m_moduleSims.length];
+            for (int i = 0; i < m_moduleSims.length; i++) {
+                currents[i] = m_moduleSims[i].getCurrentDraw();
+            }
+            return currents;
+        }
+
         return new double[] {
             m_frontLeft.getCurrentDraw(),
             m_frontRight.getCurrentDraw(),
@@ -362,6 +400,9 @@ public class DriveSubsystem extends SubsystemBase {
         actVxPublisher.set(actual.vxMetersPerSecond);
         actVyPublisher.set(actual.vyMetersPerSecond);
         actOmegaPublisher.set(actual.omegaRadiansPerSecond);
+        moduleCurrentPublisher.set(getModuleCurrents());
+        moduleOutputPublisher.set(getDriveAppliedOutputs());
+        batteryVoltagePublisher.set(batteryVoltage);
 
     }
 

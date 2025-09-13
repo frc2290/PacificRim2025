@@ -261,6 +261,9 @@ public final class Constants {
         public static final double kSteerReduction = 9424.0 / 203.0;
         public static final double kDriveEfficiency = 0.92;
 
+        // Current limit for drive motors in simulation (amps)
+        public static final int kDriveCurrentLimitAmps = 50;
+
         // Motor models used for simulation
         public static final DCMotor kDriveMotor = DCMotor.getNeoVortex(1);
         public static final DCMotor kSteerMotor = DCMotor.getNeo550(1);

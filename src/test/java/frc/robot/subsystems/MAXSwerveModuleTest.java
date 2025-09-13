@@ -120,8 +120,8 @@ class MAXSwerveModuleTest {
 
     @Test
     void getCurrentDrawSumsMotorCurrents() {
-        when(drivingSpark.getOutputCurrent()).thenReturn(10.0);
-        when(turningSpark.getOutputCurrent()).thenReturn(1.5);
+        when(drivingSpark.getOutputCurrent()).thenReturn(-10.0);
+        when(turningSpark.getOutputCurrent()).thenReturn(-1.5);
 
         MAXSwerveModule module = newModule(0.0);
         assertEquals(11.5, module.getCurrentDraw(), 1e-9);

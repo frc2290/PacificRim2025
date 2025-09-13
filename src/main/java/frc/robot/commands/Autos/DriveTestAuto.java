@@ -2,6 +2,8 @@ package frc.robot.commands.Autos;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
@@ -23,8 +25,9 @@ public class DriveTestAuto extends SequentialCommandGroup {
             ChassisSpeeds speeds = pose.getChassisSpeeds();
             double[] currents = drive.getModuleCurrents();
             double[] outputs = drive.getDriveAppliedOutputs();
+            double battery = RobotController.getBatteryVoltage();
             System.out.printf(
-                "vx: %.2f vy: %.2f omega: %.2f pose: %s curr: [%.1f %.1f %.1f %.1f] out: [%.2f %.2f %.2f %.2f]%n",
+                "vx: %.2f vy: %.2f omega: %.2f pose: %s curr: [%.1f %.1f %.1f %.1f] out: [%.2f %.2f %.2f %.2f] bat: %.2f%n",
                 speeds.vxMetersPerSecond,
                 speeds.vyMetersPerSecond,
                 speeds.omegaRadiansPerSecond,
@@ -36,7 +39,11 @@ public class DriveTestAuto extends SequentialCommandGroup {
                 outputs[0],
                 outputs[1],
                 outputs[2],
-                outputs[3]);
+                outputs[3],
+                battery);
+            SmartDashboard.putNumberArray("Drive/ModuleCurrents", currents);
+            SmartDashboard.putNumberArray("Drive/AppliedOutputs", outputs);
+            SmartDashboard.putNumber("Drive/BatteryVoltage", battery);
           }
         }).withTimeout(1.0),
         Commands.runOnce(() -> {

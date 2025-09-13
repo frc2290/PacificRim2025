@@ -179,7 +179,7 @@ public class MAXSwerveModule {
      * @return Sum of drive and turning motor currents.
      */
     public double getCurrentDraw() {
-        return m_drivingSpark.getOutputCurrent() + m_turningSpark.getOutputCurrent();
+        return Math.abs(m_drivingSpark.getOutputCurrent()) + Math.abs(m_turningSpark.getOutputCurrent());
     }
 
     /**

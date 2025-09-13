@@ -61,5 +61,74 @@ public class SwerveModuleSimTest {
     assertEquals(0.0, force.fy, 1e-9);
     assertEquals(0.0, force.vRoll, 1e-9);
   }
+
+  @Test
+  public void currentClampsToLimitWhenStalled() {
+    SwerveModuleSim module =
+        new SwerveModuleSim(
+            ModuleConstants.kDriveMotor,
+            ModuleConstants.kDrivingMotorReduction,
+            ModuleConstants.kWheelDiameterMeters / 2.0,
+            ModuleConstants.kDriveEfficiency,
+            null,
+            1.0,
+            null,
+            null,
+            null,
+            null,
+            ModuleConstants.kDriveCurrentLimitAmps);
+
+    module.setDriveOutput(1.0);
+    double busVoltage = 12.0;
+    double dt = 0.02;
+    SwerveModuleSim.ModuleForce force =
+        module.update(
+            0.0,
+            0.0,
+            busVoltage,
+            0.0,
+            0.0,
+            0.0,
+            new Translation2d(),
+            dt);
+    module.updateDriveSensor(force.vRoll, dt, busVoltage);
+
+    assertEquals(
+        ModuleConstants.kDriveCurrentLimitAmps, module.getCurrentDraw(), 1e-9);
+  }
+
+  @Test
+  public void stallsAtMotorStallCurrentWithoutLimit() {
+    SwerveModuleSim module =
+        new SwerveModuleSim(
+            ModuleConstants.kDriveMotor,
+            ModuleConstants.kDrivingMotorReduction,
+            ModuleConstants.kWheelDiameterMeters / 2.0,
+            ModuleConstants.kDriveEfficiency,
+            null,
+            1.0,
+            null,
+            null,
+            null,
+            null);
+
+    module.setDriveOutput(1.0);
+    double busVoltage = 12.0;
+    double dt = 0.02;
+    SwerveModuleSim.ModuleForce force =
+        module.update(
+            0.0,
+            0.0,
+            busVoltage,
+            0.0,
+            0.0,
+            0.0,
+            new Translation2d(),
+            dt);
+    module.updateDriveSensor(force.vRoll, dt, busVoltage);
+
+    assertEquals(
+        ModuleConstants.kDriveMotor.stallCurrentAmps, module.getCurrentDraw(), 1e-9);
+  }
 }
 

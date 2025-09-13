@@ -56,6 +56,19 @@ class DriveSubsystemTest {
     }
 
     @Test
+    void getModuleCurrentsReturnsPerModuleValues() {
+        when(frontLeft.getCurrentDraw()).thenReturn(1.0);
+        when(frontRight.getCurrentDraw()).thenReturn(2.0);
+        when(rearLeft.getCurrentDraw()).thenReturn(3.0);
+        when(rearRight.getCurrentDraw()).thenReturn(4.0);
+
+        assertArrayEquals(
+            new double[] {1.0, 2.0, 3.0, 4.0},
+            drive.getModuleCurrents(),
+            1e-9);
+    }
+
+    @Test
     void driveSetsModuleStates() {
         drive.drive(1.0, 0.0, 0.0, false);
 
