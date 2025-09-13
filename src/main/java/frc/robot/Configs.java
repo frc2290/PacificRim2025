@@ -15,9 +15,10 @@ public final class Configs {
         static {
             // Use module constants to calculate conversion factors and feed forward gain.
             double turningFactor = 2 * Math.PI;
-            double drivingVelocityFeedForward = 1.0 / ModuleConstants.kDriveWheelFreeSpeedMetersPerSecond;
-            // Feedforward is expressed as percent output per meter-per-second so a
-            // setpoint equal to the wheel free speed results in full output.
+            // SPARK velocity feedforward expects a value in percent output per RPM.
+            // Use the motor's free speed in RPM so that a setpoint equal to the
+            // free speed results in full output from the controller.
+            double drivingVelocityFeedForward = 1.0 / Constants.NeoMotorConstants.kFreeSpeedRpm;
             drivingConfig
                     .idleMode(IdleMode.kBrake)
                     .smartCurrentLimit(50);

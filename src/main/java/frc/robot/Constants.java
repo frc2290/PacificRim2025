@@ -179,11 +179,6 @@ public final class Constants {
     }
 
     public static final class DriveConstants {
-        // Driving Parameters - Note that these are not the maximum capable speeds of
-        // the robot, rather the allowed maximum speeds
-        public static final double kMaxSpeedMetersPerSecond = 5.74;
-        public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
-
         // Chassis configuration
         public static final double kTrackWidth = Units.inchesToMeters(26.5);
         // Distance between centers of right and left wheels on robot
@@ -196,6 +191,14 @@ public final class Constants {
                 new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
         };
         public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
+
+        // Driving Parameters - the following limits are derived from the physical
+        // characteristics of the module and robot geometry.
+        public static final double kMaxSpeedMetersPerSecond =
+                ModuleConstants.kDriveWheelFreeSpeedMetersPerSecond;
+        public static final double kMaxAngularSpeed =
+                kMaxSpeedMetersPerSecond /
+                        Math.hypot(kWheelBase / 2.0, kTrackWidth / 2.0); // radians per second
 
         // Physical properties used for simulation
         public static final double kRobotMassKg = 50.0;
@@ -245,6 +248,8 @@ public final class Constants {
         // Encoder conversion factors: raw motor rotations -> meters
         public static final double kDriveEncoderPositionFactor =
                 kWheelCircumferenceMeters / kDrivingMotorReduction; // meters per motor rotation
+        // The Spark Flex reports velocity in RPM, so convert motor RPM to linear wheel
+        // speed using 60 seconds per minute.
         public static final double kDriveEncoderVelocityFactor =
                 kDriveEncoderPositionFactor / 60.0; // meters per second per RPM
 
