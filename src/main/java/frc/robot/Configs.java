@@ -21,7 +21,7 @@ public final class Configs {
             double drivingVelocityFeedForward = 1.0 / Constants.NeoMotorConstants.kFreeSpeedRpm;
             drivingConfig
                     .idleMode(IdleMode.kBrake)
-                    .smartCurrentLimit(50);
+                    .smartCurrentLimit(ModuleConstants.kDriveCurrentLimitAmps);
             drivingConfig.encoder
                     .positionConversionFactor(ModuleConstants.kDriveEncoderPositionFactor) // meters
                     .velocityConversionFactor(ModuleConstants.kDriveEncoderVelocityFactor); // meters per second
