@@ -234,13 +234,23 @@ public final class Constants {
 
         // Calculations required for driving motor conversion factors and feed forward
         public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
-        public static final double kWheelDiameterMeters = 0.0736;
+        // Wheel size and gearing
+        public static final double kWheelDiameterMeters = Units.inchesToMeters(3.0);
         public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
-        // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
-        // teeth on the bevel pinion
-        public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
-        public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters)
-                / kDrivingMotorReduction;
+        // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear,
+        // 15 teeth on the bevel pinion
+        public static final double kDrivingMotorReduction =
+                (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
+
+        // Encoder conversion factors: raw motor rotations -> meters
+        public static final double kDriveEncoderPositionFactor =
+                kWheelCircumferenceMeters / kDrivingMotorReduction; // meters per motor rotation
+        public static final double kDriveEncoderVelocityFactor =
+                kDriveEncoderPositionFactor / 60.0; // meters per second per RPM
+
+        // Free speed of the drive wheel in meters per second
+        public static final double kDriveWheelFreeSpeedMetersPerSecond =
+                kDrivingMotorFreeSpeedRps * kDriveEncoderPositionFactor;
 
         // Steering and efficiency parameters
         public static final double kSteerReduction = 9424.0 / 203.0;
