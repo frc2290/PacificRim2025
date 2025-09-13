@@ -201,6 +201,8 @@ public final class Constants {
         public static final double kRobotMassKg = 50.0;
         public static final double kLinearDampingCoeff = 0.2;
         public static final double kAngularDampingCoeff = 0.05;
+        // Blend factor for softening non-holonomic constraints in simulation (1.0 = rigid)
+        public static final double kConstraintBeta = 0.9;
         public static final double kRobotMomentOfInertia =
                 kRobotMassKg * (kWheelBase * kWheelBase + kTrackWidth * kTrackWidth) / 12.0;
 

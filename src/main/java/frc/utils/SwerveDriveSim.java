@@ -20,11 +20,20 @@ public class SwerveDriveSim {
   private final double m_inertiaZ;
   private final double m_linearDamping;
   private final double m_angularDamping;
+  private final double m_beta;
 
   private Pose2d m_pose = new Pose2d();
   private double m_vx;
   private double m_vy;
   private double m_omega;
+  // Stored unconstrained speeds from the latest update step for debugging.
+  private double m_vxUn;
+  private double m_vyUn;
+  private double m_omegaUn;
+  // Acceleration delta applied by the non-holonomic projection.
+  private double m_axProj;
+  private double m_ayProj;
+  private double m_alphaProj;
 
   /**
    * Constructs a new swerve drive simulator.
@@ -35,19 +44,32 @@ public class SwerveDriveSim {
    * @param inertiaZ       robot yaw moment of inertia about the center (kg*m^2)
    * @param linearDamping  linear damping coefficient (N*s/m)
    * @param angularDamping angular damping coefficient (N*m*s/rad)
+   * @param beta           blending factor to soften constraints (0-1). 1.0 is fully rigid.
    */
   public SwerveDriveSim(List<SwerveModuleSim> modules,
                         Translation2d[] modulePos,
                         double mass,
                         double inertiaZ,
                         double linearDamping,
-                        double angularDamping) {
+                        double angularDamping,
+                        double beta) {
     m_modules = modules;
     m_modulePos = modulePos;
     m_mass = mass;
     m_inertiaZ = inertiaZ;
     m_linearDamping = linearDamping;
     m_angularDamping = angularDamping;
+    m_beta = beta;
+  }
+
+  /** Overloaded constructor with default beta of 1.0 (fully rigid). */
+  public SwerveDriveSim(List<SwerveModuleSim> modules,
+                        Translation2d[] modulePos,
+                        double mass,
+                        double inertiaZ,
+                        double linearDamping,
+                        double angularDamping) {
+    this(modules, modulePos, mass, inertiaZ, linearDamping, angularDamping, 1.0);
   }
 
   /** Default damping of zero. */
@@ -55,7 +77,7 @@ public class SwerveDriveSim {
                         Translation2d[] modulePos,
                         double mass,
                         double inertiaZ) {
-    this(modules, modulePos, mass, inertiaZ, 0.0, 0.0);
+    this(modules, modulePos, mass, inertiaZ, 0.0, 0.0, 1.0);
   }
 
   /** Returns the robot's current pose. */
@@ -64,6 +86,16 @@ public class SwerveDriveSim {
   /** Returns the current chassis speeds in the body frame. */
   public ChassisSpeeds getSpeeds() {
     return new ChassisSpeeds(m_vx, m_vy, m_omega);
+  }
+
+  /** Returns the unconstrained chassis speeds before applying non-holonomic projection. */
+  public ChassisSpeeds getUnconstrainedSpeeds() {
+    return new ChassisSpeeds(m_vxUn, m_vyUn, m_omegaUn);
+  }
+
+  /** Returns the chassis acceleration change caused by the projection step. */
+  public ChassisSpeeds getProjectionAccel() {
+    return new ChassisSpeeds(m_axProj, m_ayProj, m_alphaProj);
   }
 
   /** Sets the robot's current pose. */
@@ -137,6 +169,10 @@ public class SwerveDriveSim {
     double vyUn = m_vy + (fy / m_mass) * dt;
     double omegaUn = m_omega + (tau / m_inertiaZ) * dt;
 
+    m_vxUn = vxUn;
+    m_vyUn = vyUn;
+    m_omegaUn = omegaUn;
+
     SimpleMatrix u = new SimpleMatrix(3,1,true, vxUn, vyUn, omegaUn);
 
     // Step 4: build constraint matrix A
@@ -154,11 +190,23 @@ public class SwerveDriveSim {
 
     SimpleMatrix Winv = SimpleMatrix.diag(1.0/m_mass, 1.0/m_mass, 1.0/m_inertiaZ);
     SimpleMatrix M = A.mult(Winv).mult(A.transpose()).plus(SimpleMatrix.identity(n).scale(1e-9));
-    SimpleMatrix v = u.minus(Winv.mult(A.transpose()).mult(M.invert()).mult(A).mult(u));
+    SimpleMatrix vProj = u.minus(Winv.mult(A.transpose()).mult(M.invert()).mult(A).mult(u));
 
-    m_vx = v.get(0);
-    m_vy = v.get(1);
-    m_omega = v.get(2);
+    // Blend unconstrained and fully constrained velocities to soften constraints
+    SimpleMatrix vFinal = u.scale(1.0 - m_beta).plus(vProj.scale(m_beta));
+
+    double vx = vFinal.get(0);
+    double vy = vFinal.get(1);
+    double omega = vFinal.get(2);
+
+    // Record the acceleration change introduced by the projection step
+    m_axProj = (vx - vxUn) / dt;
+    m_ayProj = (vy - vyUn) / dt;
+    m_alphaProj = (omega - omegaUn) / dt;
+
+    m_vx = vx;
+    m_vy = vy;
+    m_omega = omega;
 
     // Step 5: update pose
     m_pose = m_pose.exp(new Twist2d(m_vx * dt, m_vy * dt, m_omega * dt));

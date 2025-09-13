@@ -236,7 +236,8 @@ public class DriveSubsystem extends SubsystemBase {
                 DriveConstants.kRobotMassKg,
                 DriveConstants.kRobotMomentOfInertia,
                 DriveConstants.kLinearDampingCoeff,
-                DriveConstants.kAngularDampingCoeff);
+                DriveConstants.kAngularDampingCoeff,
+                DriveConstants.kConstraintBeta);
         } else {
             m_field = null;
             m_moduleSims = null;
@@ -287,6 +288,26 @@ public class DriveSubsystem extends SubsystemBase {
             total += module.getCurrentDraw();
         }
         return total;
+    }
+
+    /** Returns the applied output for each drive motor. */
+    public double[] getDriveAppliedOutputs() {
+        return new double[] {
+            m_frontLeft.getDriveAppliedOutput(),
+            m_frontRight.getDriveAppliedOutput(),
+            m_rearLeft.getDriveAppliedOutput(),
+            m_rearRight.getDriveAppliedOutput()
+        };
+    }
+
+    /** Returns the current draw of each module. */
+    public double[] getModuleCurrents() {
+        return new double[] {
+            m_frontLeft.getCurrentDraw(),
+            m_frontRight.getCurrentDraw(),
+            m_rearLeft.getCurrentDraw(),
+            m_rearRight.getCurrentDraw()
+        };
     }
 
     @Override

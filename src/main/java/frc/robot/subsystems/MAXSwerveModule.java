@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -23,7 +22,6 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
@@ -45,7 +43,6 @@ public class MAXSwerveModule {
     private double m_chassisAngularOffset = 0;
     private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
-    private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.13569, 2.2311);
 
     private FlytLogger test = new FlytLogger("Swerve");
 
@@ -183,6 +180,15 @@ public class MAXSwerveModule {
      */
     public double getCurrentDraw() {
         return m_drivingSpark.getOutputCurrent() + m_turningSpark.getOutputCurrent();
+    }
+
+    /**
+     * Returns the drive motor applied output as a fraction of the supply voltage.
+     *
+     * @return Applied output in the range [-1, 1].
+     */
+    public double getDriveAppliedOutput() {
+        return m_drivingSpark.getAppliedOutput();
     }
 
     public void runDriveCharacterization(double output) {
