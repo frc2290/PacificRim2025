@@ -11,18 +11,23 @@ public class DifferentialTestAuto extends SequentialCommandGroup {
         Commands.runOnce(() -> System.out.println("Starting Differential Test")),
         Commands.deadline(
             diff.setRotAndExtSetpointCommand(100, 30),
-            Commands.run(() -> System.out.println(
-                "Extension: " + diff.getExtensionPosition() +
-                " Rotation: " + diff.getRotationPosition()))
-        ),
+            Commands.run(
+                () ->
+                    System.out.println(
+                        "Extension: "
+                            + diff.getExtensionPosition()
+                            + " Rotation: "
+                            + diff.getRotationPosition()))),
         Commands.runOnce(() -> System.out.println("First move complete")),
         Commands.deadline(
             diff.setRotAndExtSetpointCommand(0, 0),
-            Commands.run(() -> System.out.println(
-                "Extension: " + diff.getExtensionPosition() +
-                " Rotation: " + diff.getRotationPosition()))
-        ),
-        Commands.runOnce(() -> System.out.println("Differential test complete"))
-    );
+            Commands.run(
+                () ->
+                    System.out.println(
+                        "Extension: "
+                            + diff.getExtensionPosition()
+                            + " Rotation: "
+                            + diff.getRotationPosition()))),
+        Commands.runOnce(() -> System.out.println("Differential test complete")));
   }
 }

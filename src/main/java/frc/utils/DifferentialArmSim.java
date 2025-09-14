@@ -6,24 +6,25 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N4;
-import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 
 /**
  * Nonlinear simulation model for a 2-DOF planar arm driven by a differential motor pair.
  *
- * <p>Wrapper around {@link DifferentialArmDynamics} providing the simulation loop, state management,
- * and physical limit handling. Uses RK4 integration.
+ * <p>Wrapper around {@link DifferentialArmDynamics} providing the simulation loop, state
+ * management, and physical limit handling. Uses RK4 integration.
  *
- * <p>State x = [extension, extension_dot, theta_meas, theta_dot]'.
- * <br>Input u = [V_R, V_L]'.
+ * <p>State x = [extension, extension_dot, theta_meas, theta_dot]'. <br>
+ * Input u = [V_R, V_L]'.
  *
  * <p>Notes:
+ *
  * <ul>
- *   <li>LinearSystem shell is built at construction using a linearization around
- *       (r_mid, startingTheta_rads). Outputs map x directly (C = I).</li>
- *   <li>Voltage limits and battery modeling are intentionally NOT handled here.</li>
+ *   <li>LinearSystem shell is built at construction using a linearization around (r_mid,
+ *       startingTheta_rads). Outputs map x directly (C = I).
+ *   <li>Voltage limits and battery modeling are intentionally NOT handled here.
  * </ul>
  */
 public class DifferentialArmSim extends LinearSystemSim<N4, N2, N4> {
@@ -35,9 +36,7 @@ public class DifferentialArmSim extends LinearSystemSim<N4, N2, N4> {
   private final double m_minThetaRads;
   private final double m_maxThetaRads;
 
-  /**
-   * Public constructor that builds the dynamics from physical parameters.
-   */
+  /** Public constructor that builds the dynamics from physical parameters. */
   public DifferentialArmSim(
       double extensionMass,
       double rotationMass,
@@ -209,4 +208,3 @@ public class DifferentialArmSim extends LinearSystemSim<N4, N2, N4> {
     return getTotalCurrentAbsAmps();
   }
 }
-

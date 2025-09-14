@@ -15,6 +15,10 @@ public class DrivetrainSysId extends SequentialCommandGroup {
   public DrivetrainSysId(DriveSubsystem drive) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(drive.getQuasistaticForward(true), drive.getQuasistaticReverse(true), drive.getDynamicForward(true), drive.getDynamicReverse(true));
+    addCommands(
+        drive.getQuasistaticForward(true),
+        drive.getQuasistaticReverse(true),
+        drive.getDynamicForward(true),
+        drive.getDynamicReverse(true));
   }
 }

@@ -2,16 +2,16 @@ package frc.utils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import org.ejml.simple.SimpleMatrix;
 import java.util.List;
+import org.ejml.simple.SimpleMatrix;
 
 /**
- * High level simulator for a swerve drivetrain.  This class aggregates a set of
- * {@link SwerveModuleSim} instances and enforces the non-holonomic rolling
- * constraints to produce realistic robot motion.
+ * High level simulator for a swerve drivetrain. This class aggregates a set of {@link
+ * SwerveModuleSim} instances and enforces the non-holonomic rolling constraints to produce
+ * realistic robot motion.
  */
 public class SwerveDriveSim {
   private final List<SwerveModuleSim> m_modules;
@@ -38,21 +38,22 @@ public class SwerveDriveSim {
   /**
    * Constructs a new swerve drive simulator.
    *
-   * @param modules        list of module simulators
-   * @param modulePos      array of module positions relative to robot center
-   * @param mass           robot mass in kilograms
-   * @param inertiaZ       robot yaw moment of inertia about the center (kg*m^2)
-   * @param linearDamping  linear damping coefficient (N*s/m)
+   * @param modules list of module simulators
+   * @param modulePos array of module positions relative to robot center
+   * @param mass robot mass in kilograms
+   * @param inertiaZ robot yaw moment of inertia about the center (kg*m^2)
+   * @param linearDamping linear damping coefficient (N*s/m)
    * @param angularDamping angular damping coefficient (N*m*s/rad)
-   * @param beta           blending factor to soften constraints (0-1). 1.0 is fully rigid.
+   * @param beta blending factor to soften constraints (0-1). 1.0 is fully rigid.
    */
-  public SwerveDriveSim(List<SwerveModuleSim> modules,
-                        Translation2d[] modulePos,
-                        double mass,
-                        double inertiaZ,
-                        double linearDamping,
-                        double angularDamping,
-                        double beta) {
+  public SwerveDriveSim(
+      List<SwerveModuleSim> modules,
+      Translation2d[] modulePos,
+      double mass,
+      double inertiaZ,
+      double linearDamping,
+      double angularDamping,
+      double beta) {
     m_modules = modules;
     m_modulePos = modulePos;
     m_mass = mass;
@@ -63,25 +64,26 @@ public class SwerveDriveSim {
   }
 
   /** Overloaded constructor with default beta of 1.0 (fully rigid). */
-  public SwerveDriveSim(List<SwerveModuleSim> modules,
-                        Translation2d[] modulePos,
-                        double mass,
-                        double inertiaZ,
-                        double linearDamping,
-                        double angularDamping) {
+  public SwerveDriveSim(
+      List<SwerveModuleSim> modules,
+      Translation2d[] modulePos,
+      double mass,
+      double inertiaZ,
+      double linearDamping,
+      double angularDamping) {
     this(modules, modulePos, mass, inertiaZ, linearDamping, angularDamping, 1.0);
   }
 
   /** Default damping of zero. */
-  public SwerveDriveSim(List<SwerveModuleSim> modules,
-                        Translation2d[] modulePos,
-                        double mass,
-                        double inertiaZ) {
+  public SwerveDriveSim(
+      List<SwerveModuleSim> modules, Translation2d[] modulePos, double mass, double inertiaZ) {
     this(modules, modulePos, mass, inertiaZ, 0.0, 0.0, 1.0);
   }
 
   /** Returns the robot's current pose. */
-  public Pose2d getPose() { return m_pose; }
+  public Pose2d getPose() {
+    return m_pose;
+  }
 
   /** Returns the current chassis speeds in the body frame. */
   public ChassisSpeeds getSpeeds() {
@@ -99,7 +101,9 @@ public class SwerveDriveSim {
   }
 
   /** Sets the robot's current pose. */
-  public void setPose(Pose2d pose) { m_pose = pose; }
+  public void setPose(Pose2d pose) {
+    m_pose = pose;
+  }
 
   /** Sets the robot's velocity state in the body frame. */
   public void setSpeeds(ChassisSpeeds speeds) {
@@ -109,15 +113,16 @@ public class SwerveDriveSim {
   }
 
   /**
-   * Performs one simulation tick by commanding each module with the supplied setpoints
-   * and integrating the resulting chassis motion.
+   * Performs one simulation tick by commanding each module with the supplied setpoints and
+   * integrating the resulting chassis motion.
    *
-   * @param busVoltage    battery voltage supplied to the controllers
+   * @param busVoltage battery voltage supplied to the controllers
    * @param driveSetpoints array of drive velocity setpoints (m/s) per module
    * @param steerSetpoints array of steer angle setpoints (rad) per module
-   * @param dt            timestep in seconds
+   * @param dt timestep in seconds
    */
-  public void update(double busVoltage, double[] driveSetpoints, double[] steerSetpoints, double dt) {
+  public void update(
+      double busVoltage, double[] driveSetpoints, double[] steerSetpoints, double dt) {
     int n = m_modules.size();
     if (driveSetpoints.length != n || steerSetpoints.length != n) {
       throw new IllegalArgumentException("Setpoint array length must match module count");
@@ -125,15 +130,18 @@ public class SwerveDriveSim {
 
     SwerveModuleSim.ModuleForce[] forces = new SwerveModuleSim.ModuleForce[n];
     for (int i = 0; i < n; i++) {
-      forces[i] = m_modules.get(i).update(
-          driveSetpoints[i],
-          steerSetpoints[i],
-          busVoltage,
-          m_vx,
-          m_vy,
-          m_omega,
-          m_modulePos[i],
-          dt);
+      forces[i] =
+          m_modules
+              .get(i)
+              .update(
+                  driveSetpoints[i],
+                  steerSetpoints[i],
+                  busVoltage,
+                  m_vx,
+                  m_vy,
+                  m_omega,
+                  m_modulePos[i],
+                  dt);
     }
 
     update(forces, busVoltage, dt);
@@ -142,9 +150,9 @@ public class SwerveDriveSim {
   /**
    * Performs one simulation tick using precomputed module forces.
    *
-   * @param forces     array of longitudinal forces from each module
+   * @param forces array of longitudinal forces from each module
    * @param busVoltage current battery voltage for sensor mirroring
-   * @param dt         timestep in seconds
+   * @param dt timestep in seconds
    */
   public void update(SwerveModuleSim.ModuleForce[] forces, double busVoltage, double dt) {
     int n = m_modules.size();
@@ -173,7 +181,7 @@ public class SwerveDriveSim {
     m_vyUn = vyUn;
     m_omegaUn = omegaUn;
 
-    SimpleMatrix u = new SimpleMatrix(3,1,true, vxUn, vyUn, omegaUn);
+    SimpleMatrix u = new SimpleMatrix(3, 1, true, vxUn, vyUn, omegaUn);
 
     // Step 4: build constraint matrix A
     SimpleMatrix A = new SimpleMatrix(n, 3);
@@ -183,12 +191,12 @@ public class SwerveDriveSim {
       double ny = Math.cos(theta);
       double rx = m_modulePos[i].getX();
       double ry = m_modulePos[i].getY();
-      A.set(i,0,nx);
-      A.set(i,1,ny);
-      A.set(i,2, rx * ny - ry * nx);
+      A.set(i, 0, nx);
+      A.set(i, 1, ny);
+      A.set(i, 2, rx * ny - ry * nx);
     }
 
-    SimpleMatrix Winv = SimpleMatrix.diag(1.0/m_mass, 1.0/m_mass, 1.0/m_inertiaZ);
+    SimpleMatrix Winv = SimpleMatrix.diag(1.0 / m_mass, 1.0 / m_mass, 1.0 / m_inertiaZ);
     SimpleMatrix M = A.mult(Winv).mult(A.transpose()).plus(SimpleMatrix.identity(n).scale(1e-9));
     SimpleMatrix vProj = u.minus(Winv.mult(A.transpose()).mult(M.invert()).mult(A).mult(u));
 
@@ -228,4 +236,3 @@ public class SwerveDriveSim {
     return m_pose.getRotation();
   }
 }
-

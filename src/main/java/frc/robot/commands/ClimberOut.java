@@ -12,45 +12,45 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimberOut extends Command {
-    private ClimbSubsystem climb;
-    private StateSubsystem state;
+  private ClimbSubsystem climb;
+  private StateSubsystem state;
 
-    /** Creates a new ClimberOut. */
-    public ClimberOut(ClimbSubsystem _climb, StateSubsystem _state) {
-        climb = _climb;
-        state = _state;
-        // Use addRequirements() here to declare subsystem dependencies.
-        addRequirements(climb);
-    }
+  /** Creates a new ClimberOut. */
+  public ClimberOut(ClimbSubsystem _climb, StateSubsystem _state) {
+    climb = _climb;
+    state = _state;
+    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(climb);
+  }
 
-    // Called when the command is initially scheduled.
-    @Override
-    public void initialize() {
-        state.setGoal(PositionState.ClimbPosition);
-        climb.setServoOpen();
-        climb.setClimbing(false);
-    }
+  // Called when the command is initially scheduled.
+  @Override
+  public void initialize() {
+    state.setGoal(PositionState.ClimbPosition);
+    climb.setServoOpen();
+    climb.setClimbing(false);
+  }
 
-    // Called every time the scheduler runs while the command is scheduled.
-    @Override
-    public void execute() {
-        //climb.setServoPos(180);
-        //if (climb.getServoPos() > 170) {
-        if (state.atGoal()) {
-            climb.setClimberSetpoint(Climber.climberOutSetpoint);
-        }
-        //}
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+    // climb.setServoPos(180);
+    // if (climb.getServoPos() > 170) {
+    if (state.atGoal()) {
+      climb.setClimberSetpoint(Climber.climberOutSetpoint);
     }
+    // }
+  }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {
-        //climb.setClimberSpeed(0);
-    }
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    // climb.setClimberSpeed(0);
+  }
 
-    // Returns true when the command should end.
-    @Override
-    public boolean isFinished() {
-        return climb.climberOut();
-    }
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return climb.climberOut();
+  }
 }

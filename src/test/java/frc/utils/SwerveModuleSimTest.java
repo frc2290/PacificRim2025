@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link SwerveModuleSim} ensuring the closed-loop motor controllers
- * converge on the commanded setpoints and generate longitudinal force.
+ * Unit tests for {@link SwerveModuleSim} ensuring the closed-loop motor controllers converge on the
+ * commanded setpoints and generate longitudinal force.
  */
 public class SwerveModuleSimTest {
   @BeforeAll
@@ -21,17 +21,18 @@ public class SwerveModuleSimTest {
   @Test
   public void closedLoopReachesSetpoints() {
     // Module with ideal steering and no drive controller
-    SwerveModuleSim module = new SwerveModuleSim(
-        ModuleConstants.kDriveMotor,
-        ModuleConstants.kDrivingMotorReduction,
-        ModuleConstants.kWheelDiameterMeters / 2.0,
-        ModuleConstants.kDriveEfficiency,
-        null,
-        1.0,
-        null,
-        null,
-        null,
-        null);
+    SwerveModuleSim module =
+        new SwerveModuleSim(
+            ModuleConstants.kDriveMotor,
+            ModuleConstants.kDrivingMotorReduction,
+            ModuleConstants.kWheelDiameterMeters / 2.0,
+            ModuleConstants.kDriveEfficiency,
+            null,
+            1.0,
+            null,
+            null,
+            null,
+            null);
 
     double driveSetpoint = 1.0; // m/s
     double steerSetpoint = Math.PI / 4.0; // rad
@@ -41,15 +42,7 @@ public class SwerveModuleSimTest {
 
     SwerveModuleSim.ModuleForce force = null;
     for (int i = 0; i < 50; i++) {
-      force = module.update(
-          driveSetpoint,
-          steerSetpoint,
-          busVoltage,
-          0.0,
-          0.0,
-          0.0,
-          modulePos,
-          dt);
+      force = module.update(driveSetpoint, steerSetpoint, busVoltage, 0.0, 0.0, 0.0, modulePos, dt);
       module.updateDriveSensor(force.vRoll, dt, busVoltage);
     }
 
@@ -82,19 +75,10 @@ public class SwerveModuleSimTest {
     double busVoltage = 12.0;
     double dt = 0.02;
     SwerveModuleSim.ModuleForce force =
-        module.update(
-            0.0,
-            0.0,
-            busVoltage,
-            0.0,
-            0.0,
-            0.0,
-            new Translation2d(),
-            dt);
+        module.update(0.0, 0.0, busVoltage, 0.0, 0.0, 0.0, new Translation2d(), dt);
     module.updateDriveSensor(force.vRoll, dt, busVoltage);
 
-    assertEquals(
-        ModuleConstants.kDriveCurrentLimitAmps, module.getCurrentDraw(), 1e-9);
+    assertEquals(ModuleConstants.kDriveCurrentLimitAmps, module.getCurrentDraw(), 1e-9);
   }
 
   @Test
@@ -116,19 +100,9 @@ public class SwerveModuleSimTest {
     double busVoltage = 12.0;
     double dt = 0.02;
     SwerveModuleSim.ModuleForce force =
-        module.update(
-            0.0,
-            0.0,
-            busVoltage,
-            0.0,
-            0.0,
-            0.0,
-            new Translation2d(),
-            dt);
+        module.update(0.0, 0.0, busVoltage, 0.0, 0.0, 0.0, new Translation2d(), dt);
     module.updateDriveSensor(force.vRoll, dt, busVoltage);
 
-    assertEquals(
-        ModuleConstants.kDriveMotor.stallCurrentAmps, module.getCurrentDraw(), 1e-9);
+    assertEquals(ModuleConstants.kDriveMotor.stallCurrentAmps, module.getCurrentDraw(), 1e-9);
   }
 }
-

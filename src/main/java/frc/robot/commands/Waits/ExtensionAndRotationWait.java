@@ -14,7 +14,8 @@ public class ExtensionAndRotationWait extends Command {
   private double rotSetpoint;
 
   /** Creates a new ExtensionSetWait. */
-  public ExtensionAndRotationWait(DifferentialSubsystem _diff, double _extSetpoint, double _rotSetpoint) {
+  public ExtensionAndRotationWait(
+      DifferentialSubsystem _diff, double _extSetpoint, double _rotSetpoint) {
     diff = _diff;
     extSetpoint = _extSetpoint;
     rotSetpoint = _rotSetpoint;

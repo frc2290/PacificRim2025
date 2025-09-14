@@ -8,27 +8,32 @@ import frc.robot.subsystems.ElevatorSubsystem;
 public class ElevatorTestAuto extends SequentialCommandGroup {
   public ElevatorTestAuto(ElevatorSubsystem elevator) {
     addCommands(
-        Commands.runOnce(() -> {
-          System.out.println("Starting Elevator Test");
-        }),
+        Commands.runOnce(
+            () -> {
+              System.out.println("Starting Elevator Test");
+            }),
         Commands.deadline(
             elevator.setElevatorSetpointCommand(0.25),
-            Commands.run(() ->
-                System.out.println(
-                    "Elevator pos: " + elevator.getPosition() +
-                    " setpoint: " + elevator.getElevatorSetpoint()))
-        ),
-        Commands.runOnce(() ->
-            System.out.println("Elevator reached first setpoint")),
+            Commands.run(
+                () ->
+                    System.out.println(
+                        "Elevator pos: "
+                            + elevator.getPosition()
+                            + " setpoint: "
+                            + elevator.getElevatorSetpoint()))),
+        Commands.runOnce(() -> System.out.println("Elevator reached first setpoint")),
         Commands.deadline(
             elevator.setElevatorSetpointCommand(0.0),
-            Commands.run(() ->
-                System.out.println(
-                    "Elevator pos: " + elevator.getPosition() +
-                    " setpoint: " + elevator.getElevatorSetpoint()))
-        ),
-        Commands.runOnce(() -> {
-          System.out.println("Elevator test complete");
-        }));
+            Commands.run(
+                () ->
+                    System.out.println(
+                        "Elevator pos: "
+                            + elevator.getPosition()
+                            + " setpoint: "
+                            + elevator.getElevatorSetpoint()))),
+        Commands.runOnce(
+            () -> {
+              System.out.println("Elevator test complete");
+            }));
   }
 }

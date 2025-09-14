@@ -2,13 +2,11 @@ package frc.robot.subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.Field;
-
-import org.junit.jupiter.api.Test;
-
-import edu.wpi.first.hal.HAL;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
+import java.lang.reflect.Field;
+import org.junit.jupiter.api.Test;
 
 public class ElevatorSimulationTest {
   @Test

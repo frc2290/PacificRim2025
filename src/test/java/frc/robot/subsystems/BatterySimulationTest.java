@@ -2,22 +2,19 @@ package frc.robot.subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import com.revrobotics.spark.SparkBase;
-
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
- * Ensures that subsystem motor simulations draw their bus voltage from the
- * robot controller's battery simulation.
+ * Ensures that subsystem motor simulations draw their bus voltage from the robot controller's
+ * battery simulation.
  */
 public class BatterySimulationTest {
   @BeforeAll
@@ -29,8 +26,9 @@ public class BatterySimulationTest {
   public void motorsFollowRobotControllerBatteryVoltage() throws Exception {
     // Drive subsystem
     RoboRioSim.setVInVoltage(12.0);
-    DriveSubsystem drive = new DriveSubsystem();
-    verifySubsystem(drive, collectDriveMotors(drive));
+    try (DriveSubsystem drive = new DriveSubsystem()) {
+      verifySubsystem(drive, collectDriveMotors(drive));
+    }
 
     // Climb subsystem
     RoboRioSim.setVInVoltage(12.0);
@@ -40,17 +38,15 @@ public class BatterySimulationTest {
 
     // Differential arm
     RoboRioSim.setVInVoltage(12.0);
-    DifferentialSubsystem diff = new DifferentialSubsystem();
-    verifySubsystem(diff, List.of(
-        getMotor(diff, "leftMotor"),
-        getMotor(diff, "rightMotor")));
+    try (DifferentialSubsystem diff = new DifferentialSubsystem()) {
+      verifySubsystem(diff, List.of(getMotor(diff, "leftMotor"), getMotor(diff, "rightMotor")));
+    }
 
     // Elevator
     RoboRioSim.setVInVoltage(12.0);
     ElevatorSubsystem elevator = new ElevatorSubsystem();
-    verifySubsystem(elevator, List.of(
-        getMotor(elevator, "leftMotor"),
-        getMotor(elevator, "rightMotor")));
+    verifySubsystem(
+        elevator, List.of(getMotor(elevator, "leftMotor"), getMotor(elevator, "rightMotor")));
 
     // Manipulator
     RoboRioSim.setVInVoltage(12.0);

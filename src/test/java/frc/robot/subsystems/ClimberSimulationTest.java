@@ -2,14 +2,11 @@ package frc.robot.subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.Field;
-
-import org.junit.jupiter.api.Test;
-
 import com.revrobotics.sim.SparkMaxSim;
-
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
+import java.lang.reflect.Field;
+import org.junit.jupiter.api.Test;
 
 public class ClimberSimulationTest {
   @Test

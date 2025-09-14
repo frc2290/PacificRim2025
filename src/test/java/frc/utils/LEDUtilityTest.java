@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.utils.LEDEffects.LEDEffect;
-import frc.utils.colorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +54,8 @@ class LEDUtilityTest {
     assertEquals(LEDEffect.PULSE, util.getStrip("Left").getEffect());
     assertEquals(colorUtils.gammaCorrection(LEDEffects.flytBlue), util.getStrip("Left").getColor());
     assertEquals(LEDEffect.PULSE, util.getStrip("Right").getEffect());
-    assertEquals(colorUtils.gammaCorrection(LEDEffects.flytBlue), util.getStrip("Right").getColor());
+    assertEquals(
+        colorUtils.gammaCorrection(LEDEffects.flytBlue), util.getStrip("Right").getColor());
     assertEquals(LEDEffect.ALLIANCE, util.getStrip("TopLeft").getEffect());
     assertEquals(LEDEffect.ALLIANCE, util.getStrip("TopRight").getEffect());
   }
@@ -74,4 +74,3 @@ class LEDUtilityTest {
     verify(led, atLeastOnce()).start();
   }
 }
-

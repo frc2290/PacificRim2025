@@ -14,14 +14,15 @@ import java.util.function.BiFunction;
 /**
  * Core physics and dynamics for a 2-DOF planar arm driven by a differential motor pair.
  *
- * <p>State x = [extension, extension_dot, theta_meas, theta_dot]'.
- * <br>Input u = [V_R, V_L]'.
+ * <p>State x = [extension, extension_dot, theta_meas, theta_dot]'. <br>
+ * Input u = [V_R, V_L]'.
  *
  * <p>Notes:
+ *
  * <ul>
- *   <li>theta = theta_meas + sensorOffset is the ABSOLUTE angle w.r.t. gravity.</li>
- *   <li>Viscous + smoothed Coulomb friction model.</li>
- *   <li>Rotor inertia term is used as provided.</li>
+ *   <li>theta = theta_meas + sensorOffset is the ABSOLUTE angle w.r.t. gravity.
+ *   <li>Viscous + smoothed Coulomb friction model.
+ *   <li>Rotor inertia term is used as provided.
  * </ul>
  */
 public class DifferentialArmDynamics {
@@ -136,10 +137,7 @@ public class DifferentialArmDynamics {
   public Matrix<N2, N1> calculateFeedforward(Matrix<N4, N1> x) {
     double thetaAbs = x.get(2, 0) + m_sensorOffset;
 
-    double G1 =
-        (m_extensionMass + m_rotationMass)
-            * m_gravity
-            * Math.sin(m_extensionInclination);
+    double G1 = (m_extensionMass + m_rotationMass) * m_gravity * Math.sin(m_extensionInclination);
     double G2 = m_rotationMass * m_gravity * m_comOffset * Math.cos(thetaAbs);
 
     double fExtReq = G1;
@@ -179,11 +177,9 @@ public class DifferentialArmDynamics {
 
     // Differential kinematics → motor speeds
     double omegaR =
-        (rDot / m_linearDriveRadius)
-            - (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
+        (rDot / m_linearDriveRadius) - (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
     double omegaL =
-        (rDot / m_linearDriveRadius)
-            + (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
+        (rDot / m_linearDriveRadius) + (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
 
     // Motor currents/torques from applied voltages
     double iR = m_rightMotor.getCurrent(omegaR, vR);
@@ -193,8 +189,7 @@ public class DifferentialArmDynamics {
 
     // Back to generalized forces
     double fExt = (tauR + tauL) / m_linearDriveRadius;
-    double tauTheta =
-        (m_differentialArmRadius / m_linearDriveRadius) * (tauL - tauR);
+    double tauTheta = (m_differentialArmRadius / m_linearDriveRadius) * (tauL - tauR);
 
     // Shorthands
     double sPhiTheta = Math.sin(m_extensionInclination - thetaAbs);
@@ -215,15 +210,11 @@ public class DifferentialArmDynamics {
 
     // Coriolis/centrifugal, gravity, damping/friction
     double c1 = -m_rotationMass * m_comOffset * cPhiTheta * thetaDot * thetaDot;
-    double g1 =
-        (m_extensionMass + m_rotationMass)
-            * m_gravity
-            * Math.sin(m_extensionInclination);
+    double g1 = (m_extensionMass + m_rotationMass) * m_gravity * Math.sin(m_extensionInclination);
     double g2 = m_rotationMass * m_gravity * m_comOffset * cTheta;
 
     double d1 =
-        m_extensionViscousDamping * rDot
-            + m_extensionCoulombFriction * Math.tanh(100.0 * rDot);
+        m_extensionViscousDamping * rDot + m_extensionCoulombFriction * Math.tanh(100.0 * rDot);
     double d2 =
         m_rotationViscousDamping * thetaDot
             + m_rotationCoulombFriction * Math.tanh(100.0 * thetaDot);
@@ -233,7 +224,7 @@ public class DifferentialArmDynamics {
 
     // Solve M * [r_ddot; theta_ddot] = rhs
     double det = m11 * m22 - m12 * m12;
-    det = Math.abs(det) < 1e-9 ? 1e-9 : det;  // numeric guard only
+    det = Math.abs(det) < 1e-9 ? 1e-9 : det; // numeric guard only
     double invDet = 1.0 / det;
 
     double rDDot = invDet * (m22 * rhs1 - m12 * rhs2);
@@ -247,8 +238,7 @@ public class DifferentialArmDynamics {
     double rDot = x.get(1, 0);
     double thetaDot = x.get(3, 0);
     double omegaR =
-        (rDot / m_linearDriveRadius)
-            - (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
+        (rDot / m_linearDriveRadius) - (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
     return m_rightMotor.getCurrent(omegaR, u.get(0, 0));
   }
 
@@ -257,14 +247,13 @@ public class DifferentialArmDynamics {
     double rDot = x.get(1, 0);
     double thetaDot = x.get(3, 0);
     double omegaL =
-        (rDot / m_linearDriveRadius)
-            + (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
+        (rDot / m_linearDriveRadius) + (m_differentialArmRadius / m_linearDriveRadius) * thetaDot;
     return m_leftMotor.getCurrent(omegaL, u.get(1, 0));
   }
 
   /**
-   * Total current (A) defined as the sum of absolute per-motor currents.
-   * Useful for PDH/battery models.
+   * Total current (A) defined as the sum of absolute per-motor currents. Useful for PDH/battery
+   * models.
    */
   public double getTotalCurrentAbsAmps(Matrix<N4, N1> x, Matrix<N2, N1> u) {
     double iR = getRightMotorCurrentAmps(x, u);
@@ -280,4 +269,3 @@ public class DifferentialArmDynamics {
     return getTotalCurrentAbsAmps(x, u);
   }
 }
-

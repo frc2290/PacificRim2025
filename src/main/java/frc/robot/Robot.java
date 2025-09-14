@@ -4,20 +4,19 @@
 
 package frc.robot;
 
-import org.littletonrobotics.urcl.URCL;
-
 import au.grapplerobotics.CanBridge;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -26,13 +25,11 @@ import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateSubsystem;
 import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.robot.subsystems.StateSubsystem.PositionState;
-import frc.robot.Constants;
+import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import frc.utils.VisionSim;
-import frc.robot.Constants.VisionConstants;
-import frc.robot.Constants.OIConstants;
-import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
+import org.littletonrobotics.urcl.URCL;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -44,7 +41,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-  
+
   private final LEDUtility m_ledUtility = new LEDUtility(0);
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
@@ -53,7 +50,9 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+  private final StateSubsystem m_state =
+      new StateSubsystem(
+          m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
   private VisionSim m_frontVisionSim;
   private VisionSim m_rearVisionSim;
 
@@ -80,7 +79,16 @@ public class Robot extends TimedRobot {
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state);
+    m_robotContainer =
+        new RobotContainer(
+            m_ledUtility,
+            m_robotDrive,
+            m_poseEstimator,
+            m_elevator,
+            m_manipulator,
+            m_DiffArm,
+            m_climber,
+            m_state);
     DataLogManager.start();
 
     // Start URCL once, logging to the WPILib DataLog
@@ -88,8 +96,10 @@ public class Robot extends TimedRobot {
 
     if (RobotBase.isSimulation()) {
       SmartDashboard.putData("Field", m_robotDrive.getField());
-      m_frontVisionSim = new VisionSim("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT.inverse());
-      m_rearVisionSim = new VisionSim("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT.inverse());
+      m_frontVisionSim =
+          new VisionSim("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT.inverse());
+      m_rearVisionSim =
+          new VisionSim("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT.inverse());
       simDash.addDoublePublisher("Total Current", false, () -> totalCurrentDraw);
       simDash.addDoublePublisher("Loaded Voltage", false, () -> loadedBatteryVoltage);
     }

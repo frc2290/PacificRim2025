@@ -230,5 +230,4 @@ public class FieldConstants {
       this(id, id % 2 == 1);
     }
   }
-
 }

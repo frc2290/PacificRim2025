@@ -19,14 +19,20 @@ import frc.robot.subsystems.StateSubsystem.PositionState;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class IntakePosition extends SequentialCommandGroup {
   /** Creates a new IntakePositionNew. */
-  public IntakePosition(DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
-    //Command moveExt1 = diffArm.setExtensionSetpointCommand(70);
+  public IntakePosition(
+      DifferentialSubsystem diffArm, ElevatorSubsystem elevator, StateSubsystem stateSubsystem) {
+    // Command moveExt1 = diffArm.setExtensionSetpointCommand(70);
     Command moveRotAndExt = diffArm.setRotAndExtSetpointCommand(80, 225);
     Command moveElev = elevator.setElevatorSetpointCommand(Elevator.intakeSetpoint);
     ParallelCommandGroup moveElevAndArm = new ParallelCommandGroup(moveRotAndExt, moveElev);
-    Command moveRotAndExt2 = diffArm.setRotAndExtSetpointCommand(DifferentialArm.intakeExtensionSetpoint, DifferentialArm.intakeRotationSetpoint);
+    Command moveRotAndExt2 =
+        diffArm.setRotAndExtSetpointCommand(
+            DifferentialArm.intakeExtensionSetpoint, DifferentialArm.intakeRotationSetpoint);
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(moveElevAndArm, moveRotAndExt2, stateSubsystem.setCurrentStateCommand(PositionState.IntakePosition));
+    addCommands(
+        moveElevAndArm,
+        moveRotAndExt2,
+        stateSubsystem.setCurrentStateCommand(PositionState.IntakePosition));
   }
 }
