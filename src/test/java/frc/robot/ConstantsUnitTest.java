@@ -37,11 +37,9 @@ public class ConstantsUnitTest {
         1e-9);
     double expectedMaxAngular =
         Constants.DriveConstants.kMaxSpeedMetersPerSecond
-            /
-            Math.hypot(
+            / Math.hypot(
                 Constants.DriveConstants.kWheelBase / 2.0,
                 Constants.DriveConstants.kTrackWidth / 2.0);
     assertEquals(expectedMaxAngular, Constants.DriveConstants.kMaxAngularSpeed, 1e-9);
   }
 }
-

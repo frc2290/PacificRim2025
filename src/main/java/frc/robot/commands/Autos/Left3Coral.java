@@ -5,7 +5,6 @@
 package frc.robot.commands.Autos;
 
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,71 +27,94 @@ import frc.utils.PoseEstimatorSubsystem;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class Left3Coral extends SequentialCommandGroup {
   /** Creates a new Left3Coral. */
-  public Left3Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
-        try {
-            Timer timer = new Timer();
-            // Pull in path from start location to reef
-            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("LeftCoral1");
-            PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("LeftCoral1ToFeeder");
-            PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToLeftCoral2");
-            PathPlannerPath reef2toFeed = PathPlannerPath.fromPathFile("LeftCoral2ToFeeder");
-            PathPlannerPath feedToReef3 = PathPlannerPath.fromPathFile("FeederToLeftCoral3");
-            PathPlannerPath reef3ToFeed = PathPlannerPath.fromPathFile("LeftCoral3ToFeeder");
-            
-            // Create a reset pose command to set starting location (may remove in future)
-            Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
-            
-            // Set drive to auto (have to do this for every auto)
-            Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
-            
-            // Create a parallel group to move to the reef and get in scoring position at the same time
-            Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
-            Command moveToReef = new ParallelCommandGroup(followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
-            //Command scoreCoral1 = new SwerveAutoScore(VisionConstants.leftBranches.get(2), manipulator, stateSubsystem, poseEst);
+  public Left3Coral(
+      DifferentialSubsystem diff,
+      PoseEstimatorSubsystem poseEst,
+      StateSubsystem stateSubsystem,
+      ManipulatorSubsystem manipulator) {
+    try {
+      Timer timer = new Timer();
+      // Pull in path from start location to reef
+      PathPlannerPath startToReef = PathPlannerPath.fromPathFile("LeftCoral1");
+      PathPlannerPath reefToFeed = PathPlannerPath.fromPathFile("LeftCoral1ToFeeder");
+      PathPlannerPath feedToReef2 = PathPlannerPath.fromPathFile("FeederToLeftCoral2");
+      PathPlannerPath reef2toFeed = PathPlannerPath.fromPathFile("LeftCoral2ToFeeder");
+      PathPlannerPath feedToReef3 = PathPlannerPath.fromPathFile("FeederToLeftCoral3");
+      PathPlannerPath reef3ToFeed = PathPlannerPath.fromPathFile("LeftCoral3ToFeeder");
 
-            Command followPath2 = new SwerveAutoStep(reefToFeed, poseEst);
-            Command moveToFeeder = new ParallelCommandGroup(followPath2);
+      // Create a reset pose command to set starting location (may remove in future)
+      Command resetPose =
+          new InstantCommand(
+              () -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
 
-            Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
-            Command moveToReef2 = new ParallelCommandGroup(followPath3, stateSubsystem.setGoalCommand(PositionState.L4Position, true).beforeStarting(new WaitCommand(0.25)));
-            //Command scoreCoral2 = new SwerveAutoScore(VisionConstants.rightBranches.get(3), manipulator, stateSubsystem, poseEst);
+      // Set drive to auto (have to do this for every auto)
+      Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
 
-            Command followPath4 = new SwerveAutoStep(reef2toFeed, poseEst);
-            Command moveToFeeder2 = new ParallelCommandGroup(followPath4);
+      // Create a parallel group to move to the reef and get in scoring position at the same time
+      Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
+      Command moveToReef =
+          new ParallelCommandGroup(
+              followPath1, stateSubsystem.setGoalCommand(PositionState.L4Position, true));
+      // Command scoreCoral1 = new SwerveAutoScore(VisionConstants.leftBranches.get(2), manipulator,
+      // stateSubsystem, poseEst);
 
-            Command followPath5 = new SwerveAutoStep(feedToReef3, poseEst);
-            Command moveToReef3 = new ParallelCommandGroup(followPath5, stateSubsystem.setGoalCommand(PositionState.L4Position, true).beforeStarting(new WaitCommand(0.25)));
-            //Command scoreCoral3 = new SwerveAutoScore(VisionConstants.leftBranches.get(3), manipulator, stateSubsystem, poseEst);
+      Command followPath2 = new SwerveAutoStep(reefToFeed, poseEst);
+      Command moveToFeeder = new ParallelCommandGroup(followPath2);
 
-            Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
+      Command followPath3 = new SwerveAutoStep(feedToReef2, poseEst);
+      Command moveToReef2 =
+          new ParallelCommandGroup(
+              followPath3,
+              stateSubsystem
+                  .setGoalCommand(PositionState.L4Position, true)
+                  .beforeStarting(new WaitCommand(0.25)));
+      // Command scoreCoral2 = new SwerveAutoScore(VisionConstants.rightBranches.get(3),
+      // manipulator, stateSubsystem, poseEst);
 
-            // Add your commands in the addCommands() call, e.g.
-            // addCommands(new FooCommand(), new BarCommand());
-            // First reset position, move to reef and get in score position, lastly score the coral
-            addCommands(Commands.runOnce(() -> timer.restart()),
-                        resetPose, 
-                        driveSetAuto, 
-                        moveToReef, 
-                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), 
-                        moveToFeeder,
-                        new WaitCommand(1.5),
-                        moveToReef2, 
-                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
-                        moveToFeeder2,
-                        new WaitCommand(1.5),
-                        moveToReef3,
-                        new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
-                        Commands.runOnce(() -> {
-                          timer.stop();
-                          System.out.println("Left3Coral Time: " + timer.get());
-                        })//,
-                        //followPath6
-                        //driveSetTeleop,
-                        );
-        } catch (Exception e) {
-            System.out.println("BROKENNNNNNNNNNNNNNNNN");
-            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-            Commands.none();
-        }
+      Command followPath4 = new SwerveAutoStep(reef2toFeed, poseEst);
+      Command moveToFeeder2 = new ParallelCommandGroup(followPath4);
+
+      Command followPath5 = new SwerveAutoStep(feedToReef3, poseEst);
+      Command moveToReef3 =
+          new ParallelCommandGroup(
+              followPath5,
+              stateSubsystem
+                  .setGoalCommand(PositionState.L4Position, true)
+                  .beforeStarting(new WaitCommand(0.25)));
+      // Command scoreCoral3 = new SwerveAutoScore(VisionConstants.leftBranches.get(3), manipulator,
+      // stateSubsystem, poseEst);
+
+      Command followPath6 = new SwerveAutoStep(reef3ToFeed, poseEst);
+
+      // Add your commands in the addCommands() call, e.g.
+      // addCommands(new FooCommand(), new BarCommand());
+      // First reset position, move to reef and get in score position, lastly score the coral
+      addCommands(
+          Commands.runOnce(() -> timer.restart()),
+          resetPose,
+          driveSetAuto,
+          moveToReef,
+          new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
+          moveToFeeder,
+          new WaitCommand(1.5),
+          moveToReef2,
+          new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
+          moveToFeeder2,
+          new WaitCommand(1.5),
+          moveToReef3,
+          new ScoreCoral(manipulator, diff, stateSubsystem, poseEst),
+          Commands.runOnce(
+              () -> {
+                timer.stop();
+                System.out.println("Left3Coral Time: " + timer.get());
+              }) // ,
+          // followPath6
+          // driveSetTeleop,
+          );
+    } catch (Exception e) {
+      System.out.println("BROKENNNNNNNNNNNNNNNNN");
+      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+      Commands.none();
     }
+  }
 }

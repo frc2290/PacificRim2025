@@ -2,20 +2,17 @@ package frc.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.Field;
-
-import org.ejml.data.Complex_F64;
-import org.ejml.simple.SimpleEVD;
-import org.junit.jupiter.api.Test;
-
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N4;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
+import java.lang.reflect.Field;
+import org.ejml.data.Complex_F64;
+import org.ejml.simple.SimpleEVD;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DifferentialArmDynamics}. */
 public class DifferentialArmDynamicsTest {

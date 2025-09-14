@@ -17,38 +17,38 @@ public class AlgaeRemovalL3 extends Command {
   private boolean level2;
 
   /** Creates a new AlgaeRemoval. */
-    public AlgaeRemovalL3(ManipulatorSubsystem m_manip, StateSubsystem m_state, boolean _level2) {
-        manip = m_manip;
-        state = m_state;
-        level2 = _level2;
-        // Use addRequirements() here to declare subsystem dependencies.
-        //addRequirements(manip);
-    }
+  public AlgaeRemovalL3(ManipulatorSubsystem m_manip, StateSubsystem m_state, boolean _level2) {
+    manip = m_manip;
+    state = m_state;
+    level2 = _level2;
+    // Use addRequirements() here to declare subsystem dependencies.
+    // addRequirements(manip);
+  }
 
-    // Called when the command is initially scheduled.
-    @Override
-    public void initialize() {
-        state.setGoal(PositionState.AlgaeL3Position);
-        state.setDriveState(DriveState.Teleop);
-    }
+  // Called when the command is initially scheduled.
+  @Override
+  public void initialize() {
+    state.setGoal(PositionState.AlgaeL3Position);
+    state.setDriveState(DriveState.Teleop);
+  }
 
-    // Called every time the scheduler runs while the command is scheduled.
-    @Override
-    public void execute() {
-        manip.intake(-1.0);
-    }
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+    manip.intake(-1.0);
+  }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {
-        manip.intake(0);
-        state.setGoal(PositionState.IntakePosition);
-        state.setDriveState(DriveState.CoralStation);
-    }
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    manip.intake(0);
+    state.setGoal(PositionState.IntakePosition);
+    state.setDriveState(DriveState.CoralStation);
+  }
 
-    // Returns true when the command should end.
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
 }

@@ -2,23 +2,20 @@ package frc.robot.subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.Field;
-
-import org.junit.jupiter.api.Test;
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import frc.robot.Constants.DifferentialArm;
 import frc.utils.DifferentialArmSim;
+import java.lang.reflect.Field;
+import org.junit.jupiter.api.Test;
 
 /** Tests for the differential arm simulation model. */
 public class DifferentialArmSimulationTest {
@@ -103,6 +100,7 @@ public class DifferentialArmSimulationTest {
 
     @Override
     public void close() {
+      diff.close();
       leftMotor.close();
       rightMotor.close();
     }
@@ -115,7 +113,9 @@ public class DifferentialArmSimulationTest {
       for (int i = 0; i < 50; i++) {
         rig.leftSim.setAppliedOutput(1.0);
         rig.rightSim.setAppliedOutput(1.0);
-        rig.diff.simulationPeriodic();
+        for (int j = 0; j < 4; j++) {
+          rig.diff.updateSimState(0.005);
+        }
         SimHooks.stepTiming(0.02);
       }
 
@@ -130,7 +130,9 @@ public class DifferentialArmSimulationTest {
       for (int i = 0; i < 50; i++) {
         rig.leftSim.setAppliedOutput(1.0);
         rig.rightSim.setAppliedOutput(-1.0);
-        rig.diff.simulationPeriodic();
+        for (int j = 0; j < 4; j++) {
+          rig.diff.updateSimState(0.005);
+        }
         SimHooks.stepTiming(0.02);
       }
 
@@ -138,4 +140,3 @@ public class DifferentialArmSimulationTest {
     }
   }
 }
-

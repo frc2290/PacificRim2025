@@ -3,11 +3,10 @@ package frc.utils.FLYTLib;
 // Create a custom exception class
 class FLYTLibException extends Exception {
 
-    public FLYTLibException(String message) {
-        super(message);
-    }
+  public FLYTLibException(String message) {
+    super(message);
+  }
 }
-
 
 /*
 public class Main {

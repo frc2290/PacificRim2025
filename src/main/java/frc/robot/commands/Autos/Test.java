@@ -4,7 +4,6 @@ package frc.robot.commands.Autos;
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -25,9 +24,13 @@ public class Test extends SequentialCommandGroup {
       PathPlannerPath path = PathPlannerPath.fromPathFile("RightCoral1");
       // stateSubsystem.setRotationLock(false);
 
-      Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(path.getStartingHolonomicPose().get()));
+      Command resetPose =
+          new InstantCommand(() -> poseEst.setCurrentPose(path.getStartingHolonomicPose().get()));
       // Load the path you want to follow using its name in the GUI
-      addCommands(stateSubsystem.setDriveStateCommand(DriveState.Auto), resetPose, new SwerveAutoStep(path, poseEst));
+      addCommands(
+          stateSubsystem.setDriveStateCommand(DriveState.Auto),
+          resetPose,
+          new SwerveAutoStep(path, poseEst));
     } catch (Exception e) {
       DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
       Commands.none();

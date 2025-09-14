@@ -4,10 +4,9 @@
 
 package frc.utils;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
-
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionUtils extends SubsystemBase {
   private final PhotonCamera camera;

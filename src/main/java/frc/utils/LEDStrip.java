@@ -11,88 +11,89 @@ import frc.utils.LEDEffects.LEDEffect;
 
 /** Add your docs here. */
 public class LEDStrip {
-    String name;
-    int start;
-    int stop;
-    AddressableLEDBufferView bufferView;
-    Color color = LEDEffects.flytBlue;
-    LEDEffect effect = LEDEffect.SOLID;
-    boolean helperBool = false;
+  String name;
+  int start;
+  int stop;
+  AddressableLEDBufferView bufferView;
+  Color color = LEDEffects.flytBlue;
+  LEDEffect effect = LEDEffect.SOLID;
+  boolean helperBool = false;
 
-    public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop) {
-        name = _name;
-        start = _start;
-        stop = _stop;
-        bufferView = _buffer.createView(start, stop);
-    }
-    
-    public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop, boolean _reversed) {
-        name = _name;
-        start = _start;
-        stop = _stop;
-        bufferView = _buffer.createView(start, stop);
-        bufferView = bufferView.reversed();
-    }
+  public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop) {
+    name = _name;
+    start = _start;
+    stop = _stop;
+    bufferView = _buffer.createView(start, stop);
+  }
 
-    public AddressableLEDBufferView getBufferView() {
-        return bufferView;
-    }
+  public LEDStrip(
+      String _name, AddressableLEDBuffer _buffer, int _start, int _stop, boolean _reversed) {
+    name = _name;
+    start = _start;
+    stop = _stop;
+    bufferView = _buffer.createView(start, stop);
+    bufferView = bufferView.reversed();
+  }
 
-    public void setBufferView(AddressableLEDBuffer _buffer) {
-        if (bufferView.isReversed()) {
-            bufferView = _buffer.createView(start, stop);
-            bufferView = bufferView.reversed();
-        } else {
-            bufferView = _buffer.createView(start, stop);
-        }
-    }
+  public AddressableLEDBufferView getBufferView() {
+    return bufferView;
+  }
 
-    public String getName() {
-        return name;
+  public void setBufferView(AddressableLEDBuffer _buffer) {
+    if (bufferView.isReversed()) {
+      bufferView = _buffer.createView(start, stop);
+      bufferView = bufferView.reversed();
+    } else {
+      bufferView = _buffer.createView(start, stop);
     }
+  }
 
-    public LEDEffect getEffect() {
-        return effect;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public boolean getReversed() {
-        return bufferView.isReversed();
-    }
+  public LEDEffect getEffect() {
+    return effect;
+  }
 
-    public Color getColor() {
-        return color;
-    }
+  public boolean getReversed() {
+    return bufferView.isReversed();
+  }
 
-    public int getStart() {
-        return start;
-    }
+  public Color getColor() {
+    return color;
+  }
 
-    public int getStop() {
-        return stop;
-    }
+  public int getStart() {
+    return start;
+  }
 
-    public int getLength() {
-        return bufferView.getLength();
-    }
+  public int getStop() {
+    return stop;
+  }
 
-    public void setEffect(LEDEffect _effect) {
-        effect = _effect;
-    }
+  public int getLength() {
+    return bufferView.getLength();
+  }
 
-    public void setEffect(LEDEffect _effect, Color _color) {
-        effect = _effect;
-        color = _color;
-    }
+  public void setEffect(LEDEffect _effect) {
+    effect = _effect;
+  }
 
-    public void setColor(Color _color) {
-        color = colorUtils.gammaCorrection(_color);
-    }
+  public void setEffect(LEDEffect _effect, Color _color) {
+    effect = _effect;
+    color = _color;
+  }
 
-    public boolean getHelperBool() {
-        return helperBool;
-    }
+  public void setColor(Color _color) {
+    color = colorUtils.gammaCorrection(_color);
+  }
 
-    public void setHelperBool(boolean helper) {
-        helperBool = helper;
-    }
+  public boolean getHelperBool() {
+    return helperBool;
+  }
+
+  public void setHelperBool(boolean helper) {
+    helperBool = helper;
+  }
 }

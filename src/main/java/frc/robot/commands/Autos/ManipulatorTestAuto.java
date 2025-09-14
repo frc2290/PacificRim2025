@@ -9,25 +9,28 @@ public class ManipulatorTestAuto extends SequentialCommandGroup {
   public ManipulatorTestAuto(ManipulatorSubsystem manip) {
     addCommands(
         Commands.runOnce(() -> System.out.println("Starting Manipulator Test")),
-        Commands.run(() -> {
-          manip.intake(0.5);
-          System.out.println(
-              "Pos: " + manip.getMotorPos() +
-              " Current: " + manip.getCurrentDraw());
-        }).withTimeout(2.0),
-        Commands.runOnce(() -> {
-          manip.intake(-0.5);
-          System.out.println("Reversing manipulator");
-        }),
-        Commands.run(() -> {
-          System.out.println(
-              "Pos: " + manip.getMotorPos() +
-              " Current: " + manip.getCurrentDraw());
-        }).withTimeout(2.0),
-        Commands.runOnce(() -> {
-          manip.intake(0.0);
-          System.out.println("Manipulator test complete");
-        })
-    );
+        Commands.run(
+                () -> {
+                  manip.intake(0.5);
+                  System.out.println(
+                      "Pos: " + manip.getMotorPos() + " Current: " + manip.getCurrentDraw());
+                })
+            .withTimeout(2.0),
+        Commands.runOnce(
+            () -> {
+              manip.intake(-0.5);
+              System.out.println("Reversing manipulator");
+            }),
+        Commands.run(
+                () -> {
+                  System.out.println(
+                      "Pos: " + manip.getMotorPos() + " Current: " + manip.getCurrentDraw());
+                })
+            .withTimeout(2.0),
+        Commands.runOnce(
+            () -> {
+              manip.intake(0.0);
+              System.out.println("Manipulator test complete");
+            }));
   }
 }

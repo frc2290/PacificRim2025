@@ -17,6 +17,8 @@ public class ClimbPosition extends SequentialCommandGroup {
   public ClimbPosition(ElevatorSubsystem elevator, StateSubsystem state) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(elevator.setElevatorSetpointCommand(0.525), state.setCurrentStateCommand(PositionState.ClimbPosition));
+    addCommands(
+        elevator.setElevatorSetpointCommand(0.525),
+        state.setCurrentStateCommand(PositionState.ClimbPosition));
   }
 }
