@@ -119,6 +119,7 @@ public class RobotContainer {
         Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in
         //Trigger on_manual = new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual);
         //Trigger not_on_manual = on_manual.negate();
+        Trigger at_reef_relative_state = new Trigger(() -> m_drive_state.getCurrentState() == DriveState.REEF_RELATIVE);
 
 
 
@@ -145,7 +146,7 @@ public class RobotContainer {
         dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); //run intake
         
         // Controller Triggers
-        //left_trigger.onTrue(m_state.setGoalDriveCommand(DriveState.ReefAlign)).onFalse(m_state.setGoalDriveCommand(DriveState.ReefRelative));
+        left_trigger.and(at_reef_relative_state).onTrue(m_drive_state.setDriveCommand(DriveState.REEF_ALIGN)).onFalse(m_drive_state.setDriveCommand(DriveState.REEF_RELATIVE)); // While held, set to reef align state
         //right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral RECHECK
 
 

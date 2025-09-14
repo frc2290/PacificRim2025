@@ -9,14 +9,12 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.StateMachine;
-import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ReefAlignDrive extends Command {
 
     //imports
-    private DriveStateMachine stateMachine;
+    private DriveStateMachine driveStateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
@@ -36,7 +34,7 @@ public class ReefAlignDrive extends Command {
      **/
     public ReefAlignDrive(DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController, DriveStateMachine m_driverMachine) {
 
-        stateMachine = m_driverMachine;
+        driveStateMachine = m_driverMachine;
         poseEstimator = m_poseEstimator;
         drive = m_drive;
         driverController = m_driverController;
@@ -78,7 +76,7 @@ public class ReefAlignDrive extends Command {
                 true);
         }else{
 
-            targetPose = poseEstimator.getClosestBranch(stateMachine.isRightReefAlignment());
+            targetPose = poseEstimator.getClosestBranch(driveStateMachine.getRightScore());
             poseEstimator.setTargetPose(targetPose);
             //targetPose = poseEstimator.getTargetPose();
 

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -267,9 +269,36 @@ public class DriveStateMachine extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+        // Handle automatic transitions
+        handleAutomaticTransitions();
+    
+        //Update dashboard
         dashboard.putString("Current State", getCurrentState().toString());
         dashboard.putBoolean("Transitioning", isTransitioning());
         dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
         
+    }
+
+        /**
+     * Handle automatic state transitions
+     */
+    private void handleAutomaticTransitions() {
+
+        //If robot is enabled and drive was cancelled, return to manual drive state
+        //if(getCurrentState() == DriveState.CANCELLED && !isDisabled) setDriveCommand(DriveState.MANUAL).schedule();)
+
+        //Safe Disable robot if disabled
+        //if(isDisabled && getCurrentState() != DriveState.CANCELLED) setDriveCommand(DriveState.CANCELLED).schedule();
+
+       //Get state of elevator from coardinator and see if we are going for coral intake, if we have note, algae, climb etc.
+        
+
+
+        // // Timeout protection for intake
+        // if (getCurrentState() == ElevatorManipulatorState.IntakeCoral && 
+        //     Timer.getFPGATimestamp() - stateEntryTime > 5.0) {
+        //     DataLogManager.log("ElevManiSM: Intake timeout - returning to safe");
+        //     requestState(ElevatorManipulatorState.SafeCoralTravel);
+        // }
     }
 }
