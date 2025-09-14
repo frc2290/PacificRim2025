@@ -7,12 +7,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.StateSubsystem;
+import frc.robot.subsystems.StateSubsystem.DriveState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** Auto to drive forward while printing chassis speeds and pose. */
 public class DriveTestAuto extends SequentialCommandGroup {
-  public DriveTestAuto(DriveSubsystem drive, PoseEstimatorSubsystem pose) {
-    addRequirements(drive);
+  public DriveTestAuto(DriveSubsystem drive, PoseEstimatorSubsystem pose, StateSubsystem state) {
+    addRequirements(drive, state);
     final double[] lastPrint = {0.0};
     addCommands(
         Commands.runOnce(() -> System.out.println("Starting Drive Test")),
@@ -46,8 +48,18 @@ public class DriveTestAuto extends SequentialCommandGroup {
             SmartDashboard.putNumber("Drive/BatteryVoltage", battery);
           }
         }).withTimeout(1.0),
+        // Once the drive test ends, reset drive state so other commands can take over
         Commands.runOnce(() -> {
+          // Stop the drivetrain and release the rotation lock
           drive.drive(0.0, 0.0, 0.0, false);
+          state.setRotationLock(false);
+          state.setDriveState(DriveState.Teleop);
+
+          // Reset the rotation PID to the robot's current heading so the default
+          // drive command doesn't issue a sudden rotation command on the next cycle
+          drive.getRotPidController().setSetpoint(pose.getDegrees());
+          drive.getRotPidController().reset();
+
           System.out.println("Drive test complete, final pose: " + pose.getCurrentPose());
         })
     );

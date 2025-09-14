@@ -94,7 +94,7 @@ public class RobotContainer {
         auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
         auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
         auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        auto_chooser.addOption("Drive Test", new DriveTestAuto(m_robotDrive, m_poseEstimator));
+        auto_chooser.addOption("Drive Test", new DriveTestAuto(m_robotDrive, m_poseEstimator, m_state));
         auto_chooser.addOption("Differential Test", new DifferentialTestAuto(m_DiffArm));
         auto_chooser.addOption("Elevator Test", new ElevatorTestAuto(m_elevator));
         auto_chooser.addOption("Manipulator Test", new ManipulatorTestAuto(m_manipulator));
