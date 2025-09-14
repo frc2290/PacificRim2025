@@ -10,7 +10,6 @@ import java.util.Map;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Robot;
 
 public class GraphCommand extends Command {
 

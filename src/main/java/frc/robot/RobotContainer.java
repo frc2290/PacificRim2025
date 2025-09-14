@@ -128,10 +128,10 @@ public class RobotContainer {
 
         // Controller Buttons
         //extra buttons for different statemachine states HERE
-        (a_button).and(not_left_stick).onTrue(m_drive_state.setManualCommand()); // Set to L1
-        (b_button).and(not_left_stick).onTrue(m_drive_state.setReefRelativeCommand()); // Set to L2
-        (y_button).and(not_left_stick).onTrue(m_drive_state.setProcessorRelativeCommand()); // Set to L3
-        (x_button).and(not_left_stick).onTrue(m_drive_state.setCoralStationCommand()); // Set to L3
+        //(a_button).and(not_left_stick).onTrue(m_drive_state.setManualCommand()); // Set to L1
+        //(b_button).and(not_left_stick).onTrue(m_drive_state.setReefRelativeCommand()); // Set to L2
+        //(y_button).and(not_left_stick).onTrue(m_drive_state.setProcessorRelativeCommand()); // Set to L3
+        //(x_button).and(not_left_stick).onTrue(m_drive_state.setCoralStationCommand()); // Set to L3
         //back_button.onTrue(m_state.cancelCommand()); // Cancel current state  RECHECK
         //start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls DO WE NEED THIS
 

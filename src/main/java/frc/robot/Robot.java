@@ -15,15 +15,13 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveStateMachine;
-//mport frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
-//import frc.robot.subsystems.StateMachine;
-//import frc.robot.subsystems.StateMachine.DriveState;
-//import frc.robot.subsystems.StateMachine.ElevatorManipulatorState;
+import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -45,8 +43,7 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  //private final StateMachine m_state = new StateMachine(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility, m_driver);
-  private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
+  private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver, m_elevator, m_DiffArm);
 
   public Robot() {
     CanBridge.runTCP();
@@ -123,7 +120,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     //m_state.setAuto(false);
     m_driveStateMachine.setDisabled(false);
-    m_driveStateMachine.setManualCommand();
+    m_driveStateMachine.setDriveCommand(DriveState.MANUAL); //set to manual drive at start of teleop
     //run reset after autonomus, Idea for later if needed
     //m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); //from whatever state it was left off in auto, should reset to safe coral travel
 
