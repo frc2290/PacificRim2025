@@ -126,11 +126,15 @@ public class AutomatedDrive extends Command {
                 rotTarget = poseEstimator.turnToTarget(VisionConstants.reefCenter);
             } else if (stateSubsystem.hasAlgae()) {
                 rotTarget = poseEstimator.turnToTarget(VisionConstants.processor);
+            } else {
+                // No specific target: hold current heading to avoid sudden rotation
+                rotTarget = poseEstimator.getDegrees();
+                rotPid.reset();
             }
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
 
             drive.drive(xPower, yPower, rotSpeed, true);
-        } 
+        }
         // Auto state: Read target state from pose estimator that is fed from auto routine and drive to it. Will hold us there too until it changes
         else if (stateSubsystem.getDriveState() == DriveState.Auto) {
             targetPose = poseEstimator.getTargetPose(); // Target pose set by autos
