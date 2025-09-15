@@ -1,11 +1,13 @@
 package frc.robot.commands.Autos;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.HALUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
@@ -41,7 +43,7 @@ class DriveTestAutoTest {
   @BeforeEach
   void setup() {
     // The auto resets the drivetrain's rotation PID at completion
-    when(drive.getRotPidController()).thenReturn(rotPid);
+    lenient().when(drive.getRotPidController()).thenReturn(rotPid);
   }
 
   private void runFinalAction() throws Exception {
@@ -52,6 +54,23 @@ class DriveTestAutoTest {
     List<Command> commands = (List<Command>) commandsField.get(auto);
     Command finalCmd = commands.get(commands.size() - 1);
     finalCmd.initialize();
+  }
+
+  @Test
+  void handlesShortSensorArrays() throws Exception {
+    when(pose.getChassisSpeeds()).thenReturn(new ChassisSpeeds());
+    when(pose.getCurrentPose()).thenReturn(new Pose2d());
+    when(drive.getModuleCurrents()).thenReturn(new double[0]);
+    when(drive.getDriveAppliedOutputs()).thenReturn(new double[0]);
+    DriveTestAuto auto = new DriveTestAuto(drive, pose, state);
+    Field commandsField = auto.getClass().getSuperclass().getDeclaredField("m_commands");
+    commandsField.setAccessible(true);
+    @SuppressWarnings("unchecked")
+    List<Command> commands = (List<Command>) commandsField.get(auto);
+    Command runCmd = commands.get(1);
+    runCmd.initialize();
+    SimHooks.stepTiming(0.25);
+    assertDoesNotThrow(() -> runCmd.execute());
   }
 
   @Test
