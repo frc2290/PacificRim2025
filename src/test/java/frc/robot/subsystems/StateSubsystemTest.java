@@ -3,6 +3,9 @@ package frc.robot.subsystems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.Waits.SetGoalWait;
@@ -283,5 +286,44 @@ class StateSubsystemTest {
     Field f = StateSubsystem.class.getDeclaredField("currentCommand");
     f.setAccessible(true);
     return (Command) f.get(state);
+  }
+
+  static class TestStateSubsystem extends StateSubsystem {
+    boolean scheduled = false;
+
+    TestStateSubsystem() {
+      super(null, null, null, null, null, new LEDUtility(0));
+    }
+
+    @Override
+    public boolean atCurrentState() {
+      return true;
+    }
+
+    @Override
+    public void periodic() {
+      if (getGoalState() != getCurrentState() && !isTransitioning() && DriverStation.isEnabled()) {
+        scheduled = true;
+      }
+    }
+  }
+
+  @Test
+  void schedulesOnlyWhenEnabled() {
+    assertTrue(HAL.initialize(500, 0));
+
+    TestStateSubsystem state = new TestStateSubsystem();
+    state.setCurrentState(PositionState.StartPosition);
+    state.setGoal(PositionState.TravelPosition);
+
+    DriverStationSim.setEnabled(false);
+    DriverStationSim.notifyNewData();
+    state.periodic();
+    assertFalse(state.scheduled);
+
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.notifyNewData();
+    state.periodic();
+    assertTrue(state.scheduled);
   }
 }

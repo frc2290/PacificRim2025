@@ -1,8 +1,14 @@
+import com.github.spotbugs.snom.Effort
+
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2025.3.2"
-    id 'com.diffplug.spotless' version '6.20.0'
+    id 'com.diffplug.spotless' version '7.2.1'
+    id 'pmd'
+    id 'com.github.spotbugs' version '6.2.3'
 }
+
+ext.spotbugsEffort = Effort.MAX
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -35,7 +41,7 @@ deploy {
                     files = project.fileTree('src/main/deploy')
                     directory = '/home/lvuser/deploy'
                     deleteOldFiles = false // Change to true to delete files on roboRIO that no
-                                           // longer exist in deploy directory of this project
+                    // longer exist in deploy directory of this project
                 }
             }
         }
@@ -89,7 +95,11 @@ wpi.sim.addDriverstation()
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.
 jar {
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
     from sourceSets.main.allSource
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -105,20 +115,82 @@ tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
 
+pmd {
+    toolVersion = '7.16.0'
+    consoleOutput = true
+    reportsDir = file("$project.buildDir/reports/pmd")
+    ruleSetFiles = files(new File(rootDir, "styleguide/pmd-ruleset.xml"))
+    ruleSets = []
+}
+
 spotless {
     java {
-        // Don't format files in the build directory
         target fileTree('.') {
             include '**/*.java'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**', 'src/generated/**'
+        }
+        toggleOffOn()
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
             exclude '**/build/**', '**/build-*/**', '**/bin/**'
         }
-        // Use the Google Java format
-        googleJavaFormat()
-        // Remove unused imports
-        removeUnusedImports()
-        // Fix trailing whitespace
+        greclipse()
+        leadingTabsToSpaces(4)
         trimTrailingWhitespace()
-        // Ensure files end with a newline character
+        endWithNewline()
+    }
+    json {
+        target fileTree('.') {
+            include '**/*.json'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**'
+            exclude '**/simgui-ds.json', '**/simgui-window.json', '**/simgui.json', '**/networktables.json', '**/*test.json'
+            exclude '**/vendordeps/**', '**/src/main/deploy/**', '**/.wpilib/**', '**/.vscode/**', 'elastic-layout.json'
+        }
+        gson().indentWithSpaces(2)
+    }
+    format 'xml', {
+        target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**', '**/.idea/**', '**/.run/**'
+        }
+        eclipseWtp('xml')
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(2)
+        endWithNewline()
+    }
+    format 'misc', {
+        target fileTree('.') {
+            include '**/*.md', '**/.gitignore'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**'
+        }
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(2)
         endWithNewline()
     }
 }
+
+spotbugs {
+    ignoreFailures = false
+    effort = spotbugsEffort
+    excludeFilter = file("${project.rootDir}/styleguide/spotbugs-exclude.xml")
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    onlyIf { project.hasProperty('enableSpotbugs') }
+}
+
+tasks.withType(Pmd).configureEach {
+    onlyIf { project.hasProperty('enablePmd') }
+}
+
+task javaFormat {
+    dependsOn(tasks.withType(Checkstyle))
+    dependsOn(tasks.withType(Pmd))
+}
+javaFormat.dependsOn 'spotlessApply'
