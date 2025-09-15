@@ -94,7 +94,15 @@ public class DriveIOSim implements DriveIO {
 
   @Override
   public double[] getDriveAppliedOutputs() {
-    return new double[0];
+    var modules = driveSim.getModules();
+    double[] outputs = new double[modules.length];
+    double busVoltage = getBatteryVoltage();
+    for (int i = 0; i < modules.length; i++) {
+      outputs[i] =
+          modules[i].getDriveMotorAppliedVoltage().in(edu.wpi.first.units.Units.Volts)
+              / busVoltage;
+    }
+    return outputs;
   }
 
   @Override

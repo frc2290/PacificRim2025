@@ -29,23 +29,33 @@ public class DriveTestAuto extends SequentialCommandGroup {
                     double[] currents = drive.getModuleCurrents();
                     double[] outputs = drive.getDriveAppliedOutputs();
                     double battery = RobotController.getBatteryVoltage();
-                    System.out.printf(
-                        "vx: %.2f vy: %.2f omega: %.2f pose: %s curr: [%.1f %.1f %.1f %.1f] out: [%.2f %.2f %.2f %.2f] bat: %.2f%n",
-                        speeds.vxMetersPerSecond,
-                        speeds.vyMetersPerSecond,
-                        speeds.omegaRadiansPerSecond,
-                        pose.getCurrentPose(),
-                        currents[0],
-                        currents[1],
-                        currents[2],
-                        currents[3],
-                        outputs[0],
-                        outputs[1],
-                        outputs[2],
-                        outputs[3],
-                        battery);
-                    SmartDashboard.putNumberArray("Drive/ModuleCurrents", currents);
-                    SmartDashboard.putNumberArray("Drive/AppliedOutputs", outputs);
+                    if (currents.length == 4 && outputs.length == 4) {
+                      System.out.printf(
+                          "vx: %.2f vy: %.2f omega: %.2f pose: %s curr: [%.1f %.1f %.1f %.1f] out: [%.2f %.2f %.2f %.2f] bat: %.2f%n",
+                          speeds.vxMetersPerSecond,
+                          speeds.vyMetersPerSecond,
+                          speeds.omegaRadiansPerSecond,
+                          pose.getCurrentPose(),
+                          currents[0],
+                          currents[1],
+                          currents[2],
+                          currents[3],
+                          outputs[0],
+                          outputs[1],
+                          outputs[2],
+                          outputs[3],
+                          battery);
+                      SmartDashboard.putNumberArray("Drive/ModuleCurrents", currents);
+                      SmartDashboard.putNumberArray("Drive/AppliedOutputs", outputs);
+                    } else {
+                      System.out.printf(
+                          "vx: %.2f vy: %.2f omega: %.2f pose: %s bat: %.2f%n",
+                          speeds.vxMetersPerSecond,
+                          speeds.vyMetersPerSecond,
+                          speeds.omegaRadiansPerSecond,
+                          pose.getCurrentPose(),
+                          battery);
+                    }
                     SmartDashboard.putNumber("Drive/BatteryVoltage", battery);
                   }
                 })

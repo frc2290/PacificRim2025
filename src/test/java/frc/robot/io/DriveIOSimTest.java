@@ -25,4 +25,11 @@ class DriveIOSimTest {
     io.periodic();
     assertEquals(4, io.getModulePositions().length);
   }
+
+  @Test
+  void providesDriveAppliedOutputs() {
+    DriveIOSim io = new DriveIOSim();
+    io.periodic();
+    assertEquals(4, io.getDriveAppliedOutputs().length);
+  }
 }
