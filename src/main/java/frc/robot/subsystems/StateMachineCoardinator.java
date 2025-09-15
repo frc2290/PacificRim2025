@@ -1,13 +1,14 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 
 public class StateMachineCoardinator extends SubsystemBase {
 
         //attributes
-        private boolean hasCoral = false;
         private boolean hasAlgae = false;
         private boolean isDisabled = true;
         private boolean isAuto = false;
@@ -47,9 +48,11 @@ public class StateMachineCoardinator extends SubsystemBase {
                 currentProfile = ControllerProfile.DEFAULT_CORAL;
                 
                 //since we always have coral at start
-                setHasCoral(true);
+                manipulatorSM.getHasCoral();
         }
-    
+
+        //Triggers
+
         /*
          * Setters
          */
@@ -71,10 +74,6 @@ public class StateMachineCoardinator extends SubsystemBase {
                 reefAligned = align;
         }
 
-        public void setHasCoral(boolean coral){
-                hasCoral = coral;
-                manipulatorSM.setHasCoral(coral);
-        }
 
         /*
          * Getters
@@ -90,6 +89,12 @@ public class StateMachineCoardinator extends SubsystemBase {
         public ControllerProfile getCurrentControllerProfile(){
                 return currentProfile;
         }
+
+        public boolean gethasCoral(){
+                return manipulatorSM.getHasCoral(); 
+        }
+
+
 
         //set elevator goal
         private void setElevatorManipulatorGoal(ElevatorManipulatorState m_elevmanistate){

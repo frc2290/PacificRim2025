@@ -38,6 +38,7 @@ public class MAXSwerveModule {
     private double m_chassisAngularOffset = 0;
     private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
+    @SuppressWarnings("unused")
     private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.13569, 2.2311);
 
     private FlytLogger test = new FlytLogger("Swerve");

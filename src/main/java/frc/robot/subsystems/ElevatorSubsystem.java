@@ -157,6 +157,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         //     }
         // }
         double velocity = traPidController.calculate(getPosition(), elevatorSetpoint);
+        @SuppressWarnings("unused")
         double elevFeed = feedforward.calculate(velocity);
         elevator.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);//, elevFeed);
         //elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);

@@ -52,7 +52,9 @@ public class DifferentialSubsystem extends SubsystemBase {
     private double extensionSetpoint = 0;
     private double rotationSetpoint = 0;
 
+    @SuppressWarnings("unused")
     private SlewRateLimiter extendSlew = new SlewRateLimiter(700);
+    @SuppressWarnings("unused")
     private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
 
     private LaserCan lc;

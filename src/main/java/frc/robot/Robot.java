@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import java.lang.Thread.State;
 
 import org.littletonrobotics.urcl.URCL;
 
@@ -22,7 +21,6 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.StateMachineCoardinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;

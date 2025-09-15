@@ -23,47 +23,47 @@ public class SafeTravelSequential extends Command {
     public void initialize() {
         step = 0;
         stepTimer.restart();
+        System.out.println("To CoralSafeTravel INITIALIZING");
     }
     
     @Override
     public void execute() {
         switch (step) {
-            case 0: // Retract extension first
-                diffArm.setExtensionSetpoint(220);
+            case 0: 
+                diffArm.setExtensionSetpoint(230);
                 if (diffArm.atExtenstionSetpoint() || stepTimer.hasElapsed(2.0)) {
                     step = 1;
                     stepTimer.restart();
+                    System.out.println("To CoralSafeTravel 1/3");
                 }
+                
                 break;
                 
-            case 1: // Lower elevator
-                elevator.setElevatorSetpoint(Elevator.transportSetpoint);
-                if (elevator.atPosition() || stepTimer.hasElapsed(3.0)) {
+            case 1: 
+                    diffArm.setRotationSetpoint(DifferentialArm.transportRotationSetpoint);
+                if (diffArm.atRotationSetpoint() || stepTimer.hasElapsed(2.0)) {
                     step = 2;
                     stepTimer.restart();
+                    System.out.println("To CoralSafeTravel 2/3");
                 }
+                
                 break;
                 
-            case 2: // Set final rotation
-                diffArm.setRotationSetpoint(DifferentialArm.transportRotationSetpoint);
-                if (diffArm.atRotationSetpoint() || stepTimer.hasElapsed(2.0)) {
-                    step = 3;
-                    stepTimer.restart();
-                }
-                break;
-                
-            case 3: // Set final extension
+            case 2:
                 diffArm.setExtensionSetpoint(DifferentialArm.transportExtensionSetpoint);
                 if (diffArm.atExtenstionSetpoint() || stepTimer.hasElapsed(2.0)) {
-                    step = 4;
+                    step = 3;
+                    stepTimer.restart();
+                    System.out.println("To CoralSafeTravel 3/3");
                 }
+                
                 break;
         }
     }
     
     @Override
     public boolean isFinished() {
-        return step == 4;
+        return step == 3;
     }
     
     @Override

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.ManualDrive;
@@ -79,7 +80,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
     //variables
     private boolean isTransitioning = false;
     private double stateEntryTime = 0.0;
-    private boolean hasCoral = true;
 
 
     public ManipulatorStateMachine(DifferentialSubsystem diff, ElevatorSubsystem elevator, ManipulatorSubsystem manipulator, ClimbSubsystem climb) {
@@ -314,17 +314,18 @@ public class ManipulatorStateMachine extends SubsystemBase {
         
     }
     
+    //Triggers
+
     
     //setters
-    public void setHasCoral(boolean coral){
-        hasCoral = coral;
-    }
-
     //getters
     public boolean getHasCoral(){
-        return hasCoral;   
+        return m_manipulator.hasCoral();   
     }
 
+    public boolean isTransitioning() {
+        return m_graphCommand.isTransitioning();
+    }
 
     /** ----- State Transition Commands ----- */
     public Command setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
