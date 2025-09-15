@@ -11,6 +11,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.ManualDrive;
+import frc.robot.commands.ElevatorManipulator.IntakeCoral;
+import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
+import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
+import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
@@ -78,10 +82,18 @@ public class ManipulatorStateMachine extends SubsystemBase {
     GraphCommandNode cancelledNode;
 
     //variables
-    private boolean isTransitioning = false;
+    private boolean atGoalState = false;
+    private boolean reachGoalStateFailed = false;
     private double stateEntryTime = 0.0;
 
 
+    /**
+     * ManipulatorStateMachine Constructor
+     * @param diff
+     * @param elevator
+     * @param manipulator
+     * @param climb
+     */
     public ManipulatorStateMachine(DifferentialSubsystem diff, ElevatorSubsystem elevator, ManipulatorSubsystem manipulator, ClimbSubsystem climb) {
         m_diff = diff;
         m_elevator = elevator;
@@ -99,25 +111,25 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             startPositionNode = m_graphCommand.new GraphCommandNode(
                 "StartPosition", 
-                new PrintCommand(""),
+                new PrintCommand("At Start Position"),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             preCoralIntakeNode = m_graphCommand.new GraphCommandNode(
                 "PreCoralIntake", 
-                new PrintCommand(""),
+                new PrepCoralIntake(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             intakeCoralNode = m_graphCommand.new GraphCommandNode(
                 "IntakeCoral", 
-                new PrintCommand(""),
-                new PrintCommand(""),
+                new IntakeCoral(this, m_diff, m_elevator),
+                new ManipulatorIntakeCoral(m_manipulator),
                 new PrintCommand(""));
 
             safeCoralTravelNode = m_graphCommand.new GraphCommandNode(
                 "SafeCoralTravelPos", 
-                new PrintCommand(""),
+                new SafeTravelSequential(m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
             
@@ -318,48 +330,107 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
     
     //setters
+    /**
+     * Tell state machine that command finished succesfully (Shuold only be set by commands)
+     * @param state
+     */
+    public void atGoalState(boolean state){
+        atGoalState = state;
+    }
+    
+    /**
+     * Can only be used by commands, tell statemachine that command too to long to complete, needs reset, or revert to prep node
+     */
+    public void failedToReachGoal(boolean isFailed){
+        reachGoalStateFailed = isFailed;
+    }
+    
     //getters
+
+    /**
+     * Check if if robot has coral
+     * @return
+     */
     public boolean getHasCoral(){
         return m_manipulator.hasCoral();   
     }
 
+    /**
+     * GraphCommand is still reaching setgoalnode
+     * @return 
+     */
     public boolean isTransitioning() {
         return m_graphCommand.isTransitioning();
     }
 
+    private GraphCommandNode getGraphState(){
+        return m_graphCommand.getCurrentNode();
+    }
+
+    /**
+     * Check if all all subsystem are at position, atGoalState is updated by a last command
+     * @return
+     */
+    public boolean atGoalState(){
+        return atGoalState;
+    }
+
+    public boolean reachGoalStateFailed(){
+        return reachGoalStateFailed;
+    }
+
     /** ----- State Transition Commands ----- */
-    public Command setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
+
+    /**
+     * Sets the goal state for the manipulator state machine
+     * @param m_state
+     */
+    public void setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
         switch (m_state){
             case SAFE_CORAL_TRAVEL:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(safeCoralTravelNode), this);  
+                m_graphCommand.setCurrentNode(safeCoralTravelNode);
+                break;  
             case INTAKE_CORAL:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(intakeCoralNode), this);
+                m_graphCommand.setCurrentNode(intakeCoralNode);
+                break;
             case L1:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l1PrepNode), this);
+                m_graphCommand.setCurrentNode(l1PrepNode);
+                break;
             case L2:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l2PrepNode), this);
+                m_graphCommand.setCurrentNode(l2PrepNode);
+                break;
             case L3:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l3PrepNode), this);
+                m_graphCommand.setCurrentNode(l3PrepNode);
+                break;
             case L4:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l4PrepNode), this);
+                m_graphCommand.setCurrentNode(l4PrepNode);
+                break;
             case ALGAE_L2:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(prepAlgaeL2Node), this);
+                m_graphCommand.setCurrentNode(prepAlgaeL2Node);
+                break;
             case ALGAE_L3:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(prepAlgaeL3Node), this);
+                m_graphCommand.setCurrentNode(prepAlgaeL3Node);
+                break;
             case PROCESSOR:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(scoreProssesorNode), this);
+                m_graphCommand.setCurrentNode(scoreProssesorNode);
+                break;
             case BARGE:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(prepScoreBargeNode), this);
+                m_graphCommand.setCurrentNode(prepScoreBargeNode);
+                break;
             case CLIMB:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(climbPrepNode), this);
+                m_graphCommand.setCurrentNode(climbPrepNode);
+                break;
             case MANUAL:
-                return new InstantCommand();
+                break;
             default:
-                return new InstantCommand();
+                break;
         }
     }
 
-
+    /**     
+     * Return current state
+     * @return
+     */
     public ElevatorManipulatorState getCurrentState(){
         GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
         if(currentNode == startPositionNode) return ElevatorManipulatorState.START_POSITION;
@@ -378,51 +449,26 @@ public class ManipulatorStateMachine extends SubsystemBase {
         return ElevatorManipulatorState.MANUAL;
     }
 
-    private GraphCommandNode getGraphState(){
-        return m_graphCommand.getCurrentNode();
-    }
-    
-    /**
-     * Handle automatic state transitions
-     */
-    private void handleAutomaticTransitions() {
 
-        //If robot is enabled and drive was cancelled, return to manual drive state
-        //if(getCurrentState() == DriveState.CANCELLED && !isDisabled) setDriveCommand(DriveState.MANUAL).schedule();)
 
-        //Safe Disable robot if disabled
-        //if(isDisabled && getCurrentState() != DriveState.CANCELLED) setDriveCommand(DriveState.CANCELLED).schedule();
 
-       //Get state of elevator from coardinator and see if we are going for coral intake, if we have note, algae, climb etc.
+
+    /** ----- Periodic ----- */
+    @Override
+    public void periodic() {
+        //Update dashboard
+        dashboard.putString("Goal State", getCurrentState().toString());
+        dashboard.putString("Current GraphState State", getGraphState().toString());
+        dashboard.putBoolean("At state", !isTransitioning());
         
-
-
-        // // Timeout protection for intake
-        // if (getCurrentState() == ElevatorManipulatorState.IntakeCoral && 
-        //     Timer.getFPGATimestamp() - stateEntryTime > 5.0) {
-        //     DataLogManager.log("ElevManiSM: Intake timeout - returning to safe");
-        //     requestState(ElevatorManipulatorState.SafeCoralTravel);
-        // }
     }
+
 
     /**
      * Update current state tracking from GraphCommand node name
      */
     private void updateStateTracking() {
-        // String nodeName = graphCommand.getCurrentNode().getNodeName();
-        // try {
-        //     ElevatorManipulatorState newState = ElevatorManipulatorState.valueOf(nodeName);
-        //     if (currentState != newState) {
-        //         ElevatorManipulatorState previousState = currentState;
-        //         currentState = newState;
-        //         stateEntryTime = Timer.getFPGATimestamp();
-        //         DataLogManager.log("ElevManiSM: State changed from " + previousState + " to " + currentState);
-        //     }
-        // } catch (IllegalArgumentException e) {
-        //     DataLogManager.log("ElevManiSM: Invalid state from GraphCommand: " + nodeName);
-        // }
-        
-        // isTransitioning = graphCommand.isTransitioning();
+
     }
     
 }

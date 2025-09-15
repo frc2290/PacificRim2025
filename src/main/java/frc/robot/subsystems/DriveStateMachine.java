@@ -53,7 +53,10 @@ public class DriveStateMachine extends SubsystemBase {
     private boolean rightScore = false;
 
     /**
-     * Create a new DriveStateMachine
+     * Constructor for the DriveStateMachine
+     * @param m_drive
+     * @param m_pose
+     * @param m_driverController
      */
     public DriveStateMachine(DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
         drive = m_drive;
@@ -177,19 +180,31 @@ public class DriveStateMachine extends SubsystemBase {
 
     }
 
-
-
     /** ----- Branch Selection ----- */
+
+    /**
+     * Get Current branch selection
+     * @return
+     */
     public boolean getRightScore() {
         return rightScore;
     }
 
+    /**
+     * Set branch, should done only by the state machine
+     * @param right
+     */
     public void setRightScore(boolean right) {
         rightScore = right;
     }
 
 
     /** ----- State Transition Commands ----- */
+
+    /**
+    * Set Goal DriveState for DrimeStateMachine
+    * @return
+    */
     public void setDriveCommand(DriveState m_driveState){
         switch(m_driveState){
             case MANUAL:
@@ -225,12 +240,20 @@ public class DriveStateMachine extends SubsystemBase {
         }
     }
 
-
+    /**
+     * Check if graph command still reaching goal state
+     * @return
+     */
     public boolean isTransitioning() {
         return m_graphCommand.isTransitioning();
     }
 
     /** ----- State Getters ----- */
+
+    /**
+     * Get Current state
+     * @return
+     */
     public DriveState getCurrentState() {
         GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
         if (currentNode == manualNode) return DriveState.MANUAL;
@@ -251,7 +274,7 @@ public class DriveStateMachine extends SubsystemBase {
     public void periodic() {
         //Update dashboard
         dashboard.putString("Current State", getCurrentState().toString());
-        dashboard.putBoolean("Transitioning", isTransitioning());
+        dashboard.putBoolean("At State", !isTransitioning());
         dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
         
     }
