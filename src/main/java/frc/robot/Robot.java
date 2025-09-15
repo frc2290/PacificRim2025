@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.lang.Thread.State;
+
 import org.littletonrobotics.urcl.URCL;
 
 import au.grapplerobotics.CanBridge;
@@ -17,8 +19,11 @@ import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.StateMachineCoardinator;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
+import frc.robot.subsystems.StateMachineCoardinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -43,7 +48,9 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver, m_elevator, m_DiffArm);
+  private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
+  private final ManipulatorStateMachine m_manipulatorStateMachine = new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
+  private final StateMachineCoardinator m_coardinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine);
 
   public Robot() {
     CanBridge.runTCP();
@@ -57,7 +64,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_driveStateMachine, m_driver);
+    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_driveStateMachine, m_manipulatorStateMachine, m_coardinator, m_driver);
     DataLogManager.start();
 
     URCL.start();
@@ -85,7 +92,7 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    m_driveStateMachine.setDisabled(true);
+    m_coardinator.robotDisabled(true);
   }
 
   @Override
@@ -94,9 +101,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    //m_state.setAuto(true);
-    m_driveStateMachine.setDisabled(false);;
-    //m_state.setGoalElevManiCommand(ElevatorManipulatorState.StartPosition); //reset to safe coral travel at start of auto
+    m_coardinator.robotAuto(true);
+    m_coardinator.robotDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -118,9 +124,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    //m_state.setAuto(false);
-    m_driveStateMachine.setDisabled(false);
-    m_driveStateMachine.setDriveCommand(DriveState.MANUAL); //set to manual drive at start of teleop
+    m_coardinator.robotAuto(false);
+    m_coardinator.robotDisabled(false);
+    m_coardinator.setRobotGoal(RobotState.START_POSITION);
     //run reset after autonomus, Idea for later if needed
     //m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel); //from whatever state it was left off in auto, should reset to safe coral travel
 

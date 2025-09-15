@@ -15,7 +15,9 @@ import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.StateMachineCoardinator;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,6 +42,8 @@ public class RobotContainer {
     private final DifferentialSubsystem m_DiffArm;
     private final ClimbSubsystem m_climber;
     private final DriveStateMachine m_drive_state;
+    private final ManipulatorStateMachine m_ManipulatorStateMachine;
+    private final StateMachineCoardinator m_coardinator;
 
     // The driver's controller
     XboxController m_driverController;
@@ -50,8 +54,18 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer(LEDUtility _led, DriveSubsystem _drive, PoseEstimatorSubsystem _pose, ElevatorSubsystem _elev,
-            ManipulatorSubsystem _manip, DifferentialSubsystem _diff, ClimbSubsystem _climb, DriveStateMachine _drive_state, XboxController _driverController) {
+    public RobotContainer(LEDUtility _led, 
+        DriveSubsystem _drive, 
+        PoseEstimatorSubsystem _pose, 
+        ElevatorSubsystem _elev,
+        ManipulatorSubsystem _manip, 
+        DifferentialSubsystem _diff, 
+        ClimbSubsystem _climb, 
+        DriveStateMachine _drive_state, 
+        ManipulatorStateMachine _ManipulatorStateMachine, 
+        StateMachineCoardinator _coardinator, 
+        XboxController _driverController) {
+
         m_driverController = _driverController;
         m_ledUtility = _led;
         m_robotDrive = _drive;
@@ -61,6 +75,9 @@ public class RobotContainer {
         m_DiffArm = _diff;
         m_climber = _climb;
         m_drive_state = _drive_state;
+        m_ManipulatorStateMachine = _ManipulatorStateMachine;
+        m_coardinator = _coardinator;
+
         // Configure the button bindings
         configureButtonBindings();
 
@@ -117,9 +134,9 @@ public class RobotContainer {
 
         Trigger not_left_stick = left_stick.negate(); // Trigger to check if left stick is not pressed in
         Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in
-        //Trigger on_manual = new Trigger(() -> m_state.getCurrentElevManiState() == ElevatorManipulatorState.Manual);
+        Trigger corol_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.DEFAULT_CORAL);
+        Trigger algae_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.ALGAE);    
         //Trigger not_on_manual = on_manual.negate();
-        Trigger at_reef_relative_state = new Trigger(() -> m_drive_state.getCurrentState() == DriveState.REEF_RELATIVE);
 
 
 
@@ -137,8 +154,8 @@ public class RobotContainer {
         //start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls DO WE NEED THIS
 
         // Controller Bumpers
-        (left_bumper).and(not_left_stick).onTrue(m_drive_state.setRightScoreCommand(false)); // Set score to left branch
-        (right_bumper).and(not_left_stick).onTrue(m_drive_state.setRightScoreCommand(true)); // Set score to right branch
+        (left_bumper).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRightScore(false))); // Set score to left branch
+        (right_bumper).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRightScore(true))); // Set score to right branch
         
         // Controller D-Pad
         //dpad_up.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL3)); // Algae L3
@@ -146,7 +163,7 @@ public class RobotContainer {
         dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); //run intake
         
         // Controller Triggers
-        left_trigger.and(at_reef_relative_state).onTrue(m_drive_state.setDriveCommand(DriveState.REEF_ALIGN)).onFalse(m_drive_state.setDriveCommand(DriveState.REEF_RELATIVE)); // While held, set to reef align state
+        left_trigger.onTrue(new InstantCommand(() -> m_coardinator.setReefAlign(true))).onFalse(new InstantCommand(() -> m_coardinator.setReefAlign(false))); //While held will try to align with the reef
         //right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral RECHECK
 
 

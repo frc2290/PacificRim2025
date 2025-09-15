@@ -1,10 +1,6 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.GraphCommand;
@@ -24,8 +20,6 @@ public class DriveStateMachine extends SubsystemBase {
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem pose;
     private XboxController driverController;
-    private ElevatorSubsystem m_elevator;
-    private DifferentialSubsystem m_mManipulatorSubsystem;
 
     /**
      * DriveTrain states - drive state machine
@@ -56,19 +50,15 @@ public class DriveStateMachine extends SubsystemBase {
     GraphCommandNode cancelledNode;
 
     // State variables
-    private boolean rotLock = true;
     private boolean rightScore = false;
-    private boolean isDisabled = false;
 
     /**
      * Create a new DriveStateMachine
      */
-    public DriveStateMachine(DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController, ElevatorSubsystem m_elevatorManipulator, DifferentialSubsystem m_ManipulatorSubsystem) {
+    public DriveStateMachine(DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
         drive = m_drive;
         pose = m_pose;
         driverController = m_driverController;
-        m_elevator = m_elevatorManipulator;
-        m_mManipulatorSubsystem = m_ManipulatorSubsystem;
 
         // Initialize graph command
         initializeGraphCommand();
@@ -76,7 +66,7 @@ public class DriveStateMachine extends SubsystemBase {
         // Set as default command so it runs all the time
         m_graphCommand.addRequirements(this);
         this.setDefaultCommand(m_graphCommand);
-        m_graphCommand.setCurrentNode(manualNode);
+        m_graphCommand.setCurrentNode(cancelledNode);
         m_graphCommand.initialize();
     }
 
@@ -187,6 +177,8 @@ public class DriveStateMachine extends SubsystemBase {
 
     }
 
+
+
     /** ----- Branch Selection ----- */
     public boolean getRightScore() {
         return rightScore;
@@ -196,54 +188,47 @@ public class DriveStateMachine extends SubsystemBase {
         rightScore = right;
     }
 
-    public Command setRightScoreCommand(boolean right) {
-        return new InstantCommand(() -> setRightScore(right));
-    }
-
-    /** ----- Rotation Lock ----- */
-    public boolean getRotationLock() {
-        return rotLock;
-    }
-
-    public void setRotationLock(boolean lock) {
-        rotLock = lock;
-    }
-
-    public void setDisabled(boolean disabled) {
-        isDisabled = disabled;
-    }
-
-    public Command toggleRotationLock() {
-        return new InstantCommand(() -> rotLock = !rotLock);
-    }
-    
 
     /** ----- State Transition Commands ----- */
-    public Command setDriveCommand(DriveState m_driveState){
+    public void setDriveCommand(DriveState m_driveState){
         switch(m_driveState){
             case MANUAL:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(manualNode));
+                m_graphCommand.setTargetNode(manualNode);
+                break;
             case FOLLOW_PATH:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(followPathNode));
+                m_graphCommand.setTargetNode(followPathNode);
+                break;
             case BARGE_RELATIVE:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(bargeRelativeNode));
+                m_graphCommand.setTargetNode(bargeRelativeNode);
+                break;
             case CLIMB_RELATIVE:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(climbRelativeNode));
+                m_graphCommand.setTargetNode(climbRelativeNode);
+                break;
             case PROCESSOR_RELATIVE:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(processorRelativeNode));
+                m_graphCommand.setTargetNode(processorRelativeNode);
+                break;
             case CORAL_STATION:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(coralStationNode));
+                m_graphCommand.setTargetNode(coralStationNode);
+                break;
             case REEF_RELATIVE:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(reefRelativeNode));
+                m_graphCommand.setTargetNode(reefRelativeNode);
+                break;
             case REEF_ALIGN:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(reefAlignNode));
+                m_graphCommand.setTargetNode(reefAlignNode);
+                break;
             case CANCELLED:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(cancelledNode));
+                m_graphCommand.setTargetNode(cancelledNode);
+                break;
             default:
-                return new InstantCommand(() -> m_graphCommand.setTargetNode(manualNode));
+                m_graphCommand.setTargetNode(manualNode);
+                break;
         }
     }
 
+
+    public boolean isTransitioning() {
+        return m_graphCommand.isTransitioning();
+    }
 
     /** ----- State Getters ----- */
     public DriveState getCurrentState() {
@@ -260,45 +245,14 @@ public class DriveStateMachine extends SubsystemBase {
         return DriveState.MANUAL; // Default
     }
 
-    public boolean isTransitioning() {
-        return m_graphCommand.isTransitioning();
-    }
 
-    
-
+    /** ----- Periodic ----- */
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        // Handle automatic transitions
-        handleAutomaticTransitions();
-    
         //Update dashboard
         dashboard.putString("Current State", getCurrentState().toString());
         dashboard.putBoolean("Transitioning", isTransitioning());
         dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
         
-    }
-
-        /**
-     * Handle automatic state transitions
-     */
-    private void handleAutomaticTransitions() {
-
-        //If robot is enabled and drive was cancelled, return to manual drive state
-        //if(getCurrentState() == DriveState.CANCELLED && !isDisabled) setDriveCommand(DriveState.MANUAL).schedule();)
-
-        //Safe Disable robot if disabled
-        //if(isDisabled && getCurrentState() != DriveState.CANCELLED) setDriveCommand(DriveState.CANCELLED).schedule();
-
-       //Get state of elevator from coardinator and see if we are going for coral intake, if we have note, algae, climb etc.
-        
-
-
-        // // Timeout protection for intake
-        // if (getCurrentState() == ElevatorManipulatorState.IntakeCoral && 
-        //     Timer.getFPGATimestamp() - stateEntryTime > 5.0) {
-        //     DataLogManager.log("ElevManiSM: Intake timeout - returning to safe");
-        //     requestState(ElevatorManipulatorState.SafeCoralTravel);
-        // }
     }
 }
