@@ -22,8 +22,8 @@ public class ManipulatorIntakeCoral extends Command{
 
     @Override
     public void initialize() {
-        currentTimer.reset();
-        delayTimer.reset();
+        currentTimer.restart();
+        delayTimer.restart();
         sawCoral = false;
         finished = false;
     }

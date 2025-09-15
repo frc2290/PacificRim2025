@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 
-public class StateMachineCoardinator extends SubsystemBase {
+public class StateMachineCoordinator extends SubsystemBase {
 
         //attributes
         private boolean hasAlgae = false;
@@ -42,13 +42,10 @@ public class StateMachineCoardinator extends SubsystemBase {
                 MANUAL;
         }
         
-        public StateMachineCoardinator(ManipulatorStateMachine m_manipulatorStateMachine, DriveStateMachine m_driveStateMachine) {
+        public StateMachineCoordinator(ManipulatorStateMachine m_manipulatorStateMachine, DriveStateMachine m_driveStateMachine) {
                 manipulatorSM = m_manipulatorStateMachine;
                 driveSM = m_driveStateMachine;
                 currentProfile = ControllerProfile.DEFAULT_CORAL;
-                
-                //since we always have coral at start
-                manipulatorSM.getHasCoral();
         }
 
         //Triggers

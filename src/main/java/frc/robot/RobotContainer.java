@@ -15,7 +15,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
+import frc.robot.subsystems.StateMachineCoordinator;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,7 +41,7 @@ public class RobotContainer {
     private final ClimbSubsystem m_climber;
     private final DriveStateMachine m_drive_state;
     private final ManipulatorStateMachine m_ManipulatorStateMachine;
-    private final StateMachineCoardinator m_coardinator;
+    private final StateMachineCoordinator m_coardinator;
 
     // The driver's controller
     XboxController m_driverController;
@@ -61,7 +61,7 @@ public class RobotContainer {
         ClimbSubsystem _climb, 
         DriveStateMachine _drive_state, 
         ManipulatorStateMachine _ManipulatorStateMachine, 
-        StateMachineCoardinator _coardinator, 
+        StateMachineCoordinator _coardinator, 
         XboxController _driverController) {
 
         m_driverController = _driverController;
@@ -132,8 +132,8 @@ public class RobotContainer {
 
         Trigger not_left_stick = left_stick.negate(); // Trigger to check if left stick is not pressed in
         Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in
-        Trigger corol_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.DEFAULT_CORAL);
-        Trigger algae_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.ALGAE);    
+        Trigger corol_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoordinator.ControllerProfile.DEFAULT_CORAL);
+        Trigger algae_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoordinator.ControllerProfile.ALGAE);    
         //Trigger not_on_manual = on_manual.negate();
 
 

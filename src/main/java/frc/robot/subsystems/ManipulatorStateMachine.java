@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -328,34 +327,51 @@ public class ManipulatorStateMachine extends SubsystemBase {
     }
 
     /** ----- State Transition Commands ----- */
-    public Command setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
+    public void setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
         switch (m_state){
+            case START_POSITION:
+                m_graphCommand.setTargetNode(startPositionNode);
+                break;
             case SAFE_CORAL_TRAVEL:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(safeCoralTravelNode), this);  
+                m_graphCommand.setTargetNode(safeCoralTravelNode);
+                break;
             case INTAKE_CORAL:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(intakeCoralNode), this);
+                m_graphCommand.setTargetNode(intakeCoralNode);
+                break;
             case L1:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l1PrepNode), this);
+                m_graphCommand.setTargetNode(l1PrepNode);
+                break;
             case L2:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l2PrepNode), this);
+                m_graphCommand.setTargetNode(l2PrepNode);
+                break;
             case L3:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l3PrepNode), this);
+                m_graphCommand.setTargetNode(l3PrepNode);
+                break;
             case L4:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(l4PrepNode), this);
+                m_graphCommand.setTargetNode(l4PrepNode);
+                break;
             case ALGAE_L2:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(prepAlgaeL2Node), this);
+                m_graphCommand.setTargetNode(prepAlgaeL2Node);
+                break;
             case ALGAE_L3:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(prepAlgaeL3Node), this);
+                m_graphCommand.setTargetNode(prepAlgaeL3Node);
+                break;
             case PROCESSOR:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(scoreProssesorNode), this);
+                m_graphCommand.setTargetNode(scoreProssesorNode);
+                break;
             case BARGE:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(prepScoreBargeNode), this);
+                m_graphCommand.setTargetNode(prepScoreBargeNode);
+                break;
             case CLIMB:
-                return new InstantCommand(() -> m_graphCommand.setCurrentNode(climbPrepNode), this);
+                m_graphCommand.setTargetNode(climbPrepNode);
+                break;
+            case RESET:
+                m_graphCommand.setTargetNode(cancelledNode);
+                break;
             case MANUAL:
-                return new InstantCommand();
             default:
-                return new InstantCommand();
+                // No state change
+                break;
         }
     }
 

@@ -20,8 +20,8 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -48,7 +48,7 @@ public class Robot extends TimedRobot {
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
   private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
   private final ManipulatorStateMachine m_manipulatorStateMachine = new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
-  private final StateMachineCoardinator m_coardinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine);
+  private final StateMachineCoordinator m_coardinator = new StateMachineCoordinator(m_manipulatorStateMachine, m_driveStateMachine);
 
   public Robot() {
     CanBridge.runTCP();
