@@ -65,6 +65,28 @@ public class DifferentialArmSimTest {
   }
 
   @Test
+  public void equalVoltagesExtendWithoutRotation() {
+    DifferentialArmSim sim = createSim(0.0);
+    double initialExt = sim.getExtensionPositionMeters();
+    double initialAngle = sim.getRotationAngleRads();
+    sim.setInputVoltage(6.0, 6.0);
+    sim.update(0.1);
+    assertTrue(sim.getExtensionPositionMeters() > initialExt);
+    assertEquals(initialAngle, sim.getRotationAngleRads(), 1e-3);
+  }
+
+  @Test
+  public void oppositeVoltagesRotateWithoutExtension() {
+    DifferentialArmSim sim = createSim(0.0);
+    double initialExt = sim.getExtensionPositionMeters();
+    double initialAngle = sim.getRotationAngleRads();
+    sim.setInputVoltage(6.0, -6.0);
+    sim.update(0.1);
+    assertEquals(initialExt, sim.getExtensionPositionMeters(), 1e-3);
+    assertTrue(Math.abs(sim.getRotationAngleRads() - initialAngle) > 1e-3);
+  }
+
+  @Test
   public void maxExtensionClampsAndStops() {
     DifferentialArmSim sim = createSim(0.0);
     sim.setState(kMaxExtension - 0.01, 1.0, 0.0, 0.0);
@@ -150,5 +172,41 @@ public class DifferentialArmSimTest {
     assertTrue(sim.hasHitMaxAngle());
     setInternalState(sim, 2, kMaxTheta - eps);
     assertFalse(sim.hasHitMaxAngle());
+  }
+
+  @Test
+  public void stallCurrentMatchesMotorModel() {
+    DifferentialArmSim sim = createSim(0.0);
+    DCMotor motor = DCMotor.getNEO(1);
+    double volts = 2.0;
+    sim.setInputVoltage(volts, volts);
+    double expected = volts / motor.rOhms;
+    assertEquals(expected, sim.getRightCurrentAmps(), 1e-6);
+    assertEquals(expected, sim.getLeftCurrentAmps(), 1e-6);
+    assertEquals(Math.abs(expected) * 2.0, sim.getTotalCurrentAbsAmps(), 1e-6);
+  }
+
+  @Test
+  public void freeSpeedCurrentNearFreeCurrent() {
+    DifferentialArmSim sim = createSim(0.0);
+    DCMotor motor = DCMotor.getNEO(1);
+    double v = motor.nominalVoltageVolts;
+    double omega = motor.freeSpeedRadPerSec;
+    double rDot = omega * 0.1; // linearDriveRadius
+    sim.setState(0.5, rDot, 0.0, 0.0);
+    sim.setInputVoltage(v, v);
+    double iR = sim.getRightCurrentAmps();
+    double iL = sim.getLeftCurrentAmps();
+    assertEquals(motor.freeCurrentAmps, iR, 0.5);
+    assertEquals(motor.freeCurrentAmps, iL, 0.5);
+    assertEquals(Math.abs(iR) + Math.abs(iL), sim.getTotalCurrentAbsAmps(), 0.5);
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  public void deprecatedCurrentDrawMatchesTotal() {
+    DifferentialArmSim sim = createSim(0.0);
+    sim.setInputVoltage(1.0, -1.0);
+    assertEquals(sim.getTotalCurrentAbsAmps(), sim.getCurrentDrawAmps(), 1e-9);
   }
 }

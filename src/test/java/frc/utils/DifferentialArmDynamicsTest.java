@@ -101,6 +101,10 @@ public class DifferentialArmDynamicsTest {
     return f.get(obj);
   }
 
+  private Matrix<N4, N1> state(double angle) {
+    return VecBuilder.fill(0.0, 0.0, angle, 0.0);
+  }
+
   @Test
   public void zeroInputsZeroGravityNoMotion() {
     DifferentialArmDynamics dyn = createDynamics(0.0, 0.0);
@@ -168,6 +172,33 @@ public class DifferentialArmDynamicsTest {
     Matrix<N4, N1> x = VecBuilder.fill(0.0, 0.0, -Math.PI / 2.0, 0.0);
     Matrix<N2, N1> ff = dyn.calculateFeedforward(x);
     assertEquals(ff.get(0, 0), ff.get(1, 0), 1e-6);
+  }
+
+  @Test
+  public void gravityEffectsVaryWithAngle() {
+    DifferentialArmDynamics dyn = createDynamics(9.81, 0.0);
+    Matrix<N4, N1> horizontal = state(0.0);
+    Matrix<N4, N1> vertical = state(Math.PI / 2.0);
+    Matrix<N2, N1> horizV = dyn.calculateFeedforward(horizontal);
+    Matrix<N2, N1> vertV = dyn.calculateFeedforward(vertical);
+    assertTrue(Math.abs(horizV.get(0, 0)) > Math.abs(vertV.get(0, 0)));
+    assertTrue(Math.abs(horizV.get(1, 0)) > Math.abs(vertV.get(1, 0)));
+  }
+
+  @Test
+  public void feedforwardMatchesAnalyticalTorque() {
+    DifferentialArmDynamics dyn = createDynamics(9.81, 0.0);
+    double theta = Math.PI / 4.0;
+    Matrix<N4, N1> x = state(theta);
+    Matrix<N2, N1> volts = dyn.calculateFeedforward(x);
+    double g2 = 1.0 * 9.81 * 0.5 * Math.cos(theta);
+    double tauR = (-g2 * 0.1 / 0.1) / 2.0;
+    double tauL = (g2 * 0.1 / 0.1) / 2.0;
+    DCMotor motor = DCMotor.getNEO(1);
+    double expectedR = motor.getVoltage(tauR, 0.0);
+    double expectedL = motor.getVoltage(tauL, 0.0);
+    assertEquals(expectedR, volts.get(0, 0), 1e-9);
+    assertEquals(expectedL, volts.get(1, 0), 1e-9);
   }
 
   @Test

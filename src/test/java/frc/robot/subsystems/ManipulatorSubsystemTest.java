@@ -7,7 +7,9 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -111,5 +113,26 @@ class ManipulatorSubsystemTest {
 
     when(limitSwitch.isPressed()).thenReturn(true);
     assertTrue(manipulator.seesCoral());
+  }
+
+  @Test
+  void limitSwitchSequenceToggles() {
+    assertTrue(HAL.initialize(500, 0));
+
+    ManipulatorSubsystem manip = new ManipulatorSubsystem();
+
+    assertTrue(manip.hasCoral());
+    manip.setCoral(false);
+    manip.coralDebounce = new Debouncer(0.0);
+
+    manip.intake(1.0);
+    manip.simulationPeriodic();
+    assertTrue(manip.seesCoral());
+
+    SimHooks.stepTiming(0.11);
+    manip.simulationPeriodic();
+
+    assertFalse(manip.seesCoral());
+    assertTrue(manip.hasCoral());
   }
 }
