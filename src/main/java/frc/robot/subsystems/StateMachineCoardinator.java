@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -12,7 +13,6 @@ public class StateMachineCoardinator extends SubsystemBase {
         private boolean hasAlgae = false;
         private boolean isDisabled = true;
         private boolean isAuto = false;
-        private boolean isRightBranch = true;
         private boolean reefAligned = false;
         private ControllerProfile currentProfile = null;
 
@@ -57,7 +57,6 @@ public class StateMachineCoardinator extends SubsystemBase {
          * Setters
          */
         public void setRightScore(boolean isRight){
-                isRightBranch = isRight;
                 driveSM.setRightScore(isRight);
         }
 
@@ -79,17 +78,29 @@ public class StateMachineCoardinator extends SubsystemBase {
          * Getters
          */
         public boolean getRightScore(){
-                return isRightBranch;
+                return driveSM.getRightScore();
         }
 
+        /**
+         * Check which reef to align to
+         * @return
+         */
         public boolean getReefAlign(){
                 return reefAligned;
         }
 
+        /**
+         * Find current Controller profile
+         * @return
+         */
         public ControllerProfile getCurrentControllerProfile(){
                 return currentProfile;
         }
 
+        /**
+         * Check if we have coral inside the robot
+         * @return
+         */
         public boolean gethasCoral(){
                 return manipulatorSM.getHasCoral(); 
         }
@@ -106,7 +117,10 @@ public class StateMachineCoardinator extends SubsystemBase {
                 driveSM.setDriveCommand(m_drivestate);
         }
 
-        //main state change function
+        /**
+         * Set Global state goal
+         * @param state
+         */
         public void setRobotGoal(RobotState state){
                 //safety checks before requesting state changes
 
@@ -165,8 +179,42 @@ public class StateMachineCoardinator extends SubsystemBase {
                 }
         }
         
+     /**
+     * Handle automatic state transitions based on current states and state conditions
+     */
+    private void handleAutomaticTransitions() {
+        
+        //robot is not disabled, and driver station is enabled
+        if(!isDisabled && DriverStation.isEnabled()){
+                
+                //this should only run once and at the beggining to automaticaly take robot out of the start position
+                if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.START_POSITION){
+                        setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                }
+                
+                //run following command only if manipulator state machine is completed its moves and at final state
+                if(manipulatorSM.atGoalState() && !manipulatorSM.isTransitioning() && !manipulatorSM.reachGoalStateFailed()){
+
+                        if(gethasCoral()){
+                               if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
+                                setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                                manipulatorSM.atGoalState(false);
+                               }
+                        }else{
+                                if(getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL){
+                                        setRobotGoal(RobotState.INTAKE_CORAL);
+                                        manipulatorSM.atGoalState(false);
+                                }
+                        }
+
+                        
+                }
+        }
+    }
+
         @Override
         public void periodic() {
                 // This method will be called once per scheduler run
+                handleAutomaticTransitions();
         } 
 }
