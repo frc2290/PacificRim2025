@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.math.util.Units.degreesToRadians;
+import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,6 +19,9 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import java.util.List;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -124,6 +128,9 @@ public final class Constants {
 
     public static final int kLaserCanId = 5;
 
+    public static final double kEncoderPositionFactor = 34.2857;
+    public static final double kEncoderVelocityFactor = 0.5714;
+
     public static final double[][] l4RotationData = {
       {120, 235},
       {200, 240},
@@ -225,6 +232,23 @@ public final class Constants {
     public static final int kRearRightTurningCanId = 47;
 
     public static final boolean kGyroReversed = false;
+
+    public static final DriveTrainSimulationConfig mapleSimConfig =
+        DriveTrainSimulationConfig.Default()
+            .withCustomModuleTranslations(kModuleTranslations)
+            .withRobotMass(Kilogram.of(kRobotMassKg))
+            .withGyro(COTS.ofNav2X())
+            .withSwerveModule(
+                new SwerveModuleSimulationConfig(
+                    ModuleConstants.kDriveMotor,
+                    ModuleConstants.kSteerMotor,
+                    ModuleConstants.kDrivingMotorReduction,
+                    ModuleConstants.kSteerReduction,
+                    Volts.of(0.1),
+                    Volts.of(0.1),
+                    Meters.of(ModuleConstants.kWheelDiameterMeters / 2.0),
+                    KilogramSquareMeters.of(0.02),
+                    1.2));
   }
 
   public static final class ModuleConstants {
