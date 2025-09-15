@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
@@ -47,6 +45,9 @@ public class StateMachineCoardinator extends SubsystemBase {
                 manipulatorSM = m_manipulatorStateMachine;
                 driveSM = m_driveStateMachine;
                 currentProfile = ControllerProfile.DEFAULT_CORAL;
+                
+                //since we always have coral at start
+                setHasCoral(true);
         }
     
         /*
@@ -68,6 +69,11 @@ public class StateMachineCoardinator extends SubsystemBase {
         //if driver pushes trigger to make robot align, set var to true
         public void setReefAlign(boolean align){
                 reefAligned = align;
+        }
+
+        public void setHasCoral(boolean coral){
+                hasCoral = coral;
+                manipulatorSM.setHasCoral(coral);
         }
 
         /*

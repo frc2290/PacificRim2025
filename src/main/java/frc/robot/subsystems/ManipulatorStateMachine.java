@@ -79,6 +79,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     //variables
     private boolean isTransitioning = false;
     private double stateEntryTime = 0.0;
+    private boolean hasCoral = true;
 
 
     public ManipulatorStateMachine(DifferentialSubsystem diff, ElevatorSubsystem elevator, ManipulatorSubsystem manipulator, ClimbSubsystem climb) {
@@ -314,6 +315,17 @@ public class ManipulatorStateMachine extends SubsystemBase {
     }
     
     
+    //setters
+    public void setHasCoral(boolean coral){
+        hasCoral = coral;
+    }
+
+    //getters
+    public boolean getHasCoral(){
+        return hasCoral;   
+    }
+
+
     /** ----- State Transition Commands ----- */
     public Command setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
         switch (m_state){
