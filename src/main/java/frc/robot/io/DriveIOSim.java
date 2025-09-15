@@ -99,8 +99,7 @@ public class DriveIOSim implements DriveIO {
     double busVoltage = getBatteryVoltage();
     for (int i = 0; i < modules.length; i++) {
       outputs[i] =
-          modules[i].getDriveMotorAppliedVoltage().in(edu.wpi.first.units.Units.Volts)
-              / busVoltage;
+          modules[i].getDriveMotorAppliedVoltage().in(edu.wpi.first.units.Units.Volts) / busVoltage;
     }
     return outputs;
   }
