@@ -155,6 +155,10 @@ public class GraphCommand extends Command {
         return m_currentNode;
     }
 
+    public GraphCommandNode getTargetNode() {
+        return m_targetNode;
+    }
+
     public void setTargetNode(GraphCommandNode node) {
         // if the graph isn't transitioning set the next node and move on
         if (!m_isTransitioning) {
