@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,12 +36,13 @@ import frc.robot.io.VisionIOReal;
 import frc.robot.io.VisionIOSim;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.StateMachineCoardinator;
+import frc.robot.subsystems.StateMachineCoardinator.RobotState;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
@@ -61,6 +63,7 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
 
   private final LEDUtility m_ledUtility = new LEDUtility(0);
+  private final XboxController m_driver = new XboxController(0);
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive;
   private final PoseEstimatorSubsystem m_poseEstimator;
@@ -68,9 +71,11 @@ public class Robot extends TimedRobot {
   private final ManipulatorSubsystem m_manipulator;
   private final DifferentialSubsystem m_DiffArm;
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateSubsystem m_state;
+  private final DriveStateMachine m_driveStateMachine;
+  private final ManipulatorStateMachine m_manipulatorStateMachine;
+  private final StateMachineCoardinator m_coordinator;
 
-  private FlytLogger simDash = new FlytLogger("Simulation");
+  private final FlytLogger simDash = new FlytLogger("Simulation");
   private double totalCurrentDraw;
   private double loadedBatteryVoltage;
   private double m_simulatedBatteryVoltage;
@@ -96,9 +101,11 @@ public class Robot extends TimedRobot {
     DifferentialArmIO diffIO =
         RobotBase.isSimulation() ? new DifferentialArmIOSim() : new DifferentialArmIOReal();
     m_DiffArm = new DifferentialSubsystem(diffIO);
-    m_state =
-        new StateSubsystem(
-            m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+
+    m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
+    m_manipulatorStateMachine =
+        new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
+    m_coordinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine);
   }
 
   /**
@@ -125,9 +132,13 @@ public class Robot extends TimedRobot {
             m_manipulator,
             m_DiffArm,
             m_climber,
-            m_state);
+            m_driveStateMachine,
+            m_manipulatorStateMachine,
+            m_coordinator,
+            m_driver);
     DataLogManager.start();
 
+    URCL.start();
     // Start URCL once, logging to the WPILib DataLog
     URCL.start(DataLogManager.getLog());
 
@@ -181,11 +192,10 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    m_state.setDisabled(true);
+    m_coordinator.robotDisabled(true);
     if (m_autonomousCommand != null && m_autonomousCommand.isScheduled()) {
       m_autonomousCommand.cancel();
     }
-    m_state.cancelCurrentCommand();
   }
 
   @Override
@@ -194,8 +204,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_state.setAuto(true);
-    m_state.setDisabled(false);
+    m_coordinator.robotAuto(true);
+    m_coordinator.robotDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -217,12 +227,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_state.setAuto(false);
-    m_state.setDisabled(false);
-    m_state.setDriveState(DriveState.Teleop);
-    if (!m_manipulator.hasCoral()) {
-      m_state.setGoal(PositionState.IntakePosition);
-    }
+    m_coordinator.robotAuto(false);
+    m_coordinator.robotDisabled(false);
+    m_coordinator.setRobotGoal(RobotState.START_POSITION);
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
