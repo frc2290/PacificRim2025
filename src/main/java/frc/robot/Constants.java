@@ -97,7 +97,7 @@ public final class Constants {
         public static final double v_KG = 0;
 
         public static final double transportExtensionSetpoint = 80;
-        public static final double transportRotationSetpoint = 110;
+        public static final double transportRotationSetpoint = 230;
         public static final double intakeExtensionSetpoint = 10;
         public static final double intakeRotationSetpoint = 230;
 

@@ -9,6 +9,7 @@ import frc.robot.commands.DriveCommands.CancelledDrive;
 import frc.robot.commands.DriveCommands.CoralStationDrive;
 import frc.robot.commands.DriveCommands.ManualDrive;
 import frc.robot.commands.DriveCommands.ProcessorRelativeDrive;
+import frc.robot.commands.DriveCommands.ReefAlignDrive;
 import frc.robot.commands.DriveCommands.ReefRelativeDrive;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
@@ -70,7 +71,6 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand.addRequirements(this);
         this.setDefaultCommand(m_graphCommand);
         m_graphCommand.setCurrentNode(cancelledNode);
-        m_graphCommand.initialize();
     }
 
     /**
@@ -121,11 +121,11 @@ public class DriveStateMachine extends SubsystemBase {
             new PrintCommand(""),
             new ReefRelativeDrive(this, drive, pose, driverController));
 
-        // reefAlignNode = m_graphCommand.new GraphCommandNode(
-        //     "ReefAlign",
-        //     new ReefAlignDrive(this, drive, pose, driverController),
-        //     new InstantCommand(() -> drive.stop()),
-        //     new PrintCommand("Arrived at ReefAlign state"));
+        reefAlignNode = m_graphCommand.new GraphCommandNode(
+             "ReefAlign",
+             new PrintCommand(""),
+             new PrintCommand(""),
+             new ReefAlignDrive(drive, pose, driverController, this));
 
         cancelledNode = m_graphCommand.new GraphCommandNode(
             "Cancelled",
@@ -144,7 +144,7 @@ public class DriveStateMachine extends SubsystemBase {
         //cancelledNode.AddNode(followPathNode, 1.0);
         //cancelledNode.AddNode(bargeRelativeNode, 1.0);
         //cancelledNode.AddNode(climbRelativeNode, 1.0);
-        //cancelledNode.AddNode(reefAlignNode, 1.0);
+        cancelledNode.AddNode(reefAlignNode, 1.0);
         manualNode.AddNode(cancelledNode, 1.0);
         manualNode.AddNode(processorRelativeNode, 1.0);
         manualNode.AddNode(coralStationNode, 1.0);
@@ -152,7 +152,7 @@ public class DriveStateMachine extends SubsystemBase {
         //manualNode.AddNode(followPathNode, 1.0);
         //manualNode.AddNode(bargeRelativeNode, 1.0);
         //manualNode.AddNode(climbRelativeNode, 1.0);
-        //manualNode.AddNode(reefAlignNode, 1.0);
+        manualNode.AddNode(reefAlignNode, 1.0);
         processorRelativeNode.AddNode(manualNode, 1.0);
         processorRelativeNode.AddNode(cancelledNode, 1.0);
         processorRelativeNode.AddNode(coralStationNode, 1.0);
@@ -160,7 +160,7 @@ public class DriveStateMachine extends SubsystemBase {
         //processorRelativeNode.AddNode(followPathNode, 1.0);
         //processorRelativeNode.AddNode(bargeRelativeNode, 1.0);
         //processorRelativeNode.AddNode(climbRelativeNode, 1.0);
-        //processorRelativeNode.AddNode(reefAlignNode, 1.0);
+        processorRelativeNode.AddNode(reefAlignNode, 1.0);
         coralStationNode.AddNode(manualNode, 1.0);
         coralStationNode.AddNode(cancelledNode, 1.0);
         coralStationNode.AddNode(processorRelativeNode, 1.0);
@@ -168,7 +168,7 @@ public class DriveStateMachine extends SubsystemBase {
         //coralStationNode.AddNode(followPathNode, 1.0);
         //coralStationNode.AddNode(bargeRelativeNode, 1.0);
         //coralStationNode.AddNode(climbRelativeNode, 1.0);
-        //coralStationNode.AddNode(reefAlignNode, 1.0);
+        coralStationNode.AddNode(reefAlignNode, 1.0);
         reefRelativeNode.AddNode(manualNode, 1.0);
         reefRelativeNode.AddNode(cancelledNode, 1.0);
         reefRelativeNode.AddNode(processorRelativeNode, 1.0);
@@ -176,7 +176,7 @@ public class DriveStateMachine extends SubsystemBase {
         //reefRelativeNode.AddNode(followPathNode, 1.0);
         //reefRelativeNode.AddNode(bargeRelativeNode, 1.0);
         //reefRelativeNode.AddNode(climbRelativeNode, 1.0);
-        //reefRelativeNode.AddNode(reefAlignNode, 1.0); 
+        reefRelativeNode.AddNode(reefAlignNode, 1.0); 
 
     }
 

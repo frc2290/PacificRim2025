@@ -16,6 +16,7 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoardinator;
+import frc.robot.subsystems.StateMachineCoardinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -144,9 +145,9 @@ public class RobotContainer {
 
         // Controller Buttons
         //extra buttons for different statemachine states HERE
-        //(a_button).and(not_left_stick).onTrue(m_drive_state.setManualCommand()); // Set to L1
-        //(b_button).and(not_left_stick).onTrue(m_drive_state.setReefRelativeCommand()); // Set to L2
-        //(y_button).and(not_left_stick).onTrue(m_drive_state.setProcessorRelativeCommand()); // Set to L3
+        (a_button).and(corol_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL))); // Set to L1
+        (b_button).and(corol_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.INTAKE_CORAL))); // Set to L2
+        (y_button).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L4))); // Set to L3
         //(x_button).and(not_left_stick).onTrue(m_drive_state.setCoralStationCommand()); // Set to L3
         //back_button.onTrue(m_state.cancelCommand()); // Cancel current state  RECHECK
         //start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls DO WE NEED THIS
@@ -162,7 +163,7 @@ public class RobotContainer {
         
         // Controller Triggers
         left_trigger.onTrue(new InstantCommand(() -> m_coardinator.setReefAlign(true))).onFalse(new InstantCommand(() -> m_coardinator.setReefAlign(false))); //While held will try to align with the reef
-        //right_trigger.onTrue(new ScoreCoral(m_manipulator, m_DiffArm, m_state, m_poseEstimator)); // Score coral RECHECK
+        right_trigger.onTrue(new InstantCommand(() -> m_coardinator.score(true))).onFalse(new InstantCommand(() -> m_coardinator.score(false)));
 
 
         //Trigger hasCoral = m_manipulator.hasCoralTrigger();

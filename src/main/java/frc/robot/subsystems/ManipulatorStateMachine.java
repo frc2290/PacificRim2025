@@ -12,9 +12,12 @@ import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.ManualDrive;
 import frc.robot.commands.ElevatorManipulator.IntakeCoral;
+import frc.robot.commands.ElevatorManipulator.L4Prep;
 import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
 import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
+import frc.robot.commands.ElevatorManipulator.ScoreL4;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
+import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
@@ -84,6 +87,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     //variables
     private boolean atGoalState = false;
     private boolean reachGoalStateFailed = false;
+    private boolean canScore = false;
     private double stateEntryTime = 0.0;
 
 
@@ -99,12 +103,15 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_elevator = elevator;
         m_manipulator = manipulator;
         m_climb = climb;
-
+    
         initializeGraphCommand();
+    
         m_graphCommand.addRequirements(this);
         this.setDefaultCommand(m_graphCommand);
+    
+        // Set the root node and initial node
+        m_graphCommand.setGraphRootNode(startPositionNode);
         m_graphCommand.setCurrentNode(startPositionNode);
-        m_graphCommand.initialize();
     }
 
     private void initializeGraphCommand(){
@@ -153,7 +160,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             l4PrepNode = m_graphCommand.new GraphCommandNode(
                 "L4Prep", 
-                new PrintCommand(""),
+                new L4Prep(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -177,8 +184,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             scoreL4Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL4", 
-                new PrintCommand(""),
-                new PrintCommand(""),
+                new ScoreL4(this, m_diff, m_elevator),
+                new ScoreCoral(this,m_manipulator),
                 new PrintCommand(""));
 
             l1PostScoreNode = m_graphCommand.new GraphCommandNode(
@@ -201,7 +208,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             l4PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L4PostScore", 
-                new PrintCommand(""),
+                new L4Prep(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -275,26 +282,26 @@ public class ManipulatorStateMachine extends SubsystemBase {
         safeCoralTravelNode.AddNode(l4PrepNode, 1.0); //safe travel to l4 prep
         preCoralIntakeNode.AddNode(intakeCoralNode, 1.0); //pre coral intake to coral intake
         intakeCoralNode.AddNode(safeCoralTravelNode, 1.0); //coral intake to safe travel
-        l1PrepNode.AddNode(l2PrepNode, 1.0); //l1 prep to l2 prep
-        l1PrepNode.AddNode(l3PrepNode, 1.0); //l1 prep to l3 prep
-        l1PrepNode.AddNode(l4PrepNode, 1.0); //l1 prep to l4 prep
-        l2PrepNode.AddNode(l1PrepNode, 1.0); //l2 prep to l1 prep
-        l2PrepNode.AddNode(l3PrepNode, 1.0); //l2 prep to l3 prep
-        l2PrepNode.AddNode(l4PrepNode, 1.0); //l2 prep to l4 prep
-        l3PrepNode.AddNode(l1PrepNode, 1.0); //l3 prep to l1 prep
-        l3PrepNode.AddNode(l2PrepNode, 1.0); //l3 prep to l2 prep
-        l3PrepNode.AddNode(l4PrepNode, 1.0); //l3 prep to l4 prep
-        l4PrepNode.AddNode(l1PrepNode, 1.0); //l4 prep to l1 prep
-        l4PrepNode.AddNode(l2PrepNode, 1.0); //l4 prep to l2 prep
-        l4PrepNode.AddNode(l3PrepNode, 1.0); //l4 prep to l3 prep
+        //l1PrepNode.AddNode(l2PrepNode, 1.0); //l1 prep to l2 prep
+        //l1PrepNode.AddNode(l3PrepNode, 1.0); //l1 prep to l3 prep
+        //l1PrepNode.AddNode(l4PrepNode, 1.0); //l1 prep to l4 prep
+        //l2PrepNode.AddNode(l1PrepNode, 1.0); //l2 prep to l1 prep
+        //l2PrepNode.AddNode(l3PrepNode, 1.0); //l2 prep to l3 prep
+        //l2PrepNode.AddNode(l4PrepNode, 1.0); //l2 prep to l4 prep
+        //l3PrepNode.AddNode(l1PrepNode, 1.0); //l3 prep to l1 prep
+        //l3PrepNode.AddNode(l2PrepNode, 1.0); //l3 prep to l2 prep
+        //l3PrepNode.AddNode(l4PrepNode, 1.0); //l3 prep to l4 prep
+        //l4PrepNode.AddNode(l1PrepNode, 1.0); //l4 prep to l1 prep
+        //l4PrepNode.AddNode(l2PrepNode, 1.0); //l4 prep to l2 prep
+        //l4PrepNode.AddNode(l3PrepNode, 1.0); //l4 prep to l3 prep
         l1PrepNode.AddNode(scoreL1Node, 1.0); //l1 prep to score l1
         l2PrepNode.AddNode(scoreL2Node, 1.0); //l2 prep to score l2
         l3PrepNode.AddNode(scoreL3Node, 1.0); //l3 prep to score l3
         l4PrepNode.AddNode(scoreL4Node, 1.0); //l4 prep to score l4
-        scoreL1Node.AddNode(l1PrepNode, 1.0); //score l1 to l1 prep
-        scoreL2Node.AddNode(l2PrepNode, 1.0); //score l2 to l2 prep
-        scoreL3Node.AddNode(l3PrepNode, 1.0); //score l3 to l3 prep
-        scoreL4Node.AddNode(l4PrepNode, 1.0); //score l4 to l4 prep
+        //scoreL1Node.AddNode(l1PrepNode, 1.0); //score l1 to l1 prep
+        //scoreL2Node.AddNode(l2PrepNode, 1.0); //score l2 to l2 prep
+        //scoreL3Node.AddNode(l3PrepNode, 1.0); //score l3 to l3 prep
+        //scoreL4Node.AddNode(l4PrepNode, 1.0); //score l4 to l4 prep
         scoreL1Node.AddNode(l1PostScoreNode, 1.0); //score l1 to l1 post score
         scoreL2Node.AddNode(l2PostScoreNode, 1.0); //score l2 to l2 post score
         scoreL3Node.AddNode(l3PostScoreNode, 1.0); //score l3 to l3 post score
@@ -347,6 +354,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
     
     //getters
 
+    public void canScore(boolean m_canScore){
+        canScore = m_canScore;
+    }
     /**
      * Check if if robot has coral
      * @return
@@ -355,6 +365,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
         return m_manipulator.hasCoral();   
     }
 
+    public boolean canScore(){
+        return canScore;
+    }
     /**
      * GraphCommand is still reaching setgoalnode
      * @return 
@@ -388,37 +401,37 @@ public class ManipulatorStateMachine extends SubsystemBase {
     public void setElevatorManipulatorCommand(ElevatorManipulatorState m_state){
         switch (m_state){
             case SAFE_CORAL_TRAVEL:
-                m_graphCommand.setCurrentNode(safeCoralTravelNode);
+                m_graphCommand.setTargetNode(safeCoralTravelNode);
                 break;  
             case INTAKE_CORAL:
-                m_graphCommand.setCurrentNode(intakeCoralNode);
+                m_graphCommand.setTargetNode(intakeCoralNode);
                 break;
             case L1:
-                m_graphCommand.setCurrentNode(l1PrepNode);
+                m_graphCommand.setTargetNode(scoreL1Node);
                 break;
             case L2:
-                m_graphCommand.setCurrentNode(l2PrepNode);
+                m_graphCommand.setTargetNode(scoreL2Node);
                 break;
             case L3:
-                m_graphCommand.setCurrentNode(l3PrepNode);
+                m_graphCommand.setTargetNode(scoreL3Node);
                 break;
             case L4:
-                m_graphCommand.setCurrentNode(l4PrepNode);
+                m_graphCommand.setTargetNode(scoreL4Node);
                 break;
             case ALGAE_L2:
-                m_graphCommand.setCurrentNode(prepAlgaeL2Node);
+                m_graphCommand.setTargetNode(prepAlgaeL2Node);
                 break;
             case ALGAE_L3:
-                m_graphCommand.setCurrentNode(prepAlgaeL3Node);
+                m_graphCommand.setTargetNode(prepAlgaeL3Node);
                 break;
             case PROCESSOR:
-                m_graphCommand.setCurrentNode(scoreProssesorNode);
+                m_graphCommand.setTargetNode(scoreProssesorNode);
                 break;
             case BARGE:
-                m_graphCommand.setCurrentNode(prepScoreBargeNode);
+                m_graphCommand.setTargetNode(prepScoreBargeNode);
                 break;
             case CLIMB:
-                m_graphCommand.setCurrentNode(climbPrepNode);
+                m_graphCommand.setTargetNode(climbPrepNode);
                 break;
             case MANUAL:
                 break;
@@ -458,6 +471,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
     public void periodic() {
         //Update dashboard
         dashboard.putString("Goal State", getCurrentState().toString());
+        dashboard.putBoolean("Transitioning", isTransitioning());
+        dashboard.putBoolean("At Final State", atGoalState());
         dashboard.putString("Current GraphState State", getGraphState().toString());
         dashboard.putBoolean("At state", !isTransitioning());
         

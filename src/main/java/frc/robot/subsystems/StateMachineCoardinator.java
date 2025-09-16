@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
+import frc.utils.FlytDashboardV2;
 
 public class StateMachineCoardinator extends SubsystemBase {
 
@@ -15,9 +16,11 @@ public class StateMachineCoardinator extends SubsystemBase {
         private boolean isAuto = false;
         private boolean reefAligned = false;
         private ControllerProfile currentProfile = null;
+        private RobotState goalState = null;
 
         private DriveStateMachine driveSM;
         private ManipulatorStateMachine manipulatorSM;
+        private FlytDashboardV2 dashboard = new FlytDashboardV2("Coardinator");
 
         public enum RobotState{
                 START_POSITION,
@@ -46,9 +49,8 @@ public class StateMachineCoardinator extends SubsystemBase {
                 manipulatorSM = m_manipulatorStateMachine;
                 driveSM = m_driveStateMachine;
                 currentProfile = ControllerProfile.DEFAULT_CORAL;
+                goalState = RobotState.START_POSITION;
                 
-                //since we always have coral at start
-                manipulatorSM.getHasCoral();
         }
 
         //Triggers
@@ -60,6 +62,9 @@ public class StateMachineCoardinator extends SubsystemBase {
                 driveSM.setRightScore(isRight);
         }
 
+        public void score(boolean canScore){
+                manipulatorSM.canScore(canScore);
+        }
         public void robotDisabled(boolean disabled){
                 isDisabled = disabled;
         }
@@ -105,8 +110,9 @@ public class StateMachineCoardinator extends SubsystemBase {
                 return manipulatorSM.getHasCoral(); 
         }
 
-
-
+        public boolean getManipulatorAtGoalState(){
+                return manipulatorSM.atGoalState();
+        }
         //set elevator goal
         private void setElevatorManipulatorGoal(ElevatorManipulatorState m_elevmanistate){
                 manipulatorSM.setElevatorManipulatorCommand(m_elevmanistate);
@@ -115,6 +121,7 @@ public class StateMachineCoardinator extends SubsystemBase {
         //set drive goal
         private void setDriveGoal(DriveState m_drivestate){
                 driveSM.setDriveCommand(m_drivestate);
+                
         }
 
         /**
@@ -123,7 +130,7 @@ public class StateMachineCoardinator extends SubsystemBase {
          */
         public void setRobotGoal(RobotState state){
                 //safety checks before requesting state changes
-
+                goalState = state;
                 //state change
                 switch(state){
                         case START_POSITION:
@@ -135,7 +142,7 @@ public class StateMachineCoardinator extends SubsystemBase {
                                 setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case INTAKE_CORAL:
-                                setElevatorManipulatorGoal(ElevatorManipulatorState.INTAKE_CORAL);
+                                //setElevatorManipulatorGoal(ElevatorManipulatorState.INTAKE_CORAL);
                                 setDriveGoal(DriveState.CORAL_STATION);
                                 break;
                         case L1:       
@@ -149,6 +156,7 @@ public class StateMachineCoardinator extends SubsystemBase {
                                 break;
                         case L4:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.L4);
+
                                 break;
                         case ALGAE_L2:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.ALGAE_L2);
@@ -214,7 +222,20 @@ public class StateMachineCoardinator extends SubsystemBase {
 
         @Override
         public void periodic() {
+
+                if(driveSM.getCurrentState() == DriveState.REEF_RELATIVE && getReefAlign()){
+                        driveSM.setDriveCommand(DriveState.REEF_ALIGN);
+                }else if(driveSM.getCurrentState() == DriveState.REEF_ALIGN && !getReefAlign()){
+                        driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
+                }
+
+                dashboard.putString("Current State", goalState.toString());
+                dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
+                dashboard.putBoolean("RobotDisabled", isDisabled);
+                dashboard.putBoolean("Reef Align", getReefAlign());
+                dashboard.putString("Controller Profile", getCurrentControllerProfile().toString());
+                dashboard.putBoolean("Has Coral", gethasCoral());
                 // This method will be called once per scheduler run
-                handleAutomaticTransitions();
+                //handleAutomaticTransitions();
         } 
 }
