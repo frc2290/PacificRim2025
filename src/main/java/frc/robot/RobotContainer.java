@@ -14,6 +14,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.Autos.ClimberTestAuto;
+import frc.robot.commands.Autos.DifferentialTestAuto;
+import frc.robot.commands.Autos.DriveTestAuto;
+import frc.robot.commands.Autos.DrivetrainSysId;
+import frc.robot.commands.Autos.ElevatorTestAuto;
+import frc.robot.commands.Autos.ManipulatorTestAuto;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.DriveStateMachine;
@@ -86,6 +92,13 @@ public class RobotContainer {
     m_ledUtility.setDefault();
 
     auto_chooser.setDefaultOption("None", Commands.none());
+    // Add autonomous options
+    auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
+    auto_chooser.addOption("Drive Test", new DriveTestAuto(m_robotDrive, m_poseEstimator));
+    auto_chooser.addOption("Differential Test", new DifferentialTestAuto(m_DiffArm));
+    auto_chooser.addOption("Elevator Test", new ElevatorTestAuto(m_elevator));
+    auto_chooser.addOption("Manipulator Test", new ManipulatorTestAuto(m_manipulator));
+    auto_chooser.addOption("Climber Test", new ClimberTestAuto(m_climber));
     SmartDashboard.putData(auto_chooser);
   }
 

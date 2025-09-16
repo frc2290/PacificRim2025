@@ -146,6 +146,16 @@ public class Robot extends TimedRobot {
       SmartDashboard.putData("Field", m_robotDrive.getField());
       simDash.addDoublePublisher("Total Current", false, () -> totalCurrentDraw);
       simDash.addDoublePublisher("Loaded Voltage", false, () -> loadedBatteryVoltage);
+      simDash.addDoublePublisher("Differential Current", false, m_DiffArm::getCurrentDraw);
+      simDash.addDoublePublisher(
+          "Differential Velocity", false, m_DiffArm::getMeasuredExtensionVelocity);
+      simDash.addDoublePublisher(
+          "Differential Rotation Velocity", false, m_DiffArm::getMeasuredRotationVelocity);
+      simDash.addDoublePublisher("Elevator Current", false, m_elevator::getCurrentDraw);
+      simDash.addDoublePublisher(
+          "Elevator Velocity", false, m_elevator::getVelocityMetersPerSecond);
+      simDash.addDoublePublisher("Manipulator Current", false, m_manipulator::getCurrentDraw);
+      simDash.addDoublePublisher("Manipulator RPM", false, m_manipulator::getRPM);
     }
   }
 

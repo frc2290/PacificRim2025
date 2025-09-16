@@ -10,9 +10,9 @@ import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
 import frc.robot.commands.ElevatorManipulator.ScoreL4;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
+import frc.utils.FlytDashboardV2;
 import frc.utils.GraphCommand;
 import frc.utils.GraphCommand.GraphCommandNode;
-import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
 
 public class ManipulatorStateMachine extends SubsystemBase {

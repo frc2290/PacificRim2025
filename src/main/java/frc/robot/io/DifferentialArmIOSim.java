@@ -3,6 +3,7 @@ package frc.robot.io;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants.DifferentialArm;
 import frc.utils.DifferentialArmSim;
 
@@ -102,8 +103,9 @@ public class DifferentialArmIOSim implements DifferentialArmIO {
 
     // Approximate voltage needed using motor Kv (rad/s per volt)
     double kv = DCMotor.getNEO(1).KvRadPerSecPerVolt;
-    double leftVolts = MathUtil.clamp(leftMotorRadPerSec / kv, -12.0, 12.0);
-    double rightVolts = MathUtil.clamp(rightMotorRadPerSec / kv, -12.0, 12.0);
+    double busVoltage = Math.abs(RobotController.getBatteryVoltage());
+    double leftVolts = MathUtil.clamp(leftMotorRadPerSec / kv, -busVoltage, busVoltage);
+    double rightVolts = MathUtil.clamp(rightMotorRadPerSec / kv, -busVoltage, busVoltage);
 
     // DifferentialArmSim expects (right, left)
     sim.setInputVoltage(rightVolts, leftVolts);

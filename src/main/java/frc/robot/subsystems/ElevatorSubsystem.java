@@ -50,6 +50,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     return io.getPositionMeters();
   }
 
+  /** Return the measured elevator velocity in meters per second. */
+  public double getVelocityMetersPerSecond() {
+    return io.getVelocityMetersPerSec();
+  }
+
   /** Determine if the elevator is within 4 cm of its setpoint. */
   public boolean atPosition() {
     return Math.abs(getPosition() - setpointMeters) <= 0.04;

@@ -5,6 +5,7 @@ import com.revrobotics.sim.SparkLimitSwitchSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -22,6 +23,7 @@ public class ManipulatorIOSim implements ManipulatorIO {
   private final DCMotorSim motorModel;
   private final Timer coralTimer = new Timer();
   private final Debouncer coralDebounce = new Debouncer(0.05);
+  private double requestedVolts;
   private double appliedVolts;
   private boolean coralPresent = true;
   private boolean algaePresent;
@@ -38,8 +40,7 @@ public class ManipulatorIOSim implements ManipulatorIO {
 
   @Override
   public void setVoltage(double volts) {
-    appliedVolts = volts;
-    motorSim.setAppliedOutput(volts / 12.0);
+    requestedVolts = volts;
   }
 
   @Override
@@ -95,13 +96,20 @@ public class ManipulatorIOSim implements ManipulatorIO {
   @Override
   public void update() {
     double busVoltage = RobotController.getBatteryVoltage();
-    if (busVoltage <= 0.0) {
-      return;
+    double availableVoltage = Math.abs(busVoltage);
+
+    if (availableVoltage > 1e-3) {
+      appliedVolts = MathUtil.clamp(requestedVolts, -availableVoltage, availableVoltage);
+      motorSim.setAppliedOutput(appliedVolts / busVoltage);
+    } else {
+      appliedVolts = 0.0;
+      motorSim.setAppliedOutput(0.0);
     }
+
     motorModel.setInputVoltage(appliedVolts);
     motorModel.update(0.02);
     double rotorRPM = motorModel.getAngularVelocityRPM();
-    motorSim.iterate(rotorRPM, busVoltage, 0.02);
+    motorSim.iterate(rotorRPM, availableVoltage, 0.02);
     encoderSim.setPosition(motorModel.getAngularPositionRotations());
     encoderSim.setVelocity(rotorRPM);
 

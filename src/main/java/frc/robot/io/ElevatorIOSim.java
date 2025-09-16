@@ -4,6 +4,7 @@ import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
@@ -17,6 +18,7 @@ public class ElevatorIOSim implements ElevatorIO {
   private final SparkFlexSim rightSim;
   private final SparkRelativeEncoderSim leftEncoderSim;
   private final ElevatorSim elevatorSim;
+  private double requestedVolts;
   private double appliedVolts;
 
   public ElevatorIOSim() {
@@ -40,7 +42,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
   @Override
   public void setVoltage(double volts) {
-    appliedVolts = volts;
+    requestedVolts = volts;
   }
 
   @Override
@@ -61,8 +63,11 @@ public class ElevatorIOSim implements ElevatorIO {
   @Override
   public void update() {
     double busVoltage = RobotController.getBatteryVoltage();
-    if (busVoltage <= 0.0) {
-      return;
+    double availableVoltage = Math.abs(busVoltage);
+    if (availableVoltage > 1e-3) {
+      appliedVolts = MathUtil.clamp(requestedVolts, -availableVoltage, availableVoltage);
+    } else {
+      appliedVolts = 0.0;
     }
 
     elevatorSim.setInputVoltage(appliedVolts);
@@ -76,10 +81,17 @@ public class ElevatorIOSim implements ElevatorIO {
         elevatorSim.getPositionMeters() / Elevator.kSimDrumRadiusMeters / Elevator.kSimGearing;
     double rotorRPM = motorOmega * 60.0 / (2 * Math.PI);
 
-    leftSim.iterate(rotorRPM, busVoltage, 0.02);
+    double normalizedOutput = 0.0;
+    if (availableVoltage > 1e-3) {
+      normalizedOutput = appliedVolts / busVoltage;
+    }
+    leftSim.setAppliedOutput(normalizedOutput);
+    rightSim.setAppliedOutput(-normalizedOutput);
+
+    leftSim.iterate(rotorRPM, availableVoltage, 0.02);
     leftEncoderSim.setPosition(motorAngle);
     leftEncoderSim.setVelocity(rotorRPM);
 
-    rightSim.iterate(-rotorRPM, busVoltage, 0.02);
+    rightSim.iterate(-rotorRPM, availableVoltage, 0.02);
   }
 }

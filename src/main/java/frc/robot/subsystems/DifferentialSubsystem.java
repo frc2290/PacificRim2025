@@ -137,6 +137,16 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
     return -(((getLeftPos() - getRightPos()) / 2) / 200) * 360;
   }
 
+  /** Average spool velocity reported by the IO in native units per second. */
+  public double getMeasuredExtensionVelocity() {
+    return (io.getLeftVelocity() + io.getRightVelocity()) / 2.0;
+  }
+
+  /** Differential rotation velocity reported by the IO in native units per second. */
+  public double getMeasuredRotationVelocity() {
+    return (io.getLeftVelocity() - io.getRightVelocity()) / 2.0;
+  }
+
   public boolean atExtenstionSetpoint() {
     return (extensionSetpoint - 5) <= getExtensionPosition()
         && getExtensionPosition() <= (extensionSetpoint + 5);
