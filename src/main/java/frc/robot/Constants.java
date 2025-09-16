@@ -101,7 +101,6 @@ public final class Constants {
 
   public static final class Manipulator {
     public static final int kManipulatorMotorId = 7;
-
     // Simulation parameters
     public static final double kSimGearing = 1.0; // ratio
     public static final double kSimMOI = 5e-4; // kg*m^2
@@ -122,7 +121,7 @@ public final class Constants {
     public static final double v_KG = 0;
 
     public static final double transportExtensionSetpoint = 80;
-    public static final double transportRotationSetpoint = 110;
+    public static final double transportRotationSetpoint = 230;
     public static final double intakeExtensionSetpoint = 10;
     public static final double intakeRotationSetpoint = 230;
 
