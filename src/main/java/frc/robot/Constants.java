@@ -94,7 +94,7 @@ public final class Constants {
     // Gear reduction from motor to drum: (7/34) * (15/31)
     public static final double kSimGearing = (7.0 / 34.0) * (15.0 / 31.0);
     public static final double kSimDrumRadiusMeters = 0.0538; // m
-    public static final double kSimCarriageMassKg = 4.0; // kg
+    public static final double kSimCarriageMassKg = 10; // kg
     public static final double kSimMinHeightMeters = 0.0; // m
     public static final double kSimMaxHeightMeters = 1.3; // m
   }
