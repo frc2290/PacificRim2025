@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +27,11 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
 
   private final FlytLogger differentialDash = new FlytLogger("Differential");
 
+  private final double differentialArmRadiusMeters;
+  private final double linearDriveRadiusMeters;
+  private final double diffToLinearRadiusRatio;
+  private final double linearToDiffRadiusRatio;
+
   private double extensionSetpoint = 0.0;
   private double rotationSetpoint = 0.0;
 
@@ -48,6 +54,15 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
 
   public DifferentialSubsystem(DifferentialArmIO io) {
     this.io = io;
+    if (io instanceof DifferentialArmIOSim) {
+      linearDriveRadiusMeters = DifferentialArm.kSimLinearDriveRadiusMeters;
+      differentialArmRadiusMeters = DifferentialArm.kSimDifferentialArmRadiusMeters;
+    } else {
+      linearDriveRadiusMeters = DifferentialArm.kLinearDriveRadiusMeters;
+      differentialArmRadiusMeters = DifferentialArm.kDifferentialArmRadiusMeters;
+    }
+    diffToLinearRadiusRatio = differentialArmRadiusMeters / linearDriveRadiusMeters;
+    linearToDiffRadiusRatio = linearDriveRadiusMeters / differentialArmRadiusMeters;
     extensionPid.reset(extensionSetpoint);
     rotationPid.reset(rotationSetpoint);
 
@@ -134,7 +149,10 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   }
 
   public double getRotationPosition() {
-    return -(((getLeftPos() - getRightPos()) / 2) / 200) * 360;
+    double spoolDifferenceMillimeters = (getLeftPos() - getRightPos()) / 2.0;
+    double spoolDifferenceMeters = spoolDifferenceMillimeters / 1000.0;
+    double rotationRadians = -spoolDifferenceMeters * diffToLinearRadiusRatio;
+    return Units.radiansToDegrees(rotationRadians);
   }
 
   /** Average spool velocity reported by the IO in native units per second. */
@@ -186,7 +204,9 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   }
 
   private double degreesToMM(double degrees) {
-    return (degrees / 360) * 200;
+    double rotationRadians = Units.degreesToRadians(degrees);
+    double spoolDifferenceMeters = -rotationRadians * linearToDiffRadiusRatio;
+    return spoolDifferenceMeters * 1000.0;
   }
 
   @Override
