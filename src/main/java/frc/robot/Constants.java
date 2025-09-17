@@ -172,9 +172,9 @@ public final class Constants {
     public static final double kSimExtensionInclinationRads = 0.523599; // rad
     public static final double kSimGravity = 9.81; // m/s^2
     public static final double kSimExtensionViscousDamping = 0.530938; // N*s/m
-    public static final double kSimExtensionCoulombFriction = 65.9326; // N
+    public static final double kSimExtensionCoulombFriction = 5; // N
     public static final double kSimRotationViscousDamping = 0.375174; // N*m*s/rad
-    public static final double kSimRotationCoulombFriction = 0.31433; // N*m
+    public static final double kSimRotationCoulombFriction = 0.5; // N*m
     public static final double kSimLinearDriveRadiusMeters = 0.00545674; // m
     public static final double kSimDifferentialArmRadiusMeters = 0.031831; // m
     public static final double kSimSensorOffsetRads = 2.13296; // rad

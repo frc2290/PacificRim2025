@@ -151,9 +151,7 @@ public class Robot extends TimedRobot {
           "Differential Velocity", false, m_DiffArm::getMeasuredExtensionVelocity);
       simDash.addDoublePublisher(
           "Differential Rotation Velocity", false, m_DiffArm::getMeasuredRotationVelocity);
-      simDash.addDoublePublisher("Elevator Current", false, m_elevator::getCurrentDraw);
-      simDash.addDoublePublisher(
-          "Elevator Velocity", false, m_elevator::getVelocityMetersPerSecond);
+      // Elevator telemetry is published by ElevatorSubsystem's FlytLogger (same in sim/real)
       simDash.addDoublePublisher("Manipulator Current", false, m_manipulator::getCurrentDraw);
       simDash.addDoublePublisher("Manipulator RPM", false, m_manipulator::getRPM);
     }
