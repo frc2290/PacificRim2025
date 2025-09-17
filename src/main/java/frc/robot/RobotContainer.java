@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -91,7 +92,19 @@ public class RobotContainer {
     m_ledUtility.addStrip("TopRight", 134, 143);
     m_ledUtility.setDefault();
 
-    auto_chooser.setDefaultOption("None", Commands.none());
+    if (RobotBase.isSimulation()) {
+      auto_chooser.setDefaultOption(
+          "Drive Test (Full Speed)",
+          new DriveTestAuto(
+              m_robotDrive, m_poseEstimator, DriveTestAuto.FULL_SPEED_TRANSLATION_SCALAR));
+      auto_chooser.addOption("None", Commands.none());
+    } else {
+      auto_chooser.setDefaultOption("None", Commands.none());
+      auto_chooser.addOption(
+          "Drive Test (Full Speed)",
+          new DriveTestAuto(
+              m_robotDrive, m_poseEstimator, DriveTestAuto.FULL_SPEED_TRANSLATION_SCALAR));
+    }
     // Add autonomous options
     auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
     auto_chooser.addOption("Drive Test", new DriveTestAuto(m_robotDrive, m_poseEstimator));
@@ -121,8 +134,6 @@ public class RobotContainer {
     JoystickButton rightStick = new JoystickButton(m_driverController, Button.kRightStick.value);
     Trigger rightTrigger = new Trigger(() -> m_driverController.getRightTriggerAxis() > 0.5);
     Trigger leftTrigger = new Trigger(() -> m_driverController.getLeftTriggerAxis() > 0.5);
-    POVButton dpadUp = new POVButton(m_driverController, 0);
-    POVButton dpadDown = new POVButton(m_driverController, 180);
     POVButton dpadLeft = new POVButton(m_driverController, 270);
     POVButton dpadRight = new POVButton(m_driverController, 90);
 
