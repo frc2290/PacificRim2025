@@ -46,8 +46,8 @@ public class ScoreCoral extends Command{
         if (!interrupted) {
             manipulator.setCoral(false);
             manipulator.setAlgae(false);
-            //manipulatorSM.atGoalState(false);
         }
+        manipulatorSM.atGoalState(false);
     }
 
     @Override
