@@ -62,9 +62,6 @@ public class StateMachineCoardinator extends SubsystemBase {
                 driveSM.setRightScore(isRight);
         }
 
-        public void score(boolean canScore){
-                manipulatorSM.canScore(canScore);
-        }
         public void robotDisabled(boolean disabled){
                 isDisabled = disabled;
         }
@@ -77,7 +74,6 @@ public class StateMachineCoardinator extends SubsystemBase {
         public void setReefAlign(boolean align){
                 reefAligned = align;
         }
-
 
         /*
          * Getters
@@ -102,6 +98,10 @@ public class StateMachineCoardinator extends SubsystemBase {
                 return currentProfile;
         }
 
+        public void setControllerProfile(ControllerProfile profile){
+                currentProfile = profile;
+                //also runs a command do robot does not weirdly go into werid previouse state if got stuck
+        }
         /**
          * Check if we have coral inside the robot
          * @return
@@ -116,6 +116,7 @@ public class StateMachineCoardinator extends SubsystemBase {
         //set elevator goal
         private void setElevatorManipulatorGoal(ElevatorManipulatorState m_elevmanistate){
                 manipulatorSM.setElevatorManipulatorCommand(m_elevmanistate);
+
         }
 
         //set drive goal
@@ -142,7 +143,7 @@ public class StateMachineCoardinator extends SubsystemBase {
                                 setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case INTAKE_CORAL:
-                                //setElevatorManipulatorGoal(ElevatorManipulatorState.INTAKE_CORAL);
+                                setElevatorManipulatorGoal(ElevatorManipulatorState.INTAKE_CORAL);
                                 setDriveGoal(DriveState.CORAL_STATION);
                                 break;
                         case L1:       
@@ -187,35 +188,63 @@ public class StateMachineCoardinator extends SubsystemBase {
                 }
         }
         
+        public void requestToScore(boolean score){
+                manipulatorSM.setreadyToScore(score);
+        }
+
      /**
      * Handle automatic state transitions based on current states and state conditions
      */
     private void handleAutomaticTransitions() {
         
         //robot is not disabled, and driver station is enabled
-        if(!isDisabled && DriverStation.isEnabled()){
-                
+        if(!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL)){
+
                 //this should only run once and at the beggining to automaticaly take robot out of the start position
                 if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.START_POSITION){
                         setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
                 }
+                   
+                //Manages Reef_ALIGN
+                if(driveSM.getCurrentState() == DriveState.REEF_RELATIVE && getReefAlign()){
+                        driveSM.setDriveCommand(DriveState.REEF_ALIGN);
+                }else if(driveSM.getCurrentState() == DriveState.REEF_ALIGN && !getReefAlign()){
+                        driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
+                }
                 
-                //run following command only if manipulator state machine is completed its moves and at final state
+
+                
                 if(manipulatorSM.atGoalState() && !manipulatorSM.isTransitioning() && !manipulatorSM.reachGoalStateFailed()){
 
                         if(gethasCoral()){
                                if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
-                                setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
-                                manipulatorSM.atGoalState(false);
+                                        setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
                                }
+
                         }else{
                                 if(getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL){
                                         setRobotGoal(RobotState.INTAKE_CORAL);
-                                        manipulatorSM.atGoalState(false);
                                 }
                         }
 
+
+
                         
+                }
+
+
+                //Sets elevator state machine ready to score when drivestatemachine is at position (add state check later)
+                if(driveSM.atPosition()){
+                        manipulatorSM.setreadyToScore(true);
+                }else{
+                        manipulatorSM.setreadyToScore(false);
+                }
+
+                // when command is succesful it will set goalstate for manipulator state machine
+                //as true as being reached, when driver call new goal, graph command changes tearget 
+                //node and goes into transition thus not at goal state
+                if(manipulatorSM.isTransitioning()){
+                        manipulatorSM.setatGoalState(false);
                 }
         }
     }
@@ -223,19 +252,15 @@ public class StateMachineCoardinator extends SubsystemBase {
         @Override
         public void periodic() {
 
-                if(driveSM.getCurrentState() == DriveState.REEF_RELATIVE && getReefAlign()){
-                        driveSM.setDriveCommand(DriveState.REEF_ALIGN);
-                }else if(driveSM.getCurrentState() == DriveState.REEF_ALIGN && !getReefAlign()){
-                        driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
-                }
-
                 dashboard.putString("Current State", goalState.toString());
                 dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
                 dashboard.putBoolean("RobotDisabled", isDisabled);
                 dashboard.putBoolean("Reef Align", getReefAlign());
                 dashboard.putString("Controller Profile", getCurrentControllerProfile().toString());
                 dashboard.putBoolean("Has Coral", gethasCoral());
+                dashboard.getBoolean("Command Ready to score", manipulatorSM.readyToScore());
+                dashboard.getBoolean("Score Request", manipulatorSM.scoreNow());
                 // This method will be called once per scheduler run
-                //handleAutomaticTransitions();
+                handleAutomaticTransitions();
         } 
 }

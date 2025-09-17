@@ -248,6 +248,9 @@ public class DriveStateMachine extends SubsystemBase {
         return m_graphCommand.isTransitioning();
     }
 
+    public boolean atPosition(){
+        return pose.atTargetPose();
+    }
     /** ----- State Getters ----- */
 
     /**
@@ -276,6 +279,7 @@ public class DriveStateMachine extends SubsystemBase {
         dashboard.putString("Current State", getCurrentState().toString());
         dashboard.putBoolean("At State", !isTransitioning());
         dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
+        dashboard.putBoolean("At Drive Position", atPosition());
         
     }
 }

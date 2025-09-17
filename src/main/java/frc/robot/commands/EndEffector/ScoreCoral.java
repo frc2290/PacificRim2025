@@ -30,7 +30,7 @@ public class ScoreCoral extends Command{
        @Override
        public void execute() {
            //if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) || !state.getRotationLock()) {
-           if (manipulatorSM.atGoalState() && manipulatorSM.canScore()) {
+           if (manipulatorSM.atGoalState() && manipulatorSM.readyToScore() && manipulatorSM.scoreNow()) {
                manipulator.intake(1);
                if (!timer.isRunning()) {
                    timer.restart();

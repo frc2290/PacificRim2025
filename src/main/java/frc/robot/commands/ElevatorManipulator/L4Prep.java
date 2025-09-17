@@ -3,6 +3,7 @@ package frc.robot.commands.ElevatorManipulator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Constants.DifferentialArm;
+import frc.robot.Constants.Elevator;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
@@ -17,11 +18,6 @@ public class L4Prep extends Command{
     //private int step = 0;
     private boolean atPosition = false;
 
-    private double elevatorPos = 1.72;
-    private double diffExt = 140;
-    private double diffRot = 235;
-    private double diffExt1 = 220;
-
     public L4Prep(ManipulatorStateMachine m_state, DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator){
 
         manipulatorSm = m_state;
@@ -34,10 +30,11 @@ public class L4Prep extends Command{
 
         @Override
     public void initialize() {
-
-        diffArm.setExtensionSetpoint(230);
-        elevator.setElevatorSetpoint(elevatorPos);
-        diffArm.setRotationSetpoint(diffRot);
+        System.out.println("L4Prep Initializing");
+        diffArm.setExtensionSetpoint(DifferentialArm.transportExtensionSetpoint);
+        elevator.setElevatorSetpoint(Elevator.L4);
+        diffArm.setRotationSetpoint(DifferentialArm.l4Rot);
+        
     }
 
     @Override
@@ -45,6 +42,7 @@ public class L4Prep extends Command{
 
         if(diffArm.atRotationSetpoint() && elevator.atPosition() && diffArm.atExtenstionSetpoint()){
             atPosition = true;
+            System.out.println("L4Prep Done");
         }
             
         

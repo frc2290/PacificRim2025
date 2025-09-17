@@ -49,7 +49,7 @@ public class IntakeCoral extends Command{
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        manipulatorSm.atGoalState(true);
+        
     }
 
     // Returns true when the command should end.

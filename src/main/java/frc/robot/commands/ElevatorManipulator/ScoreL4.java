@@ -2,6 +2,8 @@ package frc.robot.commands.ElevatorManipulator;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.Constants.DifferentialArm;
+import frc.robot.Constants.Elevator;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
@@ -18,10 +20,6 @@ public class ScoreL4 extends Command {
     private boolean isInterpolated = false;
     private boolean isCoralScored = false;
 
-    private double elevatorPos = 1.72;
-    private double diffExt = 140;
-    private double diffRot = 235;
-    private double diffExt1 = 220;
 
     public ScoreL4(ManipulatorStateMachine m_state, DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator){
 
@@ -36,9 +34,9 @@ public class ScoreL4 extends Command {
     @Override
     public void initialize() {
 
-        diffArm.setExtensionSetpoint(diffExt);
-        elevator.setElevatorSetpoint(elevatorPos);
-        diffArm.setRotationSetpoint(diffRot);
+        diffArm.setExtensionSetpoint(DifferentialArm.l4Ext);
+        elevator.setElevatorSetpoint(Elevator.L4);
+        diffArm.setRotationSetpoint(DifferentialArm.l4Rot);
     }
 
     @Override
@@ -49,8 +47,12 @@ public class ScoreL4 extends Command {
         //this commadn only ends if robot interpolated and scored the coral
         if(diffArm.atRotationSetpoint() && diffArm.atExtenstionSetpoint() && elevator.atPosition()){
             atPosition = true;
-            manipulatorSm.atGoalState(true);
+            manipulatorSm.setatGoalState(true);
+        }else{
+            atPosition = false;
+            manipulatorSm.setatGoalState(false);
         }
+
             
         
 
@@ -59,8 +61,9 @@ public class ScoreL4 extends Command {
 
     private void interpolation(){
 
+
         /** Diff Arm Interpolation */
-        if (diffArm.hasLaserCanDistance()) {
+        if (diffArm.hasLaserCanDistance() && manipulatorSm.getInterpolateActive()) {
                 diffArm.setExtensionSetpoint(diffArm.l4ExtensionInterpolate());
                 diffArm.setRotationSetpoint(diffArm.l4RotationInterpolate());
         }
@@ -70,7 +73,6 @@ public class ScoreL4 extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        manipulatorSm.atGoalState(false);
         
     }
 
@@ -82,4 +84,3 @@ public class ScoreL4 extends Command {
     }
 
 }
-

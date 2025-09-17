@@ -76,6 +76,12 @@ public final class Constants {
 
         public static final double transportSetpoint = 0.3;
         public static final double intakeSetpoint = 0.1;
+        public static final double L1 = 0;
+        public static final double L2 = 0.74;
+        public static final double L3 = 1.14;
+        public static final double L4 = 1.72;
+
+
     }
 
     public static final class Manipulator {
@@ -100,6 +106,15 @@ public final class Constants {
         public static final double transportRotationSetpoint = 230;
         public static final double intakeExtensionSetpoint = 10;
         public static final double intakeRotationSetpoint = 230;
+
+        public static final double l1Rot = 0;
+        public static final double l2_3Rot = 230;
+        public static final double l4Rot = 235;
+
+        public static final double l1Ext = 0;
+        public static final double l2_3Ext = 80;
+        public static final double l4Ext = 140;
+
 
         public static final int kLaserCanId = 5;
 

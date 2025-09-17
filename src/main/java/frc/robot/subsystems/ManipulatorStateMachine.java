@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.ManualDrive;
+import frc.robot.commands.ElevatorManipulator.BargePrep;
 import frc.robot.commands.ElevatorManipulator.IntakeCoral;
 import frc.robot.commands.ElevatorManipulator.L4Prep;
 import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
@@ -51,7 +52,18 @@ public class ManipulatorStateMachine extends SubsystemBase {
         BARGE,
         CLIMB,
         MANUAL,
-        RESET;
+        RESET,
+
+        PrepL1,
+        PrepL2,
+        PrepL3,
+        PrepL4,
+
+        PostL1,
+        PostL2,
+        PostL3,
+        PostL4,
+
     }
 
     /*
@@ -85,9 +97,15 @@ public class ManipulatorStateMachine extends SubsystemBase {
     GraphCommandNode cancelledNode;
 
     //variables
-    private boolean atGoalState = false;
+    private boolean atGoalState = false; //checks if it reached the final state
+    private boolean canScore = false; //checks final state is reached and command aproves the score
+    private boolean score = false; //drive sends command to score
+    private boolean interpolate = false;
+
+    private boolean driveAtPose = false;
+
+
     private boolean reachGoalStateFailed = false;
-    private boolean canScore = false;
     private double stateEntryTime = 0.0;
 
 
@@ -333,16 +351,25 @@ public class ManipulatorStateMachine extends SubsystemBase {
         
     }
     
-    //Triggers
+    //need for scoring, make sure drive subsystem is at pose before scoring
+    public void setDriveAtPose(boolean atPose){
+        driveAtPose = atPose;
+    }
 
-    
-    //setters
+    public void setInterpolation(boolean m_interpolate){
+        interpolate = m_interpolate;
+    }
     /**
      * Tell state machine that command finished succesfully (Shuold only be set by commands)
      * @param state
      */
-    public void atGoalState(boolean state){
+    public void setatGoalState(boolean state){
         atGoalState = state;
+    }
+    
+    //should only be used by commands, lets scoring command know that systems are ready to score
+    public void setreadyToScore(boolean canscore){
+        canScore = canscore;
     }
     
     /**
@@ -351,23 +378,30 @@ public class ManipulatorStateMachine extends SubsystemBase {
     public void failedToReachGoal(boolean isFailed){
         reachGoalStateFailed = isFailed;
     }
-    
-    //getters
 
-    public void canScore(boolean m_canScore){
-        canScore = m_canScore;
+    //used by a coardinator to tell statemachine that it needs to score if it can
+    public void score(boolean m_score){
+        score = m_score;
     }
-    /**
-     * Check if if robot has coral
-     * @return
-     */
+
+    public boolean getInterpolateActive(){
+        return interpolate;
+    }
+
     public boolean getHasCoral(){
         return m_manipulator.hasCoral();   
     }
 
-    public boolean canScore(){
+    
+    public boolean readyToScore(){
         return canScore;
     }
+
+    //driver made a call to score now
+    public boolean scoreNow(){
+        return score;
+    }
+    
     /**
      * GraphCommand is still reaching setgoalnode
      * @return 
@@ -428,7 +462,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 m_graphCommand.setTargetNode(scoreProssesorNode);
                 break;
             case BARGE:
-                m_graphCommand.setTargetNode(prepScoreBargeNode);
+                m_graphCommand.setTargetNode(scoreBargeNode);
                 break;
             case CLIMB:
                 m_graphCommand.setTargetNode(climbPrepNode);
@@ -449,10 +483,18 @@ public class ManipulatorStateMachine extends SubsystemBase {
         if(currentNode == startPositionNode) return ElevatorManipulatorState.START_POSITION;
         if(currentNode == safeCoralTravelNode) return ElevatorManipulatorState.SAFE_CORAL_TRAVEL;
         if(currentNode == intakeCoralNode) return ElevatorManipulatorState.INTAKE_CORAL;
-        if(currentNode == l1PrepNode || currentNode == scoreL1Node || currentNode == l1PostScoreNode) return ElevatorManipulatorState.L1;
-        if(currentNode == l2PrepNode || currentNode == scoreL2Node || currentNode == l2PostScoreNode) return ElevatorManipulatorState.L2;
-        if(currentNode == l3PrepNode || currentNode == scoreL3Node || currentNode == l3PostScoreNode) return ElevatorManipulatorState.L3;
-        if(currentNode == l4PrepNode || currentNode == scoreL4Node || currentNode == l4PostScoreNode) return ElevatorManipulatorState.L4;
+        if(currentNode == l1PrepNode) return ElevatorManipulatorState.PrepL1 ;
+        if(currentNode == scoreL1Node) return ElevatorManipulatorState.L1;
+        if(currentNode == l1PostScoreNode) return ElevatorManipulatorState.PostL1;
+        if(currentNode == l2PrepNode) return ElevatorManipulatorState.PrepL2 ;
+        if(currentNode == scoreL2Node) return ElevatorManipulatorState.L2;
+        if(currentNode == l2PostScoreNode) return ElevatorManipulatorState.PostL2;
+        if(currentNode == l3PrepNode) return ElevatorManipulatorState.PrepL3 ;
+        if(currentNode == scoreL3Node) return ElevatorManipulatorState.L3;
+        if(currentNode == l3PostScoreNode) return ElevatorManipulatorState.PostL3;
+        if(currentNode == l4PrepNode) return ElevatorManipulatorState.PrepL4 ;
+        if(currentNode == scoreL4Node) return ElevatorManipulatorState.L4;
+        if(currentNode == l4PostScoreNode) return ElevatorManipulatorState.PostL4;
         if(currentNode == prepAlgaeL2Node) return ElevatorManipulatorState.ALGAE_L2;
         if(currentNode == prepAlgaeL3Node) return ElevatorManipulatorState.ALGAE_L3;
         if(currentNode == scoreProssesorNode) return ElevatorManipulatorState.PROCESSOR;
@@ -478,12 +520,5 @@ public class ManipulatorStateMachine extends SubsystemBase {
         
     }
 
-
-    /**
-     * Update current state tracking from GraphCommand node name
-     */
-    private void updateStateTracking() {
-
-    }
     
 }
