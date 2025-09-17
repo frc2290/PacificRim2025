@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,6 +33,8 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   private final double linearDriveRadiusMeters;
   private final double diffToLinearRadiusRatio;
   private final double linearToDiffRadiusRatio;
+  private final double maxExtensionVelocityMmPerSec;
+  private final double maxRotationVelocityDegPerSec;
 
   private double extensionSetpoint = 0.0;
   private double rotationSetpoint = 0.0;
@@ -54,15 +58,21 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
 
   public DifferentialSubsystem(DifferentialArmIO io) {
     this.io = io;
+    DCMotor motorModel;
     if (io instanceof DifferentialArmIOSim) {
       linearDriveRadiusMeters = DifferentialArm.kSimLinearDriveRadiusMeters;
       differentialArmRadiusMeters = DifferentialArm.kSimDifferentialArmRadiusMeters;
+      motorModel = DifferentialArm.kSimMotor;
     } else {
       linearDriveRadiusMeters = DifferentialArm.kLinearDriveRadiusMeters;
       differentialArmRadiusMeters = DifferentialArm.kDifferentialArmRadiusMeters;
+      motorModel = DifferentialArm.kMotor;
     }
     diffToLinearRadiusRatio = differentialArmRadiusMeters / linearDriveRadiusMeters;
     linearToDiffRadiusRatio = linearDriveRadiusMeters / differentialArmRadiusMeters;
+    maxExtensionVelocityMmPerSec =
+        motorModel.freeSpeedRadPerSec * linearDriveRadiusMeters * 1000.0;
+    maxRotationVelocityDegPerSec = mmToDegrees(maxExtensionVelocityMmPerSec);
     extensionPid.reset(extensionSetpoint);
     rotationPid.reset(rotationSetpoint);
 
@@ -205,8 +215,24 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
 
   private double degreesToMM(double degrees) {
     double rotationRadians = Units.degreesToRadians(degrees);
-    double spoolDifferenceMeters = -rotationRadians * linearToDiffRadiusRatio;
+    double spoolDifferenceMeters = rotationRadians * linearToDiffRadiusRatio;
     return spoolDifferenceMeters * 1000.0;
+  }
+
+  private double mmToDegrees(double millimeters) {
+    double spoolDifferenceMeters = millimeters / 1000.0;
+    double rotationRadians = spoolDifferenceMeters * diffToLinearRadiusRatio;
+    return Units.radiansToDegrees(rotationRadians);
+  }
+
+  /** Latest commanded velocity for the left side of the differential in mm/s. */
+  public double getLeftVelocityCommand() {
+    return leftCommand;
+  }
+
+  /** Latest commanded velocity for the right side of the differential in mm/s. */
+  public double getRightVelocityCommand() {
+    return rightCommand;
   }
 
   @Override
@@ -215,8 +241,16 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
     laserCanDistance = io.getLaserDistanceMm();
     hasLaserCanDistance = io.hasLaserDistance();
 
-    extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
-    rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
+    extensionVelocity =
+        MathUtil.clamp(
+            extensionPid.calculate(getExtensionPosition(), extensionSetpoint),
+            -maxExtensionVelocityMmPerSec,
+            maxExtensionVelocityMmPerSec);
+    rotationVelocity =
+        MathUtil.clamp(
+            rotationPid.calculate(getRotationPosition(), rotationSetpoint),
+            -maxRotationVelocityDegPerSec,
+            maxRotationVelocityDegPerSec);
     leftCommand = extensionVelocity - degreesToMM(rotationVelocity);
     rightCommand = extensionVelocity + degreesToMM(rotationVelocity);
     io.setArmVelocitySetpoints(leftCommand, rightCommand);
