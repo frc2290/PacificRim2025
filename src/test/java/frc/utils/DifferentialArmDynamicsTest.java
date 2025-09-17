@@ -10,6 +10,7 @@ import edu.wpi.first.math.numbers.N4;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import java.lang.reflect.Field;
+import java.util.function.Consumer;
 import org.ejml.data.Complex_F64;
 import org.ejml.simple.SimpleEVD;
 import org.junit.jupiter.api.Test;
@@ -18,25 +19,55 @@ import org.junit.jupiter.api.Test;
 public class DifferentialArmDynamicsTest {
   private static final double kEps = 1e-6;
 
-  private DifferentialArmDynamics createDynamics(double gravity, double extensionInclination) {
+  private static class Params {
+    double extensionMass = 1.0;
+    double rotationMass = 1.0;
+    double rotationInertia = 0.2;
+    double comOffset = 0.5;
+    double extensionInclination = 0.0;
+    double gravity = 0.0;
+    double extensionViscousDamping = 0.0;
+    double extensionCoulombFriction = 0.0;
+    double rotationViscousDamping = 0.0;
+    double rotationCoulombFriction = 0.0;
+    DCMotor rightMotor = DCMotor.getNEO(1);
+    DCMotor leftMotor = DCMotor.getNEO(1);
+    double linearDriveRadius = 0.1;
+    double differentialArmRadius = 0.1;
+    double sensorOffset = 0.0;
+    double motorRotorInertia = 0.0;
+  }
+
+  private DifferentialArmDynamics createDynamics(Consumer<Params> configurator) {
+    Params params = new Params();
+    if (configurator != null) {
+      configurator.accept(params);
+    }
     return new DifferentialArmDynamics(
-        1.0, // extension mass
-        1.0, // rotation mass
-        0.2, // rotation inertia
-        0.5, // COM offset
-        extensionInclination,
-        gravity,
-        0.0, // extension viscous damping
-        0.0, // extension coulomb friction
-        0.0, // rotation viscous damping
-        0.0, // rotation coulomb friction
-        DCMotor.getNEO(1),
-        DCMotor.getNEO(1),
-        0.1, // linear drive radius
-        0.1, // differential arm radius
-        0.0, // sensor offset
-        0.0 // motor rotor inertia
-        );
+        params.extensionMass,
+        params.rotationMass,
+        params.rotationInertia,
+        params.comOffset,
+        params.extensionInclination,
+        params.gravity,
+        params.extensionViscousDamping,
+        params.extensionCoulombFriction,
+        params.rotationViscousDamping,
+        params.rotationCoulombFriction,
+        params.rightMotor,
+        params.leftMotor,
+        params.linearDriveRadius,
+        params.differentialArmRadius,
+        params.sensorOffset,
+        params.motorRotorInertia);
+  }
+
+  private DifferentialArmDynamics createDynamics(double gravity, double extensionInclination) {
+    return createDynamics(
+        params -> {
+          params.gravity = gravity;
+          params.extensionInclination = extensionInclination;
+        });
   }
 
   @Test
@@ -253,5 +284,417 @@ public class DifferentialArmDynamicsTest {
     assertEquals(motor.freeCurrentAmps, iR, 0.5);
     assertEquals(motor.freeCurrentAmps, iL, 0.5);
     assertEquals(Math.abs(iR) + Math.abs(iL), dyn.getTotalCurrentAbsAmps(x, u), 0.5);
+  }
+
+  @Test
+  public void higherExtensionMassReducesAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(4.0, 4.0);
+    DifferentialArmDynamics light =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.extensionMass = 1.0;
+            });
+    DifferentialArmDynamics heavy =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.extensionMass = 5.0;
+            });
+    double lightAccel = light.dynamics(state, input).get(1, 0);
+    double heavyAccel = heavy.dynamics(state, input).get(1, 0);
+    assertTrue(lightAccel > heavyAccel, "Heavier extension mass should reduce acceleration");
+  }
+
+  @Test
+  public void largerRotationMassReducesAngularAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(-4.0, 4.0);
+    DifferentialArmDynamics light =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.rotationMass = 1.0;
+            });
+    DifferentialArmDynamics heavy =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.rotationMass = 5.0;
+            });
+    double lightAccel = light.dynamics(state, input).get(3, 0);
+    double heavyAccel = heavy.dynamics(state, input).get(3, 0);
+    assertTrue(lightAccel > heavyAccel, "Heavier rotation mass should reduce angular acceleration");
+  }
+
+  @Test
+  public void largerRotationInertiaReducesAngularAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(-4.0, 4.0);
+    DifferentialArmDynamics light =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.rotationInertia = 0.1;
+            });
+    DifferentialArmDynamics heavy =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.rotationInertia = 1.0;
+            });
+    double lightAccel = light.dynamics(state, input).get(3, 0);
+    double heavyAccel = heavy.dynamics(state, input).get(3, 0);
+    assertTrue(lightAccel > heavyAccel, "Higher inertia should reduce angular acceleration");
+  }
+
+  @Test
+  public void zeroComOffsetEliminatesGravityTorque() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.2, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics withOffset =
+        createDynamics(
+            params -> {
+              params.gravity = 9.81;
+              params.comOffset = 0.5;
+            });
+    DifferentialArmDynamics noOffset =
+        createDynamics(
+            params -> {
+              params.gravity = 9.81;
+              params.comOffset = 0.0;
+            });
+    double accelWithOffset = withOffset.dynamics(state, input).get(3, 0);
+    double accelNoOffset = noOffset.dynamics(state, input).get(3, 0);
+    assertTrue(accelWithOffset < 0.0, "Positive COM offset should create restoring torque");
+    assertEquals(0.0, accelNoOffset, 1e-9);
+  }
+
+  @Test
+  public void extensionInclinationChangesGravityProjection() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics uphill =
+        createDynamics(
+            params -> {
+              params.gravity = 9.81;
+              params.extensionInclination = 0.2;
+            });
+    DifferentialArmDynamics downhill =
+        createDynamics(
+            params -> {
+              params.gravity = 9.81;
+              params.extensionInclination = -0.2;
+            });
+    double uphillAccel = uphill.dynamics(state, input).get(1, 0);
+    double downhillAccel = downhill.dynamics(state, input).get(1, 0);
+    assertTrue(uphillAccel < 0.0);
+    assertTrue(downhillAccel > 0.0);
+  }
+
+  @Test
+  public void extensionViscousDampingOpposesVelocity() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 1.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics noDamping = createDynamics(params -> params.gravity = 0.0);
+    DifferentialArmDynamics withDamping =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.extensionViscousDamping = 5.0;
+            });
+    double baseAccel = noDamping.dynamics(state, input).get(1, 0);
+    double dampedAccel = withDamping.dynamics(state, input).get(1, 0);
+    assertTrue(baseAccel < 0.0);
+    assertTrue(dampedAccel < baseAccel);
+  }
+
+  @Test
+  public void extensionCoulombFrictionOpposesVelocity() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.05, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics noFriction = createDynamics(params -> params.gravity = 0.0);
+    DifferentialArmDynamics withFriction =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.extensionCoulombFriction = 5.0;
+            });
+    double baseAccel = noFriction.dynamics(state, input).get(1, 0);
+    double frictionAccel = withFriction.dynamics(state, input).get(1, 0);
+    assertTrue(baseAccel < 0.0);
+    assertTrue(frictionAccel < baseAccel);
+  }
+
+  @Test
+  public void rotationViscousDampingOpposesAngularVelocity() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 1.0);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics noDamping =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.comOffset = 0.0;
+            });
+    DifferentialArmDynamics withDamping =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.comOffset = 0.0;
+              params.rotationViscousDamping = 5.0;
+            });
+    double baseAccel = noDamping.dynamics(state, input).get(3, 0);
+    double dampedAccel = withDamping.dynamics(state, input).get(3, 0);
+    assertTrue(baseAccel < 0.0);
+    assertTrue(dampedAccel < baseAccel);
+  }
+
+  @Test
+  public void rotationCoulombFrictionOpposesAngularVelocity() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.1);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics noFriction =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.comOffset = 0.0;
+            });
+    DifferentialArmDynamics withFriction =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.comOffset = 0.0;
+              params.rotationCoulombFriction = 3.0;
+            });
+    double baseAccel = noFriction.dynamics(state, input).get(3, 0);
+    double frictionAccel = withFriction.dynamics(state, input).get(3, 0);
+    assertTrue(baseAccel < 0.0);
+    assertTrue(frictionAccel < baseAccel);
+  }
+
+  @Test
+  public void sensorOffsetShiftsAbsoluteAngleOnly() {
+    Matrix<N4, N1> baseState = VecBuilder.fill(0.0, 0.0, 0.2, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(0.0, 0.0);
+    DifferentialArmDynamics zeroOffset =
+        createDynamics(
+            params -> {
+              params.gravity = 9.81;
+              params.sensorOffset = 0.0;
+            });
+    DifferentialArmDynamics shiftedOffset =
+        createDynamics(
+            params -> {
+              params.gravity = 9.81;
+              params.sensorOffset = 0.3;
+            });
+    Matrix<N4, N1> shiftedState = VecBuilder.fill(0.0, 0.0, -0.1, 0.0);
+    Matrix<N4, N1> dxZero = zeroOffset.dynamics(baseState, input);
+    Matrix<N4, N1> dxShifted = shiftedOffset.dynamics(shiftedState, input);
+    assertEquals(dxZero.get(1, 0), dxShifted.get(1, 0), 1e-9);
+    assertEquals(dxZero.get(3, 0), dxShifted.get(3, 0), 1e-9);
+  }
+
+  @Test
+  public void smallerLinearDriveRadiusIncreasesExtensionAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(4.0, 4.0);
+    DifferentialArmDynamics largeRadius =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.linearDriveRadius = 0.2;
+            });
+    DifferentialArmDynamics smallRadius =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.linearDriveRadius = 0.05;
+            });
+    double accelLarge = largeRadius.dynamics(state, input).get(1, 0);
+    double accelSmall = smallRadius.dynamics(state, input).get(1, 0);
+    assertTrue(accelSmall > accelLarge);
+  }
+
+  @Test
+  public void largerDifferentialRadiusIncreasesRotationAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(-4.0, 4.0);
+    DifferentialArmDynamics smallRadius =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.differentialArmRadius = 0.05;
+            });
+    DifferentialArmDynamics largeRadius =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.differentialArmRadius = 0.2;
+            });
+    double accelSmall = smallRadius.dynamics(state, input).get(3, 0);
+    double accelLarge = largeRadius.dynamics(state, input).get(3, 0);
+    assertTrue(accelLarge > accelSmall);
+  }
+
+  @Test
+  public void motorRotorInertiaAddsApparentMass() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(4.0, 4.0);
+    DifferentialArmDynamics noRotor =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.motorRotorInertia = 0.0;
+            });
+    DifferentialArmDynamics heavyRotor =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.motorRotorInertia = 0.5;
+            });
+    double accelNoRotor = noRotor.dynamics(state, input).get(1, 0);
+    double accelHeavyRotor = heavyRotor.dynamics(state, input).get(1, 0);
+    assertTrue(accelNoRotor > accelHeavyRotor);
+  }
+
+  @Test
+  public void strongerRightMotorIncreasesExtensionAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(6.0, 6.0);
+    DifferentialArmDynamics baseline = createDynamics(params -> params.gravity = 0.0);
+    DifferentialArmDynamics strongerRight =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.rightMotor = DCMotor.getNEO(2);
+            });
+    double baseAccel = baseline.dynamics(state, input).get(1, 0);
+    double boostedAccel = strongerRight.dynamics(state, input).get(1, 0);
+    assertTrue(boostedAccel > baseAccel);
+  }
+
+  @Test
+  public void strongerLeftMotorIncreasesRotationAcceleration() {
+    Matrix<N4, N1> state = VecBuilder.fill(0.0, 0.0, 0.0, 0.0);
+    Matrix<N2, N1> input = VecBuilder.fill(-6.0, 6.0);
+    DifferentialArmDynamics baseline = createDynamics(params -> params.gravity = 0.0);
+    DifferentialArmDynamics strongerLeft =
+        createDynamics(
+            params -> {
+              params.gravity = 0.0;
+              params.leftMotor = DCMotor.getNEO(2);
+            });
+    double baseAccel = baseline.dynamics(state, input).get(3, 0);
+    double boostedAccel = strongerLeft.dynamics(state, input).get(3, 0);
+    assertTrue(boostedAccel > baseAccel);
+  }
+
+  @Test
+  public void constructorRejectsNonPositiveExtensionMass() {
+    assertThrows(
+        IllegalArgumentException.class, () -> createDynamics(params -> params.extensionMass = 0.0));
+  }
+
+  @Test
+  public void constructorRejectsNonPositiveRotationMass() {
+    assertThrows(
+        IllegalArgumentException.class, () -> createDynamics(params -> params.rotationMass = 0.0));
+  }
+
+  @Test
+  public void constructorRejectsNegativeRotationInertia() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.rotationInertia = -0.1));
+  }
+
+  @Test
+  public void constructorRejectsNegativeComOffset() {
+    assertThrows(
+        IllegalArgumentException.class, () -> createDynamics(params -> params.comOffset = -0.01));
+  }
+
+  @Test
+  public void constructorRejectsNegativeExtensionViscousDamping() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.extensionViscousDamping = -0.1));
+  }
+
+  @Test
+  public void constructorRejectsNegativeExtensionCoulombFriction() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.extensionCoulombFriction = -0.1));
+  }
+
+  @Test
+  public void constructorRejectsNegativeRotationViscousDamping() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.rotationViscousDamping = -0.1));
+  }
+
+  @Test
+  public void constructorRejectsNegativeRotationCoulombFriction() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.rotationCoulombFriction = -0.1));
+  }
+
+  @Test
+  public void constructorRejectsNonPositiveLinearDriveRadius() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.linearDriveRadius = 0.0));
+  }
+
+  @Test
+  public void constructorRejectsNonPositiveDifferentialRadius() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.differentialArmRadius = 0.0));
+  }
+
+  @Test
+  public void constructorRejectsNegativeRotorInertia() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.motorRotorInertia = -0.1));
+  }
+
+  @Test
+  public void constructorRejectsNullRightMotor() {
+    assertThrows(
+        IllegalArgumentException.class, () -> createDynamics(params -> params.rightMotor = null));
+  }
+
+  @Test
+  public void constructorRejectsNullLeftMotor() {
+    assertThrows(
+        IllegalArgumentException.class, () -> createDynamics(params -> params.leftMotor = null));
+  }
+
+  @Test
+  public void constructorRejectsNonFiniteGravity() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.gravity = Double.NaN));
+  }
+
+  @Test
+  public void constructorRejectsNonFiniteInclination() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.extensionInclination = Double.POSITIVE_INFINITY));
+  }
+
+  @Test
+  public void constructorRejectsNonFiniteSensorOffset() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createDynamics(params -> params.sensorOffset = Double.NEGATIVE_INFINITY));
   }
 }

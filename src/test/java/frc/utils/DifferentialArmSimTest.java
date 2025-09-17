@@ -76,14 +76,31 @@ public class DifferentialArmSimTest {
   }
 
   @Test
-  public void oppositeVoltagesRotateWithoutExtension() {
+  public void leftGreaterVoltageDrivesPositiveRotation() {
     DifferentialArmSim sim = createSim(0.0);
     double initialExt = sim.getExtensionPositionMeters();
     double initialAngle = sim.getRotationAngleRads();
+    // Positive rotation corresponds to the left motor spinning faster than the right.
+    sim.setInputVoltage(-6.0, 6.0);
+    sim.update(0.1);
+    assertEquals(initialExt, sim.getExtensionPositionMeters(), 1e-3);
+    assertTrue(
+        sim.getRotationAngleRads() > initialAngle,
+        "Left-faster command should yield CCW (positive) motion");
+  }
+
+  @Test
+  public void rightGreaterVoltageDrivesNegativeRotation() {
+    DifferentialArmSim sim = createSim(0.0);
+    double initialExt = sim.getExtensionPositionMeters();
+    double initialAngle = sim.getRotationAngleRads();
+    // Faster right motor should drive a negative (CW) rotation.
     sim.setInputVoltage(6.0, -6.0);
     sim.update(0.1);
     assertEquals(initialExt, sim.getExtensionPositionMeters(), 1e-3);
-    assertTrue(Math.abs(sim.getRotationAngleRads() - initialAngle) > 1e-3);
+    assertTrue(
+        sim.getRotationAngleRads() < initialAngle,
+        "Right-faster command should yield CW (negative) motion");
   }
 
   @Test
