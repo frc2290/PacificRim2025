@@ -130,6 +130,10 @@ public final class Constants {
     public static final double kEncoderPositionFactor = 34.2857;
     public static final double kEncoderVelocityFactor = 0.5714;
 
+    public static final double kLinearDriveRadiusMeters =
+        (kEncoderPositionFactor / 1000.0) / (2.0 * Math.PI);
+    public static final double kDifferentialArmRadiusMeters = 0.031831; // m
+
     public static final double[][] l4RotationData = {
       {120, 235},
       {200, 240},
@@ -296,6 +300,9 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
+    /** Default translation scalar for DriveTestAuto (1.0 = full speed). */
+    public static final double kDriveTestDefaultTranslationScalar = 0.1;
+
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
