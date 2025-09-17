@@ -296,6 +296,9 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
+    /** Default translation scalar for DriveTestAuto (1.0 = full speed). */
+    public static final double kDriveTestDefaultTranslationScalar = 0.1;
+
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;

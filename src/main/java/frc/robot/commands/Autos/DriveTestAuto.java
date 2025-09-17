@@ -6,20 +6,36 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** Auto to drive forward while printing chassis speeds and pose. */
 public class DriveTestAuto extends SequentialCommandGroup {
+  public static final double FULL_SPEED_TRANSLATION_SCALAR = 1.0;
+
+  private final double translationScalar;
+
   public DriveTestAuto(DriveSubsystem drive, PoseEstimatorSubsystem pose) {
+    this(drive, pose, AutoConstants.kDriveTestDefaultTranslationScalar);
+  }
+
+  public DriveTestAuto(
+      DriveSubsystem drive, PoseEstimatorSubsystem pose, double translationScalar) {
     addRequirements(drive);
+    this.translationScalar = translationScalar;
     final double[] lastPrint = {0.0};
     addCommands(
-        Commands.runOnce(() -> System.out.println("Starting Drive Test")),
+        Commands.runOnce(
+            () ->
+                System.out.printf(
+                    "Starting Drive Test with translation scalar %.2f (default %.2f, 1.0 = full speed)%n",
+                    this.translationScalar, AutoConstants.kDriveTestDefaultTranslationScalar)),
         Commands.run(
                 () -> {
-                  // Drive at a reduced speed to keep the test manageable
-                  drive.drive(0.1, 0.0, 0.0, false);
+                  // Drive using the requested scalar (defaults to 0.1 for manageable indoor
+                  // testing).
+                  drive.drive(this.translationScalar, 0.0, 0.0, false);
                   double now = Timer.getFPGATimestamp();
                   if (now - lastPrint[0] > 0.2) {
                     lastPrint[0] = now;
