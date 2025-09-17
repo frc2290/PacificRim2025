@@ -13,9 +13,15 @@ import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.ManualDrive;
 import frc.robot.commands.ElevatorManipulator.BargePrep;
 import frc.robot.commands.ElevatorManipulator.IntakeCoral;
+import frc.robot.commands.ElevatorManipulator.L2Prep;
+import frc.robot.commands.ElevatorManipulator.L3PostScore;
+import frc.robot.commands.ElevatorManipulator.L3Prep;
+import frc.robot.commands.ElevatorManipulator.L4PostScore;
 import frc.robot.commands.ElevatorManipulator.L4Prep;
 import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
 import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
+import frc.robot.commands.ElevatorManipulator.ScoreL2;
+import frc.robot.commands.ElevatorManipulator.ScoreL3;
 import frc.robot.commands.ElevatorManipulator.ScoreL4;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
@@ -123,13 +129,15 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_climb = climb;
     
         initializeGraphCommand();
-    
-        m_graphCommand.addRequirements(this);
-        this.setDefaultCommand(m_graphCommand);
-    
-        // Set the root node and initial node
+
+        // Set the root/current BEFORE scheduling it as default
         m_graphCommand.setGraphRootNode(startPositionNode);
         m_graphCommand.setCurrentNode(startPositionNode);
+        
+        // Now register requirements and set default
+        m_graphCommand.addRequirements(this);
+        this.setDefaultCommand(m_graphCommand);
+        
     }
 
     private void initializeGraphCommand(){
@@ -149,8 +157,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             intakeCoralNode = m_graphCommand.new GraphCommandNode(
                 "IntakeCoral", 
                 new IntakeCoral(this, m_diff, m_elevator),
-                new ManipulatorIntakeCoral(m_manipulator),
-                new PrintCommand(""));
+                new PrintCommand(""),
+                new ManipulatorIntakeCoral(m_manipulator));
 
             safeCoralTravelNode = m_graphCommand.new GraphCommandNode(
                 "SafeCoralTravelPos", 
@@ -166,13 +174,13 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             l2PrepNode = m_graphCommand.new GraphCommandNode(
                 "L2Prep", 
-                new PrintCommand(""),
+                new L2Prep(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l3PrepNode = m_graphCommand.new GraphCommandNode(
                 "L3Prep", 
-                new PrintCommand(""),
+                new L2Prep(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -190,21 +198,21 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             scoreL2Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL2", 
+                new ScoreL2(this, m_diff, m_elevator),
                 new PrintCommand(""),
-                new PrintCommand(""),
-                new PrintCommand(""));
+                new ScoreCoral(this,m_manipulator));;
 
             scoreL3Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL3", 
+                new ScoreL3(this, m_diff, m_elevator),
                 new PrintCommand(""),
-                new PrintCommand(""),
-                new PrintCommand(""));
+                new ScoreCoral(this,m_manipulator));;
 
             scoreL4Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL4", 
                 new ScoreL4(this, m_diff, m_elevator),
-                new ScoreCoral(this,m_manipulator),
-                new PrintCommand(""));
+                new PrintCommand(""),
+                new ScoreCoral(this,m_manipulator));
 
             l1PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L1PostScore", 
@@ -214,19 +222,19 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             l2PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L2PostScore", 
-                new PrintCommand(""),
+                new L3PostScore(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l3PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L3PostScore", 
-                new PrintCommand(""),
+                new L3PostScore(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));  
 
             l4PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L4PostScore", 
-                new L4Prep(this, m_diff, m_elevator),
+                new L4PostScore(this, m_diff, m_elevator),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -517,6 +525,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
         dashboard.putBoolean("At Final State", atGoalState());
         dashboard.putString("Current GraphState State", getGraphState().toString());
         dashboard.putBoolean("At state", !isTransitioning());
+        
         
     }
 
