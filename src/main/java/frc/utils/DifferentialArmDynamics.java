@@ -85,6 +85,28 @@ public class DifferentialArmDynamics {
       double sensorOffset,
       double motorRotorInertia) {
 
+    if (rightMotor == null) {
+      throw new IllegalArgumentException("rightMotor cannot be null");
+    }
+    if (leftMotor == null) {
+      throw new IllegalArgumentException("leftMotor cannot be null");
+    }
+
+    requireStrictlyPositive(extensionMass, "extensionMass");
+    requireStrictlyPositive(rotationMass, "rotationMass");
+    requireNonNegative(rotationInertia, "rotationInertia");
+    requireNonNegative(comOffset, "comOffset");
+    requireFinite(extensionInclination, "extensionInclination");
+    requireFinite(gravity, "gravity");
+    requireNonNegative(extensionViscousDamping, "extensionViscousDamping");
+    requireNonNegative(extensionCoulombFriction, "extensionCoulombFriction");
+    requireNonNegative(rotationViscousDamping, "rotationViscousDamping");
+    requireNonNegative(rotationCoulombFriction, "rotationCoulombFriction");
+    requireStrictlyPositive(linearDriveRadius, "linearDriveRadius");
+    requireStrictlyPositive(differentialArmRadius, "differentialArmRadius");
+    requireFinite(sensorOffset, "sensorOffset");
+    requireNonNegative(motorRotorInertia, "motorRotorInertia");
+
     m_rightMotor = rightMotor;
     m_leftMotor = leftMotor;
 
@@ -105,6 +127,24 @@ public class DifferentialArmDynamics {
     m_differentialArmRadius = differentialArmRadius;
     m_sensorOffset = sensorOffset;
     m_motorRotorInertia = motorRotorInertia;
+  }
+
+  private static void requireStrictlyPositive(double value, String name) {
+    if (!Double.isFinite(value) || value <= 0.0) {
+      throw new IllegalArgumentException(name + " must be > 0 and finite");
+    }
+  }
+
+  private static void requireNonNegative(double value, String name) {
+    if (!Double.isFinite(value) || value < 0.0) {
+      throw new IllegalArgumentException(name + " must be >= 0 and finite");
+    }
+  }
+
+  private static void requireFinite(double value, String name) {
+    if (!Double.isFinite(value)) {
+      throw new IllegalArgumentException(name + " must be finite");
+    }
   }
 
   /**

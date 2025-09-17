@@ -116,20 +116,20 @@ public class DifferentialArmIOSim implements DifferentialArmIO {
     double extVelMps = sim.getExtensionVelocityMetersPerSec();
     double rotVelRps = sim.getRotationVelocityRadsPerSec();
 
+    double rotationCoupling =
+        DifferentialArm.kSimDifferentialArmRadiusMeters
+            / DifferentialArm.kSimLinearDriveRadiusMeters;
+
     // Convert to native units (mm and mm/s)
     double leftRad =
-        extMeters / DifferentialArm.kSimLinearDriveRadiusMeters
-            - rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters;
+        extMeters / DifferentialArm.kSimLinearDriveRadiusMeters + rotationCoupling * rotRads;
     double rightRad =
-        extMeters / DifferentialArm.kSimLinearDriveRadiusMeters
-            + rotRads / DifferentialArm.kSimDifferentialArmRadiusMeters;
+        extMeters / DifferentialArm.kSimLinearDriveRadiusMeters - rotationCoupling * rotRads;
 
     double leftRadPerSec =
-        extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters
-            - rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters;
+        extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters + rotationCoupling * rotVelRps;
     double rightRadPerSec =
-        extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters
-            + rotVelRps / DifferentialArm.kSimDifferentialArmRadiusMeters;
+        extVelMps / DifferentialArm.kSimLinearDriveRadiusMeters - rotationCoupling * rotVelRps;
 
     // Encoder conversion factors from real hardware
     leftPos = Units.radiansToRotations(leftRad) * DifferentialArm.kEncoderPositionFactor;

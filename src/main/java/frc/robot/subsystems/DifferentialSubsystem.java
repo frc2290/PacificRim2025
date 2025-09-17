@@ -31,8 +31,6 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
 
   private final double differentialArmRadiusMeters;
   private final double linearDriveRadiusMeters;
-  private final double diffToLinearRadiusRatio;
-  private final double linearToDiffRadiusRatio;
   private final double maxExtensionVelocityMmPerSec;
   private final double maxRotationVelocityDegPerSec;
 
@@ -68,10 +66,7 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
       differentialArmRadiusMeters = DifferentialArm.kDifferentialArmRadiusMeters;
       motorModel = DifferentialArm.kMotor;
     }
-    diffToLinearRadiusRatio = differentialArmRadiusMeters / linearDriveRadiusMeters;
-    linearToDiffRadiusRatio = linearDriveRadiusMeters / differentialArmRadiusMeters;
-    maxExtensionVelocityMmPerSec =
-        motorModel.freeSpeedRadPerSec * linearDriveRadiusMeters * 1000.0;
+    maxExtensionVelocityMmPerSec = motorModel.freeSpeedRadPerSec * linearDriveRadiusMeters * 1000.0;
     maxRotationVelocityDegPerSec = mmToDegrees(maxExtensionVelocityMmPerSec);
     extensionPid.reset(extensionSetpoint);
     rotationPid.reset(rotationSetpoint);
@@ -161,7 +156,7 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   public double getRotationPosition() {
     double spoolDifferenceMillimeters = (getLeftPos() - getRightPos()) / 2.0;
     double spoolDifferenceMeters = spoolDifferenceMillimeters / 1000.0;
-    double rotationRadians = -spoolDifferenceMeters * diffToLinearRadiusRatio;
+    double rotationRadians = spoolDifferenceMeters / differentialArmRadiusMeters;
     return Units.radiansToDegrees(rotationRadians);
   }
 
@@ -215,13 +210,13 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
 
   private double degreesToMM(double degrees) {
     double rotationRadians = Units.degreesToRadians(degrees);
-    double spoolDifferenceMeters = rotationRadians * linearToDiffRadiusRatio;
+    double spoolDifferenceMeters = rotationRadians * differentialArmRadiusMeters;
     return spoolDifferenceMeters * 1000.0;
   }
 
   private double mmToDegrees(double millimeters) {
     double spoolDifferenceMeters = millimeters / 1000.0;
-    double rotationRadians = spoolDifferenceMeters * diffToLinearRadiusRatio;
+    double rotationRadians = spoolDifferenceMeters / differentialArmRadiusMeters;
     return Units.radiansToDegrees(rotationRadians);
   }
 
@@ -251,8 +246,9 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
             rotationPid.calculate(getRotationPosition(), rotationSetpoint),
             -maxRotationVelocityDegPerSec,
             maxRotationVelocityDegPerSec);
-    leftCommand = extensionVelocity - degreesToMM(rotationVelocity);
-    rightCommand = extensionVelocity + degreesToMM(rotationVelocity);
+    double rotationCommandMmPerSec = degreesToMM(rotationVelocity);
+    leftCommand = extensionVelocity + rotationCommandMmPerSec;
+    rightCommand = extensionVelocity - rotationCommandMmPerSec;
     io.setArmVelocitySetpoints(leftCommand, rightCommand);
 
     differentialDash.update(Constants.debugMode);
