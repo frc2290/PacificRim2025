@@ -110,6 +110,8 @@ public final class Constants {
     // Motors
     public static final int kLeftMotorId = 60;
     public static final int kRightMotorId = 61;
+    public static final DCMotor kMotor = DCMotor.getNEO(1);
+    public static final DCMotor kSimMotor = DCMotor.getNEO(1);
     // configuration
     public static final double voltageComp = 0;
     public static final int currentStallLim = 0;
