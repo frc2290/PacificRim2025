@@ -140,12 +140,78 @@ public final class Constants {
         };
 
         public static final double[][] l2_3ExtensionData = {
-  
+
             {120, 80},
             {200, 170},
             {330, 170},
             {420, 225}
         };
+    }
+
+    public static final class ElevatorManipulatorPositions {
+        private ElevatorManipulatorPositions() {}
+
+        public static final ManipulatorPosition SAFE_CORAL_TRAVEL =
+                new ManipulatorPosition(Elevator.transportSetpoint,
+                        DifferentialArm.transportExtensionSetpoint,
+                        DifferentialArm.transportRotationSetpoint);
+        public static final ManipulatorPosition START_POSITION = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition PRE_CORAL_INTAKE =
+                new ManipulatorPosition(Elevator.intakeSetpoint, 80, 225);
+
+        public static final ManipulatorPosition INTAKE_CORAL =
+                new ManipulatorPosition(Elevator.intakeSetpoint,
+                        DifferentialArm.intakeExtensionSetpoint,
+                        DifferentialArm.intakeRotationSetpoint);
+
+        public static final ManipulatorPosition L1_PREP =
+                new ManipulatorPosition(0.675, 80, 235);
+        public static final ManipulatorPosition SCORE_L1 = L1_PREP;
+        public static final ManipulatorPosition L1_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition L2_PREP =
+                new ManipulatorPosition(0.74, 80, 230);
+        public static final ManipulatorPosition SCORE_L2 = L2_PREP;
+        public static final ManipulatorPosition L2_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition L3_PREP =
+                new ManipulatorPosition(1.14, 80, 230);
+        public static final ManipulatorPosition SCORE_L3 = L3_PREP;
+        public static final ManipulatorPosition L3_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition L4_PREP =
+                new ManipulatorPosition(1.72, 140, 235);
+        public static final ManipulatorPosition SCORE_L4 = L4_PREP;
+        public static final ManipulatorPosition L4_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition PREP_ALGAE_INTAKE = SAFE_CORAL_TRAVEL;
+        public static final ManipulatorPosition PREP_ALGAE_L2 =
+                new ManipulatorPosition(0.625, 185, 225);
+        public static final ManipulatorPosition PREP_ALGAE_L3 =
+                new ManipulatorPosition(1.025, 185, 225);
+        public static final ManipulatorPosition SAFE_ALGAE_TRAVEL = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition SCORE_PROCESSOR =
+                new ManipulatorPosition(0.125, 80, 195);
+
+        public static final ManipulatorPosition PREP_SCORE_BARGE = SAFE_CORAL_TRAVEL;
+        public static final ManipulatorPosition SCORE_BARGE = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition CLIMB_PREP = SAFE_CORAL_TRAVEL;
+        public static final ManipulatorPosition CLIMB_READY =
+                new ManipulatorPosition(0.525,
+                        DifferentialArm.transportExtensionSetpoint,
+                        DifferentialArm.transportRotationSetpoint);
+
+        public static final ManipulatorPosition CANCELLED = SAFE_CORAL_TRAVEL;
+
+        public static final ManipulatorPosition L1 = SCORE_L1;
+        public static final ManipulatorPosition L2 = SCORE_L2;
+        public static final ManipulatorPosition L3 = SCORE_L3;
+        public static final ManipulatorPosition L4 = SCORE_L4;
+
+        public record ManipulatorPosition(double elevatorMeters, double extensionMillimeters, double rotationDegrees) {}
     }
 
     public static final class DriveConstants {

@@ -21,11 +21,17 @@ import frc.robot.subsystems.StateMachineCoardinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.Autos.Left3Coral;
+import frc.robot.commands.Autos.Middle1Coral;
+import frc.robot.commands.Autos.Right1Coral;
+import frc.robot.commands.Autos.Right2Coral;
+import frc.robot.commands.Autos.Right3Coral;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -90,14 +96,17 @@ public class RobotContainer {
         m_ledUtility.setDefault();
 
         // Build an auto chooser. This will use Commands.none() as the default option.
-        //auto_chooser.addOption("Drivetrain SysID", new DrivetrainSysId(m_robotDrive));
-        //auto_chooser.addOption("Test", new Test(m_poseEstimator, m_state));
-        //auto_chooser.addOption("Driving", new Auto(m_robotDrive));
-        //auto_chooser.addOption("Right1Coral", new Right1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("RightCoral2", new Right2Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("RightCoral3", new Right3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("Left3Coral", new Left3Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
-        //auto_chooser.addOption("Middle1Coral", new Middle1Coral(m_DiffArm, m_poseEstimator, m_state, m_manipulator));
+        auto_chooser.setDefaultOption("None", Commands.none());
+        auto_chooser.addOption("Right1Coral", new Right1Coral(
+            m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
+        auto_chooser.addOption("Right2Coral", new Right2Coral(
+            m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
+        auto_chooser.addOption("Right3Coral", new Right3Coral(
+            m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
+        auto_chooser.addOption("Left3Coral", new Left3Coral(
+            m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
+        auto_chooser.addOption("Middle1Coral", new Middle1Coral(
+            m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
         SmartDashboard.putData(auto_chooser);
 
 

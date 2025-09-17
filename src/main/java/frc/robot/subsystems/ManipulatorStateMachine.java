@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -12,17 +13,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.commands.DriveCommands.ManualDrive;
-import frc.robot.commands.ElevatorManipulator.BargePrep;
+import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.IntakeCoral;
-import frc.robot.commands.ElevatorManipulator.L2Prep;
-import frc.robot.commands.ElevatorManipulator.L3PostScore;
-import frc.robot.commands.ElevatorManipulator.L3Prep;
-import frc.robot.commands.ElevatorManipulator.L4PostScore;
-import frc.robot.commands.ElevatorManipulator.L4Prep;
+import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
 import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
 import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
-import frc.robot.commands.ElevatorManipulator.ScoreL2;
-import frc.robot.commands.ElevatorManipulator.ScoreL3;
 import frc.robot.commands.ElevatorManipulator.ScoreL4;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
@@ -168,59 +163,61 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new PrintCommand(""));
             
             l1PrepNode = m_graphCommand.new GraphCommandNode(
-                "L1Prep", 
-                new PrintCommand(""),
+                "L1Prep",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L1),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l2PrepNode = m_graphCommand.new GraphCommandNode(
-                "L2Prep", 
-                new L2Prep(this, m_diff, m_elevator),
+                "L2Prep",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L2),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l3PrepNode = m_graphCommand.new GraphCommandNode(
-                "L3Prep", 
-                new L2Prep(this, m_diff, m_elevator),
+                "L3Prep",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L3),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l4PrepNode = m_graphCommand.new GraphCommandNode(
-                "L4Prep", 
-                new L4Prep(this, m_diff, m_elevator),
+                "L4Prep",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L4),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             scoreL1Node = m_graphCommand.new GraphCommandNode(
-                "ScoreL1", 
+                "ScoreL1",
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L1),
                 new PrintCommand(""),
-                new PrintCommand(""),
-                new PrintCommand(""));
+                new ScoreCoral(this, m_manipulator));
 
             scoreL2Node = m_graphCommand.new GraphCommandNode(
-                "ScoreL2", 
-                new ParallelCommandGroup(
-                    new ScoreL2(this, m_diff, m_elevator),
-                    new ScoreCoral(this,m_manipulator)),
-                new PrintCommand("Hi this is l2"),
-                new PrintCommand("Hi this is l2"));
+                "ScoreL2",
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L2),
+                new PrintCommand(""),
+                new ScoreCoral(this, m_manipulator));
 
             scoreL3Node = m_graphCommand.new GraphCommandNode(
-                "ScoreL3", 
-                new ParallelCommandGroup(
-                    new ScoreL3(this, m_diff, m_elevator),
-                    new ScoreCoral(this,m_manipulator)),
+                "ScoreL3",
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L3),
                 new PrintCommand(""),
-                new PrintCommand(""));
+                new ScoreCoral(this, m_manipulator));
 
 
             scoreL4Node = m_graphCommand.new GraphCommandNode(
-                "ScoreL4", 
-                new ParallelCommandGroup(
-                    new ScoreL4(this, m_diff, m_elevator),
-                    new ScoreCoral(this,m_manipulator)),
+                "ScoreL4",
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L4),
                 new PrintCommand(""),
-                new PrintCommand(""));
+                new ScoreCoral(this, m_manipulator));
 
             l1PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L1PostScore", 
@@ -241,8 +238,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new PrintCommand(""));  
 
             l4PostScoreNode = m_graphCommand.new GraphCommandNode(
-                "L4PostScore", 
-                new L4PostScore(this, m_diff, m_elevator),
+                "L4PostScore",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L4),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -438,8 +436,16 @@ public class ManipulatorStateMachine extends SubsystemBase {
         return atGoalState;
     }
 
+    public Command waitUntilReady() {
+        return Commands.waitUntil(() -> atGoalState() && !isTransitioning());
+    }
+
     public boolean reachGoalStateFailed(){
         return reachGoalStateFailed;
+    }
+
+    public Command waitForState(ElevatorManipulatorState desiredState) {
+        return Commands.waitUntil(() -> getCurrentState() == desiredState && !isTransitioning());
     }
 
     /** ----- State Transition Commands ----- */
