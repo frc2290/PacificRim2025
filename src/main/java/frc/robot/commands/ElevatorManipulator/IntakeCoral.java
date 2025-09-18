@@ -2,6 +2,7 @@ package frc.robot.commands.ElevatorManipulator;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DifferentialArm;
+import frc.robot.Constants.Elevator;
 import frc.robot.subsystems.DifferentialSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
@@ -32,6 +33,7 @@ public class IntakeCoral extends Command{
     public void initialize() {
         diffArm.setExtensionSetpoint(DifferentialArm.intakeExtensionSetpoint);
         diffArm.setRotationSetpoint(DifferentialArm.intakeRotationSetpoint);
+        elevator.setElevatorSetpoint(Elevator.intakeSetpoint);
     }
 
     @Override

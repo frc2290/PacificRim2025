@@ -33,14 +33,14 @@ public class L4Prep extends Command{
         System.out.println("L4Prep Initializing");
         diffArm.setExtensionSetpoint(DifferentialArm.transportExtensionSetpoint);
         elevator.setElevatorSetpoint(Elevator.L4);
-        diffArm.setRotationSetpoint(DifferentialArm.l4Rot);
+        //diffArm.setRotationSetpoint(DifferentialArm.l4Rot);
         
     }
 
     @Override
     public void execute(){
 
-        if(diffArm.atRotationSetpoint() && elevator.atPosition() && diffArm.atExtenstionSetpoint()){
+        if(elevator.atPosition() && diffArm.atExtenstionSetpoint()){
             atPosition = true;
             System.out.println("L4Prep Done");
         }

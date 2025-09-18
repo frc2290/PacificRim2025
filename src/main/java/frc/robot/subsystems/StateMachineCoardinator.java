@@ -1,12 +1,16 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.utils.FlytDashboardV2;
+import frc.utils.LEDEffects;
+import frc.utils.LEDEffects.LEDEffect;
+import frc.utils.LEDUtility;
 
 public class StateMachineCoardinator extends SubsystemBase {
 
@@ -22,6 +26,7 @@ public class StateMachineCoardinator extends SubsystemBase {
         private DriveStateMachine driveSM;
         private ManipulatorStateMachine manipulatorSM;
         private FlytDashboardV2 dashboard = new FlytDashboardV2("Coardinator");
+        private LEDUtility ledUtility;
 
         public enum RobotState{
                 START_POSITION,
@@ -46,9 +51,10 @@ public class StateMachineCoardinator extends SubsystemBase {
                 MANUAL;
         }
         
-        public StateMachineCoardinator(ManipulatorStateMachine m_manipulatorStateMachine, DriveStateMachine m_driveStateMachine) {
+        public StateMachineCoardinator(ManipulatorStateMachine m_manipulatorStateMachine, DriveStateMachine m_driveStateMachine, LEDUtility m_ledUtility) {
                 manipulatorSM = m_manipulatorStateMachine;
                 driveSM = m_driveStateMachine;
+                ledUtility = m_ledUtility;
                 
         }
 
@@ -147,22 +153,28 @@ public class StateMachineCoardinator extends SubsystemBase {
                                 break;
                         case L1:       
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.L1);
+                                setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case L2:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.L2);
+                                setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case L3:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.L3);
+                                setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case L4:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.L4);
+                                setDriveGoal(DriveState.REEF_RELATIVE);
 
                                 break;
                         case ALGAE_L2:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.ALGAE_L2);
+                                setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case ALGAE_L3:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.ALGAE_L3);
+                                setDriveGoal(DriveState.REEF_RELATIVE);
                                 break;
                         case PROCESSOR:
                                 setElevatorManipulatorGoal(ElevatorManipulatorState.PROCESSOR);
@@ -213,12 +225,12 @@ public class StateMachineCoardinator extends SubsystemBase {
                 
 
                 
-                 if(manipulatorSM.atGoalState() && !manipulatorSM.isTransitioning() && !manipulatorSM.reachGoalStateFailed()){
+                 if(!manipulatorSM.isTransitioning()){
 
                          if(gethasCoral()){
-                                if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
-                                         setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
-                                }
+                                // if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
+                                //          setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                                // }
 
                          }else{
                                  if(getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL){
@@ -246,6 +258,44 @@ public class StateMachineCoardinator extends SubsystemBase {
                         manipulatorSM.setatGoalState(false);
                 }
         }
+
+        if (manipulatorSM.atGoalState()) {
+                if (isAuto) {
+                    ledUtility.setAll(LEDEffect.PULSE, LEDEffects.flytBlue);
+                } else if (isDisabled) {
+                    ledUtility.getStrip("TopLeft").setEffect(LEDEffect.NAVLIGHTS, Color.kRed);
+                    ledUtility.getStrip("TopRight").setEffect(LEDEffect.NAVLIGHTS, Color.kGreen);
+                    ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                    ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                } else if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL && !gethasCoral() && driveSM.getCurrentState() == DriveState.CORAL_STATION) {
+                    ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
+                    ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);}
+                // } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral() && getDriveState() == DriveState.CoralStation) {
+                //     ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+                //     ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+                // } else if (!getRotationLock()) {
+                //     ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
+                //     ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
+                //     ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                //     ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                // } else if (getDriveState() == DriveState.Teleop) {
+                //     if (getRightScore()) {
+                //         ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
+                //         ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
+                //     } else {
+                //         ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
+                //         ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
+                //     }
+                //     ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                //     ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+                // } else if (getDriveState() == DriveState.ReefScoreMove) {
+                //     ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+                //     ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+                // } else if (getDriveState() == DriveState.ReefScore) {
+                //     ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+                //     ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+                // } 
+            }
     }
 
         @Override
@@ -262,4 +312,6 @@ public class StateMachineCoardinator extends SubsystemBase {
                 // This method will be called once per scheduler run
                 handleAutomaticTransitions();
         } 
+
+        
 }

@@ -32,15 +32,15 @@ public class PrepCoralIntake extends Command {
 
     @Override
     public void initialize() {
-        diffArm.setExtensionSetpoint(80);
-        diffArm.setRotationSetpoint(225);
+        diffArm.setExtensionSetpoint(230);
+        diffArm.setRotationSetpoint(DifferentialArm.intakeRotationSetpoint);
         elevator.setElevatorSetpoint(Elevator.intakeSetpoint);
     }
 
     @Override
     public void execute(){
 
-        if(diffArm.atExtenstionSetpoint() && diffArm.atRotationSetpoint() && elevator.atPosition()){
+        if(diffArm.atExtenstionSetpoint() && diffArm.atRotationSetpoint()){
             atPosition = true;
         }
 

@@ -48,7 +48,7 @@ public class Robot extends TimedRobot {
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
   private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
   private final ManipulatorStateMachine m_manipulatorStateMachine = new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
-  private final StateMachineCoardinator m_coardinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine);
+  private final StateMachineCoardinator m_coardinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
 
   public Robot() {
     CanBridge.runTCP();

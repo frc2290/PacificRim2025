@@ -22,6 +22,7 @@ import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -172,9 +173,9 @@ public class RobotContainer {
         //hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
 
         // Manual controls
-        dpad_up.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL))); //coral mode
+        dpad_up.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)), new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL)))); //coral mode
         dpad_down.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.ALGAE))); //algae mode
-        dpad_left.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL))); // manula mode
+        dpad_left.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)), new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.MANUAL)))); // manula mode
         //dpad_right.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)));
 
         manual_profileTrigger.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up

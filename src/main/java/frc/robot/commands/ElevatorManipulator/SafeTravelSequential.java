@@ -51,7 +51,8 @@ public class SafeTravelSequential extends Command {
                 
             case 2:
                 diffArm.setExtensionSetpoint(DifferentialArm.transportExtensionSetpoint);
-                if (diffArm.atExtenstionSetpoint() || stepTimer.hasElapsed(2.0)) {
+                elevator.setElevatorSetpoint(0.2);
+                if ((diffArm.atExtenstionSetpoint() && elevator.atPosition())|| stepTimer.hasElapsed(2.0)) {
                     step = 3;
                     stepTimer.restart();
                     System.out.println("To CoralSafeTravel 3/3");
