@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -198,21 +199,28 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
             scoreL2Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL2", 
-                new ScoreL2(this, m_diff, m_elevator),
-                new PrintCommand(""),
-                new ScoreCoral(this,m_manipulator));;
+                new ParallelCommandGroup(
+                    new ScoreL2(this, m_diff, m_elevator),
+                    new ScoreCoral(this,m_manipulator)),
+                new PrintCommand("Hi this is l2"),
+                new PrintCommand("Hi this is l2"));
 
             scoreL3Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL3", 
-                new ScoreL3(this, m_diff, m_elevator),
+                new ParallelCommandGroup(
+                    new ScoreL3(this, m_diff, m_elevator),
+                    new ScoreCoral(this,m_manipulator)),
                 new PrintCommand(""),
-                new ScoreCoral(this,m_manipulator));;
+                new PrintCommand(""));
+
 
             scoreL4Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL4", 
-                new ScoreL4(this, m_diff, m_elevator),
+                new ParallelCommandGroup(
+                    new ScoreL4(this, m_diff, m_elevator),
+                    new ScoreCoral(this,m_manipulator)),
                 new PrintCommand(""),
-                new ScoreCoral(this,m_manipulator));
+                new PrintCommand(""));
 
             l1PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L1PostScore", 
@@ -522,10 +530,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
         //Update dashboard
         dashboard.putString("Goal State", getCurrentState().toString());
         dashboard.putBoolean("Transitioning", isTransitioning());
-        dashboard.putBoolean("At Final State", atGoalState());
+        dashboard.putBoolean("DriveTrainLocked", atGoalState());
         dashboard.putString("Current GraphState State", getGraphState().toString());
-        dashboard.putBoolean("At state", !isTransitioning());
-        
+        dashboard.putBoolean("At state graphcommand", !isTransitioning());
+
         
     }
 

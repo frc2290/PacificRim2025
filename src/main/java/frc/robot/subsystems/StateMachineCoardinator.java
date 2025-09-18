@@ -213,23 +213,23 @@ public class StateMachineCoardinator extends SubsystemBase {
                 
 
                 
-                // if(manipulatorSM.atGoalState() && !manipulatorSM.isTransitioning() && !manipulatorSM.reachGoalStateFailed()){
+                 if(manipulatorSM.atGoalState() && !manipulatorSM.isTransitioning() && !manipulatorSM.reachGoalStateFailed()){
 
-                //         if(gethasCoral()){
-                //                if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
-                //                         setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
-                //                }
+                         if(gethasCoral()){
+                                if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
+                                         setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                                }
 
-                //         }else{
-                //                 if(getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL){
-                //                         setRobotGoal(RobotState.INTAKE_CORAL);
-                //                 }
-                //         }
+                         }else{
+                                 if(getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL){
+                                         setRobotGoal(RobotState.INTAKE_CORAL);
+                                 }
+                         }
 
 
 
                         
-                // }
+                 }
 
 
                 //Sets elevator state machine ready to score when drivestatemachine is at position (add state check later)

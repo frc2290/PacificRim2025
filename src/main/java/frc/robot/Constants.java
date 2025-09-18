@@ -77,9 +77,9 @@ public final class Constants {
         public static final double transportSetpoint = 0.3;
         public static final double intakeSetpoint = 0.1;
         public static final double L1 = 0;
-        public static final double L2 = 0.74;
-        public static final double L3 = 1.14;
-        public static final double L4 = 1.72;
+        public static final double L2 = 0.64;
+        public static final double L3 = 0.94;
+        public static final double L4 = 1.42;
 
 
     }

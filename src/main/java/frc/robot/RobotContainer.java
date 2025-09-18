@@ -145,7 +145,7 @@ public class RobotContainer {
 
 
         // Controller Buttons
-        //(a_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL))); // Set to L1
+        (a_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.INTAKE_CORAL))); // Set to L1
         (b_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L2))); // Set to L2
         (y_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L3))); // Set to L3
         (x_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L4))); // Set to L4
