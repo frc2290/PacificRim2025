@@ -5,13 +5,7 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
-import frc.robot.commands.DriveCommands.CancelledDrive;
-import frc.robot.commands.DriveCommands.CoralStationDrive;
-import frc.robot.commands.DriveCommands.FollowPathDrive;
-import frc.robot.commands.DriveCommands.ManualDrive;
-import frc.robot.commands.DriveCommands.ProcessorRelativeDrive;
-import frc.robot.commands.DriveCommands.ReefAlignDrive;
-import frc.robot.commands.DriveCommands.ReefRelativeDrive;
+import frc.robot.commands.DriveCommands.DriveCommandFactory;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -80,59 +74,59 @@ public class DriveStateMachine extends SubsystemBase {
     private void initializeGraphCommand() {
         // Create all graph command nodes
         manualNode = m_graphCommand.new GraphCommandNode(
-            "Manual", 
+            "Manual",
             new PrintCommand(""),
             new PrintCommand(""),
-            new ManualDrive(this, drive, pose, driverController));
-        
+            DriveCommandFactory.createManualCommand(this, drive, pose, driverController));
+
         followPathNode = m_graphCommand.new GraphCommandNode(
             "FollowPath",
-            new FollowPathDrive(drive, pose, driverController, this),
+            DriveCommandFactory.createFollowPathCommand(this, drive, pose, driverController),
             new PrintCommand(""),
             new PrintCommand(""));
 
-        // bargeRelativeNode = m_graphCommand.new GraphCommandNode(
-        //     "BargeRelative",
-        //     new InstantCommand(() -> drive.stop()), // Placeholder command
-        //     new InstantCommand(() -> drive.stop()),
-        //     new PrintCommand("Arrived at BargeRelative state"));
+        bargeRelativeNode = m_graphCommand.new GraphCommandNode(
+            "BargeRelative",
+            new PrintCommand(""),
+            new PrintCommand(""),
+            DriveCommandFactory.createBargeRelativeCommand(this, drive, pose, driverController));
 
-        // climbRelativeNode = m_graphCommand.new GraphCommandNode(
-        //     "ClimbRelative",
-        //     new InstantCommand(() -> drive.stop()), // Placeholder command
-        //     new InstantCommand(() -> drive.stop()),
-        //     new PrintCommand("Arrived at ClimbRelative state"));
+        climbRelativeNode = m_graphCommand.new GraphCommandNode(
+            "ClimbRelative",
+            new PrintCommand(""),
+            new PrintCommand(""),
+            DriveCommandFactory.createClimbRelativeCommand(this, drive, pose, driverController));
 
         processorRelativeNode = m_graphCommand.new GraphCommandNode(
             "ProcessorRelative",
             new PrintCommand(""),
             new PrintCommand(""),
-            new ProcessorRelativeDrive(this, drive, pose, driverController));
-        
+            DriveCommandFactory.createProcessorRelativeCommand(this, drive, pose, driverController));
+
 
         coralStationNode = m_graphCommand.new GraphCommandNode(
             "CoralStation",
             new PrintCommand(""),
             new PrintCommand(""),
-            new CoralStationDrive(this, drive, pose, driverController));
+            DriveCommandFactory.createCoralStationCommand(this, drive, pose, driverController));
 
         reefRelativeNode = m_graphCommand.new GraphCommandNode(
             "ReefRelative",
             new PrintCommand(""),
             new PrintCommand(""),
-            new ReefRelativeDrive(this, drive, pose, driverController));
+            DriveCommandFactory.createReefRelativeCommand(this, drive, pose, driverController));
 
         reefAlignNode = m_graphCommand.new GraphCommandNode(
              "ReefAlign",
              new PrintCommand(""),
              new PrintCommand(""),
-             new ReefAlignDrive(drive, pose, driverController, this));
+             DriveCommandFactory.createReefAlignCommand(this, drive, pose, driverController));
 
         cancelledNode = m_graphCommand.new GraphCommandNode(
             "Cancelled",
             new PrintCommand(""),
             new PrintCommand(""),
-            new CancelledDrive(drive));
+            DriveCommandFactory.createCancelledCommand(drive));
 
         // Graph Command setup
         m_graphCommand.setGraphRootNode(cancelledNode); //shouldn't drive
@@ -143,41 +137,73 @@ public class DriveStateMachine extends SubsystemBase {
         cancelledNode.AddNode(coralStationNode, 1.0);
         cancelledNode.AddNode(reefRelativeNode, 1.0);
         cancelledNode.AddNode(followPathNode, 1.0);
-        //cancelledNode.AddNode(bargeRelativeNode, 1.0);
-        //cancelledNode.AddNode(climbRelativeNode, 1.0);
+        cancelledNode.AddNode(bargeRelativeNode, 1.0);
+        cancelledNode.AddNode(climbRelativeNode, 1.0);
         cancelledNode.AddNode(reefAlignNode, 1.0);
         manualNode.AddNode(cancelledNode, 1.0);
         manualNode.AddNode(processorRelativeNode, 1.0);
         manualNode.AddNode(coralStationNode, 1.0);
         manualNode.AddNode(reefRelativeNode, 1.0);
         manualNode.AddNode(followPathNode, 1.0);
-        //manualNode.AddNode(bargeRelativeNode, 1.0);
-        //manualNode.AddNode(climbRelativeNode, 1.0);
+        manualNode.AddNode(bargeRelativeNode, 1.0);
+        manualNode.AddNode(climbRelativeNode, 1.0);
         manualNode.AddNode(reefAlignNode, 1.0);
         processorRelativeNode.AddNode(manualNode, 1.0);
         processorRelativeNode.AddNode(cancelledNode, 1.0);
         processorRelativeNode.AddNode(coralStationNode, 1.0);
         processorRelativeNode.AddNode(reefRelativeNode, 1.0);
         processorRelativeNode.AddNode(followPathNode, 1.0);
-        //processorRelativeNode.AddNode(bargeRelativeNode, 1.0);
-        //processorRelativeNode.AddNode(climbRelativeNode, 1.0);
+        processorRelativeNode.AddNode(bargeRelativeNode, 1.0);
+        processorRelativeNode.AddNode(climbRelativeNode, 1.0);
         processorRelativeNode.AddNode(reefAlignNode, 1.0);
         coralStationNode.AddNode(manualNode, 1.0);
         coralStationNode.AddNode(cancelledNode, 1.0);
         coralStationNode.AddNode(processorRelativeNode, 1.0);
         coralStationNode.AddNode(reefRelativeNode, 1.0);
         coralStationNode.AddNode(followPathNode, 1.0);
-        //coralStationNode.AddNode(bargeRelativeNode, 1.0);
-        //coralStationNode.AddNode(climbRelativeNode, 1.0);
+        coralStationNode.AddNode(bargeRelativeNode, 1.0);
+        coralStationNode.AddNode(climbRelativeNode, 1.0);
         coralStationNode.AddNode(reefAlignNode, 1.0);
         reefRelativeNode.AddNode(manualNode, 1.0);
         reefRelativeNode.AddNode(cancelledNode, 1.0);
         reefRelativeNode.AddNode(processorRelativeNode, 1.0);
         reefRelativeNode.AddNode(coralStationNode, 1.0);
         reefRelativeNode.AddNode(followPathNode, 1.0);
-        //reefRelativeNode.AddNode(bargeRelativeNode, 1.0);
-        //reefRelativeNode.AddNode(climbRelativeNode, 1.0);
-        reefRelativeNode.AddNode(reefAlignNode, 1.0); 
+        reefRelativeNode.AddNode(bargeRelativeNode, 1.0);
+        reefRelativeNode.AddNode(climbRelativeNode, 1.0);
+        reefRelativeNode.AddNode(reefAlignNode, 1.0);
+        followPathNode.AddNode(cancelledNode, 1.0);
+        followPathNode.AddNode(manualNode, 1.0);
+        followPathNode.AddNode(processorRelativeNode, 1.0);
+        followPathNode.AddNode(coralStationNode, 1.0);
+        followPathNode.AddNode(reefRelativeNode, 1.0);
+        followPathNode.AddNode(bargeRelativeNode, 1.0);
+        followPathNode.AddNode(climbRelativeNode, 1.0);
+        followPathNode.AddNode(reefAlignNode, 1.0);
+        bargeRelativeNode.AddNode(cancelledNode, 1.0);
+        bargeRelativeNode.AddNode(manualNode, 1.0);
+        bargeRelativeNode.AddNode(processorRelativeNode, 1.0);
+        bargeRelativeNode.AddNode(coralStationNode, 1.0);
+        bargeRelativeNode.AddNode(reefRelativeNode, 1.0);
+        bargeRelativeNode.AddNode(followPathNode, 1.0);
+        bargeRelativeNode.AddNode(climbRelativeNode, 1.0);
+        bargeRelativeNode.AddNode(reefAlignNode, 1.0);
+        climbRelativeNode.AddNode(cancelledNode, 1.0);
+        climbRelativeNode.AddNode(manualNode, 1.0);
+        climbRelativeNode.AddNode(processorRelativeNode, 1.0);
+        climbRelativeNode.AddNode(coralStationNode, 1.0);
+        climbRelativeNode.AddNode(reefRelativeNode, 1.0);
+        climbRelativeNode.AddNode(followPathNode, 1.0);
+        climbRelativeNode.AddNode(bargeRelativeNode, 1.0);
+        climbRelativeNode.AddNode(reefAlignNode, 1.0);
+        reefAlignNode.AddNode(cancelledNode, 1.0);
+        reefAlignNode.AddNode(manualNode, 1.0);
+        reefAlignNode.AddNode(processorRelativeNode, 1.0);
+        reefAlignNode.AddNode(coralStationNode, 1.0);
+        reefAlignNode.AddNode(reefRelativeNode, 1.0);
+        reefAlignNode.AddNode(followPathNode, 1.0);
+        reefAlignNode.AddNode(bargeRelativeNode, 1.0);
+        reefAlignNode.AddNode(climbRelativeNode, 1.0);
 
     }
 

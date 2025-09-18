@@ -5,20 +5,16 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
-import frc.robot.commands.DriveCommands.ManualDrive;
 import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.IntakeCoral;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
 import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
 import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
-import frc.robot.commands.ElevatorManipulator.L3PostScore;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
@@ -219,27 +215,30 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new ScoreCoral(this, m_manipulator));
 
             l1PostScoreNode = m_graphCommand.new GraphCommandNode(
-                "L1PostScore", 
-                new PrintCommand(""),
+                "L1PostScore",
+                ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L1_POST_SCORE),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l2PostScoreNode = m_graphCommand.new GraphCommandNode(
-                "L2PostScore", 
-                new L3PostScore(this, m_diff, m_elevator),
+                "L2PostScore",
+                ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L2_POST_SCORE),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
             l3PostScoreNode = m_graphCommand.new GraphCommandNode(
-                "L3PostScore", 
-                new L3PostScore(this, m_diff, m_elevator),
+                "L3PostScore",
+                ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L3_POST_SCORE),
                 new PrintCommand(""),
-                new PrintCommand(""));  
+                new PrintCommand(""));
 
             l4PostScoreNode = m_graphCommand.new GraphCommandNode(
                 "L4PostScore",
-                ManipulatorPositionCommandFactory.createPrepCommand(
-                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L4),
+                ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.L4_POST_SCORE),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
