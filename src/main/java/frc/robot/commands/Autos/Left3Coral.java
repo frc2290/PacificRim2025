@@ -36,7 +36,7 @@ public class Left3Coral extends SequentialCommandGroup {
                 Commands.runOnce(() -> pose.setCurrentPose(startToReef.getStartingHolonomicPose().get())),
                 Commands.runOnce(() -> {
                     driveState.setDriveCommand(DriveState.FOLLOW_PATH);
-                    coordinator.score(false);
+                    coordinator.requestToScore(false);
                     coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
                 }),
                 routineFactory.scoreCoral(startToReef, RobotState.L4),

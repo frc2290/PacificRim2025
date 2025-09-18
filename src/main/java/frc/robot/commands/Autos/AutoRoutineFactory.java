@@ -44,10 +44,10 @@ public class AutoRoutineFactory {
                 coordinator.setRobotGoal(targetState);
             }),
             Commands.parallel(new SwerveAutoStep(path, pose), manipulatorState.waitUntilReady()),
-            Commands.runOnce(() -> coordinator.score(true)),
+            Commands.runOnce(() -> coordinator.requestToScore(true)),
             new ScoreCoral(manipulatorState, manipulator),
             Commands.runOnce(() -> {
-                coordinator.score(false);
+                coordinator.requestToScore(false);
                 coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
             }),
             manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL)
@@ -61,7 +61,7 @@ public class AutoRoutineFactory {
         return new SequentialCommandGroup(
             Commands.runOnce(() -> {
                 manipulatorState.atGoalState(false);
-                coordinator.score(false);
+                coordinator.requestToScore(false);
                 coordinator.setRobotGoal(RobotState.INTAKE_CORAL);
             }),
             Commands.parallel(new SwerveAutoStep(path, pose), Commands.waitUntil(() -> manipulator.hasCoral())),

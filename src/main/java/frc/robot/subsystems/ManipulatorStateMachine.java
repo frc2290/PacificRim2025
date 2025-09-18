@@ -18,7 +18,7 @@ import frc.robot.commands.ElevatorManipulator.IntakeCoral;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
 import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
 import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
-import frc.robot.commands.ElevatorManipulator.ScoreL4;
+import frc.robot.commands.ElevatorManipulator.L3PostScore;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
@@ -210,8 +210,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.L3),
                 new PrintCommand(""),
                 new ScoreCoral(this, m_manipulator));
-
-
+            
             scoreL4Node = m_graphCommand.new GraphCommandNode(
                 "ScoreL4",
                 ManipulatorPositionCommandFactory.createScoreCommand(
@@ -379,6 +378,11 @@ public class ManipulatorStateMachine extends SubsystemBase {
      */
     public void setatGoalState(boolean state){
         atGoalState = state;
+    }
+    
+    // Backwards-compatible setter used by existing commands
+    public void atGoalState(boolean state){
+        setatGoalState(state);
     }
     
     //should only be used by commands, lets scoring command know that systems are ready to score
