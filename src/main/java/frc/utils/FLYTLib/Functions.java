@@ -1,6 +1,7 @@
 package frc.utils.FLYTLib;
 import java.lang.Math;
 
+/** Collection of math helpers retained from the original FLYT library. */
 public class Functions {
 
 

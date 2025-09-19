@@ -1,2 +1,2 @@
-# PacificRim2025
-FRC season 2025, FLYT 2029
+# PacificRim2025 — Excelsior
+FRC season 2025, Team FLYT 2290

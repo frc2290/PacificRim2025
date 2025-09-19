@@ -21,6 +21,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Manipulator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
+/** Controls the manipulator roller and tracks whether game pieces are held. */
 public class ManipulatorSubsystem extends SubsystemBase {
 
     private SparkFlex manipulatorMotor;
@@ -31,11 +32,15 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     private SparkLimitSwitch manipulatorLimitSwitch;
 
+    /** Debounce used to filter the beam break input so bumps do not cause false drops. */
     Debouncer coralDebounce = new Debouncer(0.05);
 
+    /** Tracks whether a coral is currently held. */
     private boolean hasCoral = true;
+    /** Tracks whether algae is currently held. */
     private boolean hasAlgae = false;
 
+    /** Dashboard logger providing intake telemetry to AdvantageScope. */
     private FlytLogger manipDash = new FlytLogger("Manipulator");
 
     public ManipulatorSubsystem (){
@@ -107,6 +112,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     }
 
     public boolean seesCoral() {
+        // Debounce the beam break so momentary drops from vibration do not toggle state.
         return coralDebounce.calculate(manipulatorLimitSwitch.isPressed());
     }
 

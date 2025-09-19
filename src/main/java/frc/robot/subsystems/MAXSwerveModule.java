@@ -25,6 +25,7 @@ import com.revrobotics.RelativeEncoder;
 import frc.robot.Configs;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
+/** Wrapper around a single REV MAXSwerve module that handles configuration and state reporting. */
 public class MAXSwerveModule {
     private final SparkFlex m_drivingSpark;
     private final SparkMax m_turningSpark;
@@ -41,6 +42,7 @@ public class MAXSwerveModule {
     @SuppressWarnings("unused")
     private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.13569, 2.2311);
 
+    /** Logger used to inspect per-module telemetry during tuning sessions. */
     private FlytLogger test = new FlytLogger("Swerve");
 
     /**

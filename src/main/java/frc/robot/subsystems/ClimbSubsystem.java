@@ -25,11 +25,15 @@ import frc.robot.Constants.Climber;
 import frc.robot.Constants.DriveConstants;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;;
 
+/** Controls the telescoping climb winch and the servo that deploys the hook. */
 public class ClimbSubsystem extends SubsystemBase {
     private SparkMax leftMotor;
 
+    /** PWM servo that deploys or retracts the climb hook. */
     private Servo servo;
+    /** Stored servo angle when the hook is deployed. */
     private double servoOpen = 90;
+    /** Stored servo angle when the hook is safely stowed. */
     private double servoClosed = 180;
 
     private SparkClosedLoopController climber;
@@ -38,16 +42,22 @@ public class ClimbSubsystem extends SubsystemBase {
 
     private SparkMaxConfig leftConfig = new SparkMaxConfig();
 
+    /** Latest requested winch position in native encoder units. */
     private double climberSetpoint = 0;
 
+    /** Desired time (seconds) to move between the in and out setpoints. */
     public double tClimb = 2;
+    /** Slew-rate (units/sec) derived from the travel time so the winch accelerates smoothly. */
     public double vSlewrate = Math.abs((Climber.climberOutSetpoint - Climber.climberInSetpoint) / tClimb);
+    /** Approximate drive distance covered while the winch is moving, used for dashboard context. */
     public double climbDistance = (Units.inchesToMeters(20)/DriveConstants.kMaxSpeedMetersPerSecond);
 
+    /** Limits how quickly the climb setpoint changes to protect the hook and winch. */
     private SlewRateLimiter climberSlew = new SlewRateLimiter(vSlewrate);
 
     private boolean climbing = false;
 
+    /** Dashboard logger used to stream climb telemetry for tuning. */
     private FlytLogger climbDash = new FlytLogger("Climb");
 
     /** Creates a new ClimbSubsystem. */
@@ -145,6 +155,7 @@ public class ClimbSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         if (!climbing) {
+            // Slew-limit the setpoint to avoid sudden shocks on the climb structure.
             climber.setReference(climberSlew.calculate(climberSetpoint), ControlType.kPosition);
         }
         // This method will be called once per scheduler run

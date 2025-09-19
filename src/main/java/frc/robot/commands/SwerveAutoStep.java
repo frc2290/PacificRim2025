@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.utils.PoseEstimatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+/** Generates a trajectory on the fly and feeds it to the pose estimator one sample at a time. */
 public class SwerveAutoStep extends Command {
     PathPlannerPath path;
     PathPlannerTrajectory trajectory;
@@ -21,7 +22,10 @@ public class SwerveAutoStep extends Command {
 
     Timer timer;
 
-    /** Creates a new SwerveAutoCommand. */
+    /**
+     * Creates a command that streams trajectory samples to the drive subsystem using the current
+     * robot velocity as the starting condition.
+     */
     public SwerveAutoStep(PathPlannerPath _path, PoseEstimatorSubsystem _pose) {
         path = _path;
         pose = _pose;
@@ -32,6 +36,7 @@ public class SwerveAutoStep extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        // Build a trajectory using the current robot state as the starting conditions.
         trajectory = path.generateTrajectory(pose.getChassisSpeeds(), pose.getCurrentRotation(), pose.getRobotConfig());
         timer.restart();
     }
@@ -40,6 +45,7 @@ public class SwerveAutoStep extends Command {
     @Override
     public void execute() {
         Pose2d target = trajectory.sample(timer.get()).pose;
+        // Provide the desired pose to the drive state machine so it can follow the path.
         pose.setTargetPose(target);
     }
 
@@ -48,7 +54,8 @@ public class SwerveAutoStep extends Command {
     public void end(boolean interrupted) {
         timer.stop();
         System.out.println("Time for " + path.name + ": " + timer.get());
-        pose.setTargetPose(trajectory.getEndState().pose);
+        // Snap to the final pose to avoid drift if the drive command was interrupted early.
+       pose.setTargetPose(trajectory.getEndState().pose);
     }
 
     // Returns true when the command should end.

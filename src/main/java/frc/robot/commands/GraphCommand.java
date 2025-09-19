@@ -11,6 +11,11 @@ import java.util.Map;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 
+/**
+ * Executes {@link Command}s along a directed graph. This utility allows complex mechanisms to
+ * move through a defined sequence of waypoints while still reacting to new targets the driver
+ * selects.
+ */
 public class GraphCommand extends Command {
 
     private GraphCommandNode m_rootNode = null;
@@ -20,6 +25,7 @@ public class GraphCommand extends Command {
     private boolean m_isTransitioning = false;
     private boolean m_isInitialized = false;
 
+    /** Reference to the command that is currently running during a transition. */
     private Command m_command = null;
 
     /** Creates a new GraphCommand. */
@@ -62,6 +68,7 @@ public class GraphCommand extends Command {
         }
     }
 
+    /** @return true while a waypoint or target command is scheduled. */
     public boolean isTransitioning() {
         return m_isTransitioning;
     }
@@ -147,14 +154,17 @@ public class GraphCommand extends Command {
         return false;
     }
 
+    /** Sets which node the graph is currently occupying. */
     public void setCurrentNode(GraphCommandNode node) {
         m_currentNode = node;
     }
 
+    /** @return The node the graph believes it is currently on. */
     public GraphCommandNode getCurrentNode() {
         return m_currentNode;
     }
 
+    /** Requests a new target node for the graph to route toward. */
     public void setTargetNode(GraphCommandNode node) {
         // if the graph isn't transitioning set the next node and move on
         if (!m_isTransitioning) {
@@ -223,6 +233,10 @@ public class GraphCommand extends Command {
         m_targetNode = node;
     }
 
+    /**
+     * Node within the navigation graph. Each node knows about its neighbor links and the commands to
+     * run when visited.
+     */
     public class GraphCommandNode {
         private Map<String, GraphCommandNodeLink> m_neighborLinks = new HashMap<>();
         private Map<String, GraphCommandNodeLink> m_optimizedLinks = null;
@@ -250,6 +264,11 @@ public class GraphCommand extends Command {
             m_arrivedCommand = arrivedCommand;
         }
 
+        /**
+         * @param target Node to measure against.
+         * @return The cost of traveling from this node to the target after optimization. If there is
+         *         no path, {@code Double.MAX_VALUE} is returned.
+         */
         public double getCost(GraphCommandNode target) {
             assert (target != null) : " Target node cannot be null.";
             assert (m_optimizedLinks != null) : " Graph must be optimized first.";
@@ -264,6 +283,12 @@ public class GraphCommand extends Command {
             return link.m_cost;
         }
 
+        /**
+         * Determines the next hop to take when traveling toward the supplied target node.
+         *
+         * @param node Node to reach.
+         * @return The waypoint to visit next or {@code null} if the node is already at the target.
+         */
         public GraphCommandNode getNextNodeGivenTarget(GraphCommandNode node) {
             GraphCommandNodeLink link = m_optimizedLinks.get(node.m_nodeName);
 
@@ -283,6 +308,7 @@ public class GraphCommand extends Command {
             return link.m_wayPointNode;
         }
 
+        /** Adds the node and all descendants to the provided lookup map. */
         public void getNodeMap(Map<String, GraphCommandNode> nodes) {
             nodes.put(m_nodeName, this);
 

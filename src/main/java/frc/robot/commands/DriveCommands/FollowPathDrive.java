@@ -10,27 +10,28 @@ import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
 
+/** Command used during autonomous path following to hold the driver input as overrides. */
 public class FollowPathDrive extends Command{
 
-    //imports
     private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    //pid
+    // PID controllers that steer the robot back onto the planned path.
     private PIDController rotPid;
     private PIDController xPid;
     private PIDController yPid;
 
-    //pos estimator
+    // Cached path targets used to compute heading corrections each cycle.
     private double rotTarget = 0;
     private double rotSpeed = 0;
     private Pose2d targetPose = new Pose2d();
 
-    /*
-     * Command to align neareest reef (usually has note)
-     **/
+    /**
+     * Creates a command that mirrors the autonomous path follower. It keeps the driver input
+     * available as an override while PID loops steer toward the path planner target pose.
+     */
     public FollowPathDrive(DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController, DriveStateMachine m_driverMachine) {
         stateMachine = m_driverMachine;
         poseEstimator = m_poseEstimator;
@@ -45,7 +46,7 @@ public class FollowPathDrive extends Command{
         addRequirements(drive);
     }
 
-    // Called when the command is initially scheduled. Not used right now
+    // Called when the command is initially scheduled. Not used right now.
     @Override
     public void initialize() {
         // stateSubsystem.setDriveState(StateMachine.DriveState.REEF_RELATIVE);
@@ -60,21 +61,21 @@ public class FollowPathDrive extends Command{
     @Override
     public void execute(){
 
-        //Get current controller inputs
+        // Get current controller inputs.
         double xPower = -MathUtil.applyDeadband(driverController.getLeftY(), OIConstants.kDriveDeadband);
         double yPower = -MathUtil.applyDeadband(driverController.getLeftX(), OIConstants.kDriveDeadband);
         double rotPower = -MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
 
-        //Rotation override else automatic angling
+        // Rotation override else automatic angling.
         if (rotPower != 0) {
             drive.drive(
                 xPower,
                 yPower,
                 rotPower,
                 true);
-        }else{
-            
-            targetPose = poseEstimator.getTargetPose(); // Target pose set by autos
+        } else {
+
+            targetPose = poseEstimator.getTargetPose(); // Target pose set by autos.
             rotTarget = targetPose.getRotation().getDegrees();
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
             xPower = xPid.calculate(poseEstimator.getCurrentPose().getX(), targetPose.getX());
@@ -87,6 +88,7 @@ public class FollowPathDrive extends Command{
             //xPower = vCmd * Math.cos(modifier);
             //yPower = vCmd * Math.sin(modifier);
 
+            // Drive toward the stored target pose while maintaining the requested heading.
             drive.drive(xPower, yPower, rotSpeed, true);
             //drive.drive(xFilter.calculate(xPower), yFilter.calculate(yPower), rotFilter.calculate(rotSpeed), true);
         }

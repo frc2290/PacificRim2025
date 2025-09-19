@@ -33,15 +33,14 @@ import frc.robot.commands.Autos.Right1Coral;
 import frc.robot.commands.Autos.Right2Coral;
 import frc.robot.commands.Autos.Right3Coral;
 
-/*
- * This class is where the bulk of the robot should be declared.  Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
- * (including subsystems, commands, and button mappings) should be declared here.
+/**
+ * Central wiring hub for Excelsior. This container builds subsystems, registers default commands,
+ * publishes autonomous routines, and binds the driver controller so the rest of the code can focus
+ * on describing behaviors instead of input plumbing.
  */
 public class RobotContainer {
     private final LEDUtility m_ledUtility;
-    // The robot's subsystems
+    // The robot's subsystems.
     private final DriveSubsystem m_robotDrive;
     private final PoseEstimatorSubsystem m_poseEstimator;
     private final ElevatorSubsystem m_elevator;
@@ -53,9 +52,10 @@ public class RobotContainer {
     private final StateMachineCoardinator m_coardinator;
 
     // The driver's controller
+    /** Driver joystick used for all manual control. */
     XboxController m_driverController;
 
-    // Auto Chooser for Dashboard
+    /** Shuffleboard chooser that lets the drive team pick an auto routine each match. */
     SendableChooser<Command> auto_chooser = new SendableChooser<>();
 
     /**
@@ -85,9 +85,10 @@ public class RobotContainer {
         m_ManipulatorStateMachine = _ManipulatorStateMachine;
         m_coardinator = _coardinator;
 
-        // Configure the button bindings
+        // Configure the button bindings.
         configureButtonBindings();
 
+        // Register each LED strip with the helper so state machines can update them by name.
         m_ledUtility.addStrip("Left", 0, 61);
         m_ledUtility.addStrip("TopLeft", 62, 71);
         m_ledUtility.addStrip("Right", 72, 133);
@@ -107,6 +108,7 @@ public class RobotContainer {
             m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
         auto_chooser.addOption("Middle1Coral", new Middle1Coral(
             m_poseEstimator, m_drive_state, m_coardinator, m_ManipulatorStateMachine, m_manipulator));
+        // Expose the options to the dashboard so the drive team can select before each match.
         SmartDashboard.putData(auto_chooser);
 
 
@@ -124,7 +126,8 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
 
-        // Button definitions
+        // Button definitions.
+        // Map the raw controller buttons to descriptive names for readability.
         JoystickButton a_button = new JoystickButton(m_driverController, Button.kA.value);
         JoystickButton b_button = new JoystickButton(m_driverController, Button.kB.value);
         JoystickButton y_button = new JoystickButton(m_driverController, Button.kY.value);
@@ -142,10 +145,11 @@ public class RobotContainer {
         POVButton dpad_left = new POVButton(m_driverController, 270);
         POVButton dpad_right = new POVButton(m_driverController, 90);
 
-        Trigger not_left_stick = left_stick.negate(); // Trigger to check if left stick is not pressed in
-        Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in
+        Trigger not_left_stick = left_stick.negate(); // Trigger to check if left stick is not pressed in.
+        Trigger not_right_stick = right_stick.negate(); // Trigger to check if right stick is not pressed in.
+        // Profile triggers make it easy to reuse button bindings while the controller changes modes.
         Trigger coral_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.DEFAULT_CORAL);
-        Trigger algae_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.ALGAE);    
+        Trigger algae_profilTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.ALGAE);
         Trigger manual_profileTrigger = new Trigger(() -> m_coardinator.getCurrentControllerProfile() == StateMachineCoardinator.ControllerProfile.MANUAL);
 
 
@@ -154,49 +158,49 @@ public class RobotContainer {
 
 
 
-        // Controller Buttons
-        (a_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.INTAKE_CORAL))); // Set to L1
-        (b_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L2))); // Set to L2
-        (y_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L3))); // Set to L3
-        (x_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L4))); // Set to L4
-        //back_button.onTrue(m_state.cancelCommand()); // Cancel current state  RECHECK
-        //start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls DO WE NEED THIS
+        // Controller buttons.
+        (a_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.INTAKE_CORAL))); // Request the intake coral routine.
+        (b_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L2))); // Request the L2 scoring routine.
+        (y_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L3))); // Request the L3 scoring routine.
+        (x_button).and(coral_profilTrigger).onTrue(new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.L4))); // Request the L4 scoring routine.
+        // back_button.onTrue(m_state.cancelCommand()); // Cancel current state. Revisit if we restore the legacy state machine.
+        // start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver controls.
 
-        // Controller Bumpers
-        (left_bumper).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRightScore(false))); // Set score to left branch
-        (right_bumper).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRightScore(true))); // Set score to right branch
+        // Controller bumpers.
+        (left_bumper).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRightScore(false))); // Select the left reef branch.
+        (right_bumper).and(not_left_stick).onTrue(new InstantCommand(() -> m_coardinator.setRightScore(true))); // Select the right reef branch.
         
-        // Controller D-Pad
-        //dpad_up.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL3)); // Algae L3
-        //dpad_down.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL2)); // Algae L2
-        //dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); //run intake
+        // Controller D-Pad.
+        // dpad_up.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL3)); // Algae L3.
+        // dpad_down.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL2)); // Algae L2.
+        // dpad_right.and(not_right_stick).onTrue(m_manipulator.runIntake(-0.9)).onFalse(m_manipulator.runIntake(0)); // Run intake.
         
-        // Controller Triggers
-        left_trigger.onTrue(new InstantCommand(() -> m_coardinator.setReefAlign(true))).onFalse(new InstantCommand(() -> m_coardinator.setReefAlign(false))); //While held will try to align with the reef
+        // Controller triggers.
+        left_trigger.onTrue(new InstantCommand(() -> m_coardinator.setReefAlign(true))).onFalse(new InstantCommand(() -> m_coardinator.setReefAlign(false))); // While held the robot tries to align with the reef.
         right_trigger.onTrue(new InstantCommand(() -> m_coardinator.requestToScore(true))).onFalse(new InstantCommand(() -> m_coardinator.requestToScore(false)));
 
 
 
 
-        //IDK what is this, if that is logic, it should be inside state machine
-        //hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
+        // Legacy logic for automatically switching modes lives in the state machine now.
+        // hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
 
-        // Manual controls
-        dpad_up.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)), new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL)))); //coral mode
-        dpad_down.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.ALGAE))); //algae mode
-        dpad_left.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)), new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.MANUAL)))); // manula mode
-        //dpad_right.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)));
+        // Manual controls.
+        dpad_up.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)), new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL)))); // Coral profile with safe travel goal.
+        dpad_down.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.ALGAE))); // Algae profile.
+        dpad_left.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)), new InstantCommand(() -> m_coardinator.setRobotGoal(RobotState.MANUAL)))); // Manual profile.
+        // dpad_right.and(not_right_stick).toggleOnTrue(new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)));
 
-        manual_profileTrigger.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up
-        manual_profileTrigger.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down
-        manual_profileTrigger.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out
-        manual_profileTrigger.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in
-        manual_profileTrigger.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out
-        manual_profileTrigger.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in
+        manual_profileTrigger.and(y_button).onTrue(m_elevator.incrementElevatorSetpoint(0.025)); // Manual move elevator up.
+        manual_profileTrigger.and(a_button).onTrue(m_elevator.incrementElevatorSetpoint(-0.025)); // Manual move elevator down.
+        manual_profileTrigger.and(x_button).onTrue(m_DiffArm.incrementExtensionSetpoint(5)); // Manual move diff arm out.
+        manual_profileTrigger.and(b_button).onTrue(m_DiffArm.incrementExtensionSetpoint(-5)); // Manual move diff arm in.
+        manual_profileTrigger.and(left_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(5)); // Manual rotate diff arm out.
+        manual_profileTrigger.and(right_bumper).onTrue(m_DiffArm.incrementRotationSetpoint(-5)); // Manual rotate diff arm in.
         
-        //Other
-        right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen())); // Manual servo open
-        right_stick.and(dpad_right).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading())); // Manual heading reset
+        // Other controls.
+        right_stick.and(dpad_left).onTrue(new InstantCommand(() -> m_climber.setServoOpen())); // Manual servo open.
+        right_stick.and(dpad_right).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading())); // Manual heading reset.
     }
 
     /**

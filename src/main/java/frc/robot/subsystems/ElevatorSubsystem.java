@@ -26,13 +26,16 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 //import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 //import frc.utils.FLYTLib.FLYTMotorLib.SparkFlexController;
 
+/** Controls the elevator carriage that raises and lowers the manipulator. */
 public class ElevatorSubsystem extends SubsystemBase {
 
     //motor group
     //FlytMotorController leftMotor; 
     //FlytMotorController rightMotor;
 
+    /** Motion-profiled PID that commands elevator velocity while respecting trapezoid limits. */
     private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 1, new TrapezoidProfile.Constraints(2.5, 9));
+    /** Feedforward tuned for the elevator to counteract gravity and inertia. */
     private ElevatorFeedforward feedforward = new ElevatorFeedforward(Elevator.kS, Elevator.kG, Elevator.kV, Elevator.kA);
 
     private SparkFlex leftMotor;
@@ -45,10 +48,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private RelativeEncoder leftEnc;
 
+    /** Dashboard logger used to monitor elevator performance. */
     private FlytLogger elevatorDash = new FlytLogger("Elevator");
 
+    /** Desired carriage height in meters. */
     private double elevatorSetpoint = 0;
 
+    /** Experimental controller kept for future tuning experiments. */
     private ExponentialProfiledPIDController expPidController = new ExponentialProfiledPIDController(0.0, 0.0, 0.0, ExponentialProfile.Constraints.fromCharacteristics(0.0, 0.0, 0.0));
 
     //private SlewRateLimiter elevatorSlew = new SlewRateLimiter(3);

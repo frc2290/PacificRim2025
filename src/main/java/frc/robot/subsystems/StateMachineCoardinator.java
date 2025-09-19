@@ -12,20 +12,28 @@ import frc.utils.LEDEffects;
 import frc.utils.LEDEffects.LEDEffect;
 import frc.utils.LEDUtility;
 
+/** Bridges the drive and manipulator state machines while updating LEDs for feedback. */
 public class StateMachineCoardinator extends SubsystemBase {
 
         //attributes
+        /** Tracks whether the manipulator currently holds algae. */
         private boolean hasAlgae = false;
+        /** Mirrors the robot enable state so LEDs can be updated appropriately. */
         private boolean isDisabled = true;
+        /** Indicates whether autonomous mode is active. */
         private boolean isAuto = false;
+        /** True while the driver is holding the reef alignment trigger. */
         private boolean reefAligned = false;
+        /** Active controller profile that dictates button bindings. */
         private ControllerProfile currentProfile = ControllerProfile.DEFAULT_CORAL;
+        /** Latest global goal state requested by the driver or auto routine. */
         private RobotState goalState = RobotState.START_POSITION;
         
 
         private DriveStateMachine driveSM;
         private ManipulatorStateMachine manipulatorSM;
         private FlytDashboardV2 dashboard = new FlytDashboardV2("Coardinator");
+        /** Helper for setting global LED patterns based on robot state. */
         private LEDUtility ledUtility;
 
         public enum RobotState{
@@ -104,6 +112,7 @@ public class StateMachineCoardinator extends SubsystemBase {
         }
 
         public void setControllerProfile(ControllerProfile profile){
+                // Drivers can swap profiles to expose different button mappings and LED themes.
                 currentProfile = profile;
                 //also runs a command do robot does not weirdly go into werid previouse state if got stuck
         }
@@ -203,11 +212,11 @@ public class StateMachineCoardinator extends SubsystemBase {
                 manipulatorSM.score(score);
         }
 
-     /**
+    /**
      * Handle automatic state transitions based on current states and state conditions
      */
     private void handleAutomaticTransitions() {
-        
+
         //robot is not disabled, and driver station is enabled
         if(!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL)){
 

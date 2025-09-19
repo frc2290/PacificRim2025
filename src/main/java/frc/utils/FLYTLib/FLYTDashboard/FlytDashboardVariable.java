@@ -8,14 +8,17 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.Topic;
 
+/** Represents a single value published to the FLYT dashboard. */
 public class FlytDashboardVariable {
 
     private String name;
     private boolean debug;
+    /** Cached supplier used when the variable publishes boolean values. */
     private Supplier<Boolean> boolSupplier;
     private Supplier<Integer> intSupplier;
     private Supplier<Double> doubleSupplier;
     private Supplier<String> stringSupplier;
+    /** Keeps track of the active data type so the update() switch can publish correctly. */
     private int type = 0;
     private Topic topic;
     private GenericPublisher publisher;

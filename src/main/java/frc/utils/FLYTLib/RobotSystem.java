@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.FLYTLib.FLYTDashboard.OldStuff.PDHDashboard;
 
+/** Legacy subsystem that exposes the NavX and PDH over NetworkTables. */
 public class RobotSystem extends SubsystemBase{
 
 
@@ -20,6 +21,7 @@ public class RobotSystem extends SubsystemBase{
 
     //Rev power distribution panel
     private PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);//set it up
+    /** Dashboard view that publishes PDH telemetry over NetworkTables. */
     private PDHDashboard PDHDash = new PDHDashboard(PDH); //initialize the dashboard
 
     

@@ -36,6 +36,7 @@ public final class Constants {
 
     public static final boolean debugMode = true;
 
+    /** Constants that configure the climb winches and their soft limits. */
     public static final class Climber {
         public static final int kLeftClimberMotorId = 8;
         public static final int kRightClimberMotorId = 81;
@@ -55,6 +56,7 @@ public final class Constants {
         public static final double climberInSetpoint = -85;
     }
 
+    /** All elevator setpoints and feedforward values. */
     public static final class Elevator {
         public static final int kLeftElevatorMotorId = 50;
         public static final int kRightElevatorMotorId = 51;
@@ -84,10 +86,12 @@ public final class Constants {
 
     }
 
+    /** IDs and constants for the manipulator roller. */
     public static final class Manipulator {
         public static final int kManipulatorMotorId = 7;
     }
 
+    /** Extension and rotation constants for the differential arm. */
     public static final class DifferentialArm {
         // Motors
         public static final int kLeftMotorId = 60;
@@ -118,6 +122,7 @@ public final class Constants {
 
         public static final int kLaserCanId = 5;
 
+        // Lookup tables used for interpolating custom scoring positions.
         public static final double[][] l4RotationData = {
             {120, 235},
             {200, 240},
@@ -148,6 +153,10 @@ public final class Constants {
         };
     }
 
+    /**
+     * Pre-defined manipulator states that keep the arm and elevator synchronized. Each state is
+     * referenced by the state machines so that drivers only need to ask for goals by name.
+     */
     public static final class ElevatorManipulatorPositions {
         private ElevatorManipulatorPositions() {}
 
@@ -214,6 +223,7 @@ public final class Constants {
         public record ManipulatorPosition(double elevatorMeters, double extensionMillimeters, double rotationDegrees) {}
     }
 
+    /** Drivetrain-specific configuration such as module locations and CAN IDs. */
     public static final class DriveConstants {
         // Driving Parameters - Note that these are not the maximum capable speeds of
         // the robot, rather the allowed maximum speeds
@@ -251,6 +261,7 @@ public final class Constants {
         public static final boolean kGyroReversed = false;
     }
 
+    /** Gear ratios and kinematics values that apply to an individual swerve module. */
     public static final class ModuleConstants {
         // The MAXSwerve module can be configured with one of three pinion gears: 12T,
         // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
@@ -268,11 +279,13 @@ public final class Constants {
                 / kDrivingMotorReduction;
     }
 
+    /** Mappings for the driver controller. */
     public static final class OIConstants {
         public static final int kDriverControllerPort = 0;
         public static final double kDriveDeadband = 0.05;
     }
 
+    /** Motion limits and controller values that are specific to autonomous pathing. */
     public static final class AutoConstants {
         public static final double kMaxSpeedMetersPerSecond = 3;
         public static final double kMaxAccelerationMetersPerSecondSquared = 3;
@@ -292,10 +305,12 @@ public final class Constants {
                 kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
     }
 
+    /** Specifications that apply to all NEO brushless motors used on the robot. */
     public static final class NeoMotorConstants {
         public static final double kFreeSpeedRpm = 6784;
     }
 
+    /** Shared geometry describing the robot's vision sensors and AprilTag layout. */
     public static final class VisionConstants {
         public static final double CAMERA_HEIGHT_METERS = 0.9144;
         public static final double CAMERA_PITCH_RADIANS = degreesToRadians(45);

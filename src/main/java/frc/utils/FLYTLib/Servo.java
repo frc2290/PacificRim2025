@@ -1,6 +1,7 @@
 package frc.utils.FLYTLib;
 
 //servo class, to control simple servos that are conencted directly to roborio
+/** Placeholder servo wrapper kept for backward compatibility with older utilities. */
 public class Servo {
     Servo servo;
     

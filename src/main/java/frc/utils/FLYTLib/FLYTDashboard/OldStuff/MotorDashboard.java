@@ -6,10 +6,12 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.utils.FLYTLib.GlobalVar;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 
+/** Dashboard helper that exposes PID tuning fields for FLYT motor controllers. */
 public class MotorDashboard extends SuperDashboard {
     
     //Network tables for the controller configuration
     NetworkTable table;
+    /** Motor controller being tuned by this dashboard view. */
     FlytMotorController controller;
     private NetworkTableEntry kP, kI, kD, kFF, set,cType;
     

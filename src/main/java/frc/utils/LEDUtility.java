@@ -12,10 +12,15 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.LEDEffects.LEDEffect;
 
+/** Manages LED strips and applies predefined animation effects across the robot. */
 public class LEDUtility extends SubsystemBase {
+    /** Physical PWM LED controller driving all strips. */
     AddressableLED addressableLED;
+    /** Total number of LEDs accounted for across every registered strip. */
     int overallLength = 0;
+    /** Shared buffer that backs the addressable LED output. */
     AddressableLEDBuffer filler = new AddressableLEDBuffer(0);
+    /** List of all named strips currently managed by the utility. */
     ArrayList<LEDStrip> newLedStrips = new ArrayList<>();
 
     /** Creates a new LEDUtility. */

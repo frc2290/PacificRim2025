@@ -21,9 +21,12 @@ import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
 
+/** Coordinates the manipulator, elevator, and climb states via a graph of commands. */
 public class ManipulatorStateMachine extends SubsystemBase {
 
+    /** Graph helper that sequences manipulator poses and end-effector commands. */
     private GraphCommand m_graphCommand = new GraphCommand();
+    /** Dashboard binding used to monitor manipulator state transitions. */
     private FlytDashboardV2 dashboard = new FlytDashboardV2("ManipulatorStateMachine");
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem pose;
@@ -95,15 +98,21 @@ public class ManipulatorStateMachine extends SubsystemBase {
     GraphCommandNode cancelledNode;
 
     //variables
+    /** Tracks whether the current state has reached its goal pose. */
     private boolean atGoalState = false; //checks if it reached the final state
+    /** True when the state machine has armed the manipulator to score. */
     private boolean canScore = false; //checks final state is reached and command aproves the score
+    /** Driver request that tells the state machine to begin the scoring routine. */
     private boolean score = false; //drive sends command to score
+    /** Enables interpolation based on laser distance when targeting certain reef levels. */
     private boolean interpolate = false;
 
+    /** Flag that mirrors whether the drive subsystem is staged at its target pose. */
     private boolean driveAtPose = false;
 
 
     private boolean reachGoalStateFailed = false;
+    /** Timestamp used to time-out states that take too long. */
     private double stateEntryTime = 0.0;
 
 
@@ -119,23 +128,29 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_elevator = elevator;
         m_manipulator = manipulator;
         m_climb = climb;
-    
+
         initializeGraphCommand();
 
         // Set the root/current BEFORE scheduling it as default
         m_graphCommand.setGraphRootNode(startPositionNode);
         m_graphCommand.setCurrentNode(startPositionNode);
-        
+
         // Now register requirements and set default
         m_graphCommand.addRequirements(this);
         this.setDefaultCommand(m_graphCommand);
-        
+
     }
 
+    /**
+     * Builds the manipulator graph, mapping each logical state to the commands required to reach it
+     * safely. The graph allows the state machine to jump between presets without violating joint
+     * limits.
+     */
     private void initializeGraphCommand(){
+            // Build every node in the manipulator graph along with the command to run when we visit it.
 
             startPositionNode = m_graphCommand.new GraphCommandNode(
-                "StartPosition", 
+                "StartPosition",
                 new PrintCommand("At Start Position"),
                 new PrintCommand(""),
                 new PrintCommand(""));
@@ -364,6 +379,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     }
     
     //need for scoring, make sure drive subsystem is at pose before scoring
+    /** Called by the drive state machine to indicate whether the chassis is aligned to score. */
     public void setDriveAtPose(boolean atPose){
         driveAtPose = atPose;
     }

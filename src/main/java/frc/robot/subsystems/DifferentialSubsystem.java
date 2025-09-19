@@ -30,9 +30,12 @@ import frc.robot.commands.Waits.RotationSetWait;
 import frc.utils.LinearInterpolator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
+/** Owns the differential arm that controls manipulator rotation and extension. */
 public class DifferentialSubsystem extends SubsystemBase {
 
+    /** Motion-profiled PID that handles telescoping the arm in millimeters. */
     private ProfiledPIDController extensionPid = new ProfiledPIDController(30, 0, 1.5, new Constraints(3000, 12000));
+    /** Motion-profiled PID that rotates the arm while respecting acceleration limits. */
     private ProfiledPIDController rotationPid = new ProfiledPIDController(60, 0, 4, new Constraints(1400, 5600));
 
     private SparkMax leftMotor;
@@ -47,6 +50,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     private SparkClosedLoopController leftArm;
     private SparkClosedLoopController rightArm;
 
+    /** Dashboard helper for streaming arm telemetry to AdvantageScope. */
     private FlytLogger differentialDash = new FlytLogger("Differential");
 
     private double extensionSetpoint = 0;
@@ -57,13 +61,18 @@ public class DifferentialSubsystem extends SubsystemBase {
     @SuppressWarnings("unused")
     private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
 
+    /** Laser rangefinder mounted near the manipulator for interpolation of scoring positions. */
     private LaserCan lc;
     private int laserCanDistance = 0;
     private boolean hasLaserCanDistance = false;
 
+    /** Lookup table for upper reef rotations keyed by laser distance. */
     private LinearInterpolator l4RotationInterpolator = new LinearInterpolator(DifferentialArm.l4RotationData);
+    /** Lookup table for upper reef extensions keyed by laser distance. */
     private LinearInterpolator l4ExtensionInterpolator = new LinearInterpolator(DifferentialArm.l4ExtensionData);
+    /** Lookup table for mid reef rotations keyed by laser distance. */
     private LinearInterpolator l2_3RotationInterpolator = new LinearInterpolator(DifferentialArm.l2_3RotationData);
+    /** Lookup table for mid reef extensions keyed by laser distance. */
     private LinearInterpolator l2_3ExtensionInterpolator = new LinearInterpolator(DifferentialArm.l2_3ExtensionData);
 
     double extensionVelocity;
@@ -108,7 +117,7 @@ public class DifferentialSubsystem extends SubsystemBase {
 
         lc = new LaserCan(DifferentialArm.kLaserCanId);
 
-        // Optionally initialise the settings of the LaserCAN, if you haven't already done so in GrappleHook
+        // Configure the LaserCAN for close range measurements so the interpolators have reliable data.
         try {
             lc.setRangingMode(LaserCan.RangingMode.SHORT);
             lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
@@ -139,11 +148,13 @@ public class DifferentialSubsystem extends SubsystemBase {
         differentialDash.addIntegerPublisher("LaserCan Distance", true, () -> laserCanDistance);
     }
 
+    /** Direct percent-output control for telescoping, primarily used for testing. */
     public void extend(double setpoint) {
         leftMotor.set(setpoint);
         rightMotor.set(setpoint);
     }
 
+    /** Direct percent-output control for rotation, primarily used for testing. */
     public void rotate(double setpoint) {
         leftMotor.set(setpoint);
         rightMotor.set(-setpoint);
@@ -249,6 +260,7 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // Poll the LaserCAN for distance data that helps compute interpolated presets.
         LaserCan.Measurement measurement = lc.getMeasurement();
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT && measurement.distance_mm < 430) {
             laserCanDistance = measurement.distance_mm;
@@ -258,6 +270,8 @@ public class DifferentialSubsystem extends SubsystemBase {
             hasLaserCanDistance = false;
         }
 
+        // Convert PID outputs into velocity commands for each motor. Extension is the average, rotation
+        // is produced by commanding opposite directions on the two motors.
         extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
         rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
         //double extFeed = extFeedforward.calculate(extensionVelocity);
