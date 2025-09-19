@@ -11,27 +11,28 @@ import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
 
+/** Manual drive command reserved for aligning the robot during climbs. */
 public class ClimbRelativeDrive extends Command{
     
-    //imports
     private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    //pid
+    // PID controllers reused when auto-targeting is re-enabled.
     private PIDController rotPid;
     private PIDController xPid;
     private PIDController yPid;
 
-    //pos estimator
+    // Pose estimator caches that support the commented auto-alignment logic.
     private double rotTarget = 0;
     private double rotSpeed = 0;
     private Pose2d targetPose = new Pose2d();
 
-    /*
-     * Command to align neareest reef (usually has note)
-     **/
+    /**
+     * Creates a command used during the endgame climb sequence. The alignment PID controllers are
+     * preserved so auto-targeting can be re-enabled when finished tuning.
+     */
     public ClimbRelativeDrive(DriveStateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
         stateMachine = m_state;
@@ -47,7 +48,7 @@ public class ClimbRelativeDrive extends Command{
         addRequirements(m_drive);
     }
 
-    // Called when the command is initially scheduled. Not used right now
+    // Called when the command is initially scheduled. Not used right now.
     @Override
     public void initialize() {
         // stateSubsystem.setDriveState(StateMachine.DriveState.REEF_RELATIVE);
@@ -62,25 +63,28 @@ public class ClimbRelativeDrive extends Command{
     @Override
     public void execute(){
 
-        //Get current controller inputs
+        // Get current controller inputs.
         double xPower = -MathUtil.applyDeadband(driverController.getLeftY(), OIConstants.kDriveDeadband);
         double yPower = -MathUtil.applyDeadband(driverController.getLeftX(), OIConstants.kDriveDeadband);
         double rotPower = -MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
-        
 
-        // //Rotation override else automatic angling
+
+        // Rotation override else automatic angling.
         // if (rotPower != 0) {
         //     drive.drive(
         //         xPower,
         //         yPower,
         //         rotPower,
         //         true);
-        // }else{
-        //     //make it so robot always faces with climber towards climb structure
-        //     rotTarget = poseEstimator.turnToTarget(VisionConstants.reefCenter); 
+        // } else {
+        //     // Make it so robot always faces with climber towards climb structure.
+        //     rotTarget = poseEstimator.turnToTarget(VisionConstants.reefCenter);
         //     rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
         //     drive.drive(xPower, yPower, rotSpeed, true);
         // }
+
+        // Currently just drives under driver control; aiming logic can be restored above if needed.
+        drive.drive(xPower, yPower, rotPower, true);
 
     }
 

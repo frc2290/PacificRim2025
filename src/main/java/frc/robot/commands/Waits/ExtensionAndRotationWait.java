@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DifferentialSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+/**
+ * Sets both the differential arm extension and rotation setpoints and waits until they are reached.
+ */
 public class ExtensionAndRotationWait extends Command {
   private DifferentialSubsystem diff;
   private double extSetpoint;
@@ -39,6 +42,7 @@ public class ExtensionAndRotationWait extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // Only finish once both setpoints have been reached.
     return diff.atExtenstionSetpoint() && diff.atRotationSetpoint();
   }
 }

@@ -10,29 +10,28 @@ import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 //import frc.robot.subsystems.StateMachine;
 import frc.utils.PoseEstimatorSubsystem;
-
-
+/** Default drive command that lets the driver control the robot in field-relative mode. */
 public class ManualDrive extends Command {
 
-    //imports
     private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    //pid
+    // PID controllers reused for assisted alignment.
     private PIDController rotPid;
     private PIDController xPid;
     private PIDController yPid;
 
-    //pos estimator
+    // Cached pose targets maintained for future auto-alignment features.
     private double rotTarget = 0;
     private double rotSpeed = 0;
     private Pose2d targetPose = new Pose2d();
 
-    /*
-     * Command to just drive the with field oriented controls, default command for the the drive
-     **/
+    /**
+     * Default command that exposes field-relative arcade control for the driver. All PID members are
+     * retained so auto-alignment features can be layered in later without re-allocating them.
+     */
     public ManualDrive(DriveStateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
         stateMachine = m_state;
@@ -48,8 +47,8 @@ public class ManualDrive extends Command {
         addRequirements(m_drive);
     }
 
-    // Called when the command is initially scheduled. Not used right now
-    @Override   
+    // Called when the command is initially scheduled. Not used right now.
+    @Override
     public void initialize() {
         // stateSubsystem.setDriveState(StateMachine.DriveState.TELEOP);
         // rotPid.reset();
@@ -63,14 +62,15 @@ public class ManualDrive extends Command {
     @Override
     public void execute(){
 
-        //Get current controller inputs
+        // Get current controller inputs.
         double xPower = -MathUtil.applyDeadband(driverController.getLeftY(), OIConstants.kDriveDeadband);
         double yPower = -MathUtil.applyDeadband(driverController.getLeftX(), OIConstants.kDriveDeadband);
         double rotPower = -MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
 
-        //Square inputs for finer control at low speeds TEST OUT LATER
+        // Square inputs for finer control at low speeds. Test out later.
         //xPower = Math.copySign(xPower * xPower, xPower);
 
+        // Send the requested chassis speeds to the drive subsystem.
         drive.drive(xPower, yPower, rotPower, true);
     }
 

@@ -13,6 +13,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+/** Wrapper that configures a SPARK MAX using the legacy FLYT API. */
 public class SparkMaxController extends FlytMotorController {
 
     /*
@@ -20,6 +21,7 @@ public class SparkMaxController extends FlytMotorController {
      */
     //motor controller
     SparkMax sparkMax; //General controller
+    /** Configuration container shared across setup calls. */
     SparkMaxConfig config; //Controller configuration objects
 
     //encoders
@@ -40,6 +42,7 @@ public class SparkMaxController extends FlytMotorController {
     private boolean e_absalute = false; //check if specified encoder is absalute
     private boolean pidREADY =  false; //checks and sees if pid setup was successfully used
     private ControlType controlType; //control type
+    /** CAN device ID associated with this controller. */
     private double motorID; //motor id
 
     /**

@@ -24,6 +24,9 @@ public class AutoRoutineFactory {
     private final ManipulatorStateMachine manipulatorState;
     private final ManipulatorSubsystem manipulator;
 
+    /**
+     * Creates a helper that can be reused by each autonomous routine to share core steps.
+     */
     public AutoRoutineFactory(PoseEstimatorSubsystem pose,
                               StateMachineCoardinator coordinator,
                               ManipulatorStateMachine manipulatorState,
@@ -40,13 +43,17 @@ public class AutoRoutineFactory {
     public Command scoreCoral(PathPlannerPath path, RobotState targetState) {
         return new SequentialCommandGroup(
             Commands.runOnce(() -> {
+                // Tell the manipulator state machine which goal we are chasing.
                 manipulatorState.atGoalState(false);
                 coordinator.setRobotGoal(targetState);
             }),
+            // Drive to the reef while the manipulator moves in parallel.
             Commands.parallel(new SwerveAutoStep(path, pose), manipulatorState.waitUntilReady()),
+            // Once staged, request the scoring action.
             Commands.runOnce(() -> coordinator.requestToScore(true)),
             new ScoreCoral(manipulatorState, manipulator),
             Commands.runOnce(() -> {
+                // Reset to a safe travel configuration after scoring completes.
                 coordinator.requestToScore(false);
                 coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
             }),
@@ -60,12 +67,15 @@ public class AutoRoutineFactory {
     public Command intakeCoral(PathPlannerPath path) {
         return new SequentialCommandGroup(
             Commands.runOnce(() -> {
+                // Leave scoring mode and configure for intake.
                 manipulatorState.atGoalState(false);
                 coordinator.requestToScore(false);
                 coordinator.setRobotGoal(RobotState.INTAKE_CORAL);
             }),
+            // Path to the station while waiting for the beam break to trip.
             Commands.parallel(new SwerveAutoStep(path, pose), Commands.waitUntil(() -> manipulator.hasCoral())),
             manipulatorState.waitForState(ElevatorManipulatorState.INTAKE_CORAL),
+            // Once a coral is detected, command the manipulator to stow safely again.
             Commands.runOnce(() -> coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL)),
             manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL)
         );

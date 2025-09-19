@@ -1,5 +1,6 @@
 package frc.utils;
 
+/** Utility math helpers used by the swerve drivetrain for stepping and wrapping angles. */
 public class SwerveUtils {
 
     /**

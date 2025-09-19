@@ -28,8 +28,11 @@ public class PhotonRunnable implements Runnable {
 
     private final PhotonPoseEstimator photonPoseEstimator;
     private final PhotonCamera photonCamera;
+    /** Latest pose estimate published from the PhotonVision thread. */
     private final AtomicReference<EstimatedRobotPose> atomicEstimatedRobotPose = new AtomicReference<EstimatedRobotPose>();
+    /** Heading supplier used to inject gyro data into the pose estimator. */
     private Supplier<Heading> heading;
+    /** Cached pipeline result from the last successful update. */
     private PhotonPipelineResult photonResults;
     private PhotonPipelineResult hasAResult = new PhotonPipelineResult();
     private AprilTagFieldLayout layout;

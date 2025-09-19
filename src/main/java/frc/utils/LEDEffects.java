@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 
-/** Add your docs here. */
+/** Central location for predefined LED animations used throughout the robot. */
 public class LEDEffects {
 
     public static enum LEDEffect {

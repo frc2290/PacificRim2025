@@ -7,6 +7,7 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 
+/** Placeholder command for the manipulator's starting configuration. */
 public class StartPosition extends Command{
 
     private ManipulatorStateMachine manipulatorSm;
@@ -16,6 +17,10 @@ public class StartPosition extends Command{
     //private final Timer stepTimer = new Timer();
     private int step = 0;
 
+    /**
+     * Placeholder command for the opening configuration. It exists so the state machine can schedule
+     * a command even though the motion has not been implemented yet.
+     */
     public StartPosition(ManipulatorStateMachine m_state, DifferentialSubsystem m_diff, ElevatorSubsystem m_elevator, ManipulatorSubsystem m_manipulator){
         manipulatorSm = m_state;
         diff = m_diff;

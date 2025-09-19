@@ -29,13 +29,17 @@ public class Right1Coral extends SequentialCommandGroup {
                 new AutoRoutineFactory(pose, coordinator, manipulatorState, manipulator);
 
             addCommands(
+                // Snap the pose estimator to the first point of the autonomous path.
                 Commands.runOnce(() -> pose.setCurrentPose(startToReef.getStartingHolonomicPose().get())),
                 Commands.runOnce(() -> {
+                    // Enable path following and prep the manipulator for scoring.
                     driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                     coordinator.requestToScore(false);
                     coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
                 }),
+                // Drive out and score the preloaded coral, then stop path following.
                 routineFactory.scoreCoral(startToReef, RobotState.L4),
+                // Ensure the drivetrain defaults back to manual control.
                 Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED))
             );
         } catch (Exception ex) {

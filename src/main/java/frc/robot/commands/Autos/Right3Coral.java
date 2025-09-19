@@ -33,17 +33,21 @@ public class Right3Coral extends SequentialCommandGroup {
                 new AutoRoutineFactory(pose, coordinator, manipulatorState, manipulator);
 
             addCommands(
+                // Lock odometry to match the starting pose of the generated path.
                 Commands.runOnce(() -> pose.setCurrentPose(startToReef.getStartingHolonomicPose().get())),
                 Commands.runOnce(() -> {
+                    // Start path following and make sure the manipulator begins in the safe pose.
                     driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                     coordinator.requestToScore(false);
                     coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
                 }),
+                // Score, reload, and score two additional corals.
                 routineFactory.scoreCoral(startToReef, RobotState.L4),
                 routineFactory.intakeCoral(reefToFeeder),
                 routineFactory.scoreCoral(feederToReefTwo, RobotState.L4),
                 routineFactory.intakeCoral(reefTwoToFeeder),
                 routineFactory.scoreCoral(feederToReefThree, RobotState.L4),
+                // Return drivetrain control to the driver when auto finishes.
                 Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED))
             );
         } catch (Exception ex) {

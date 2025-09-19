@@ -9,27 +9,37 @@ import frc.robot.commands.DriveCommands.DriveCommandFactory;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
 
+/** Manages the robot's drive modes using a graph-based state machine. */
 public class DriveStateMachine extends SubsystemBase {
 
+    /** Graph helper that orchestrates drive commands as state transitions. */
     private GraphCommand m_graphCommand = new GraphCommand();
+    /** Dashboard binding used to visualize the current drive state. */
     private FlytDashboardV2 dashboard = new FlytDashboardV2("DriveStateMachine");
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem pose;
     private XboxController driverController;
 
-    /**
-     * DriveTrain states - drive state machine
-     */
+    /** Enumerates the major driving behaviors the robot can request. */
     public enum DriveState {
-        MANUAL,            // Field oriented freeroam
-        FOLLOW_PATH,       // Auto path following
-        BARGE_RELATIVE,    // Faces Barge
-        CLIMB_RELATIVE,    // Faces Climb
-        PROCESSOR_RELATIVE, // Faces Processor
-        CORAL_STATION,     // Faces Intake based on half field
-        REEF_RELATIVE,     // Faces Reef based on robot position and angles as drives around
-        REEF_ALIGN,        // Locked to right or left reef, holding position
-        CANCELLED          // Drive system cancelled
+        /** Field-oriented manual drive for teleoperated control. */
+        MANUAL,
+        /** PathPlanner-driven trajectory following. */
+        FOLLOW_PATH,
+        /** Manual control that keeps the robot pointed toward the barge. */
+        BARGE_RELATIVE,
+        /** Driver control tuned for endgame climbing. */
+        CLIMB_RELATIVE,
+        /** Manual control that faces the processor for algae cycles. */
+        PROCESSOR_RELATIVE,
+        /** Auto-line up with the coral station to intake a game piece. */
+        CORAL_STATION,
+        /** Field-relative drive that orients around the reef for scoring. */
+        REEF_RELATIVE,
+        /** Assisted alignment that locks the heading to the active reef branch. */
+        REEF_ALIGN,
+        /** Idle state when the drivetrain should not accept driver commands. */
+        CANCELLED
     }
 
     /*
@@ -45,7 +55,8 @@ public class DriveStateMachine extends SubsystemBase {
     GraphCommandNode reefAlignNode;
     GraphCommandNode cancelledNode;
 
-    // State variables
+    // State variables.
+    /** True when the driver wants to score on the right branch of the reef. */
     private boolean rightScore = false;
 
     /**
@@ -59,20 +70,22 @@ public class DriveStateMachine extends SubsystemBase {
         pose = m_pose;
         driverController = m_driverController;
 
-        // Initialize graph command
+        // Initialize graph command.
         initializeGraphCommand();
 
-        // Set as default command so it runs all the time
+        // Set as default command so it runs all the time.
         m_graphCommand.addRequirements(this);
         this.setDefaultCommand(m_graphCommand);
         m_graphCommand.setCurrentNode(cancelledNode);
     }
 
     /**
-     * Initialize the graph command with all nodes and connections
+     * Builds the directed graph that maps each {@link DriveState} to the command that should run
+     * while the state is active. Each call to {@link GraphCommandNode#AddNode} defines an allowed
+     * transition between states.
      */
     private void initializeGraphCommand() {
-        // Create all graph command nodes
+        // Create all graph command nodes.
         manualNode = m_graphCommand.new GraphCommandNode(
             "Manual",
             new PrintCommand(""),
@@ -128,10 +141,10 @@ public class DriveStateMachine extends SubsystemBase {
             new PrintCommand(""),
             DriveCommandFactory.createCancelledCommand(drive));
 
-        // Graph Command setup
-        m_graphCommand.setGraphRootNode(cancelledNode); //shouldn't drive
-        
-        // Define transitions between drive states
+        // Graph Command setup.
+        m_graphCommand.setGraphRootNode(cancelledNode); // Should not drive.
+
+        // Define transitions between drive states.
         cancelledNode.AddNode(manualNode, 1.0);
         cancelledNode.AddNode(processorRelativeNode, 1.0);
         cancelledNode.AddNode(coralStationNode, 1.0);
@@ -207,31 +220,26 @@ public class DriveStateMachine extends SubsystemBase {
 
     }
 
-    /** ----- Branch Selection ----- */
+    // Branch selection helpers.
 
-    /**
-     * Get Current branch selection
-     * @return
-     */
+    /** Returns true when the driver selected the right reef branch. */
     public boolean getRightScore() {
         return rightScore;
     }
 
-    /**
-     * Set branch, should done only by the state machine
-     * @param right
-     */
+    /** Sets which reef branch the driver wants to score on. */
     public void setRightScore(boolean right) {
+        // true means the driver wants to aim for the right branch, false targets the left.
         rightScore = right;
     }
 
 
-    /** ----- State Transition Commands ----- */
+    // State transition commands.
 
     /**
-    * Set Goal DriveState for DrimeStateMachine
-    * @return
-    */
+     * Requests a new drive state. The underlying {@link GraphCommand} handles whatever transitions
+     * are necessary to reach the node safely.
+     */
     public void setDriveCommand(DriveState m_driveState){
         switch(m_driveState){
             case MANUAL:
@@ -268,22 +276,19 @@ public class DriveStateMachine extends SubsystemBase {
     }
 
     /**
-     * Check if graph command still reaching goal state
-     * @return
+     * @return {@code true} while the graph is still traversing toward the requested state.
      */
     public boolean isTransitioning() {
         return m_graphCommand.isTransitioning();
     }
 
+    /** @return true when the pose estimator reports the drivetrain is at the requested pose. */
     public boolean atPosition(){
         return pose.atTargetPose();
     }
-    /** ----- State Getters ----- */
+    // State getters.
 
-    /**
-     * Get Current state
-     * @return
-     */
+    /** Returns the drive state associated with the current graph node. */
     public DriveState getCurrentState() {
         GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
         if (currentNode == manualNode) return DriveState.MANUAL;
@@ -299,10 +304,10 @@ public class DriveStateMachine extends SubsystemBase {
     }
 
 
-    /** ----- Periodic ----- */
+    // Periodic bookkeeping.
     @Override
     public void periodic() {
-        //Update dashboard
+        // Update dashboard with the human-friendly state name.
         dashboard.putString("Current State", getCurrentState().toString());
         dashboard.putBoolean("At State", !isTransitioning());
         dashboard.putString("Branch", getRightScore() ? "Right" : "Left");

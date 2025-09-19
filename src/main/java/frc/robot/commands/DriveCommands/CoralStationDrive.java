@@ -12,27 +12,28 @@ import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.PoseEstimatorSubsystem;
 
+/** Field-relative drive command that aims toward the closest coral station. */
 public class CoralStationDrive extends Command {
 
-    //imports
     private DriveStateMachine stateMachine;
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem poseEstimator;
     private XboxController driverController;
 
-    //pid
+    // PID controllers reused for the heading lock when targeting stations.
     private PIDController rotPid;
     private PIDController xPid;
     private PIDController yPid;
 
-    //pos estimator
+    // Cached targets that were used when auto-alignment ran on initialize.
     private double rotTarget = 0;
     private double rotSpeed = 0;
     private Pose2d targetPose = new Pose2d();
 
-    /*
-     * Command to drive robot with active angling towards coral station
-     **/
+    /**
+     * Creates a command that keeps the robot aimed at whichever loading station is closest while
+     * still allowing full translational control.
+     */
     public CoralStationDrive(DriveStateMachine m_state, DriveSubsystem m_drive, PoseEstimatorSubsystem m_poseEstimator, XboxController m_driverController) {
 
         stateMachine = m_state;
@@ -48,7 +49,7 @@ public class CoralStationDrive extends Command {
         addRequirements(m_drive);
     }
 
-    // Called when the command is initially scheduled. Not used right now
+    // Called when the command is initially scheduled. Not used right now.
     @Override
     public void initialize() {
         // stateSubsystem.setDriveState(StateMachine.DriveState.REEF_RELATIVE);
@@ -59,23 +60,24 @@ public class CoralStationDrive extends Command {
         // targetPose = poseEstimator.getEstimatedPose();
     }
     
-        // Called every time the scheduler runs while the command is scheduled.
+    // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute(){
-        
-        //Get current controller inputs
+
+        // Get current controller inputs.
         double xPower = -MathUtil.applyDeadband(driverController.getLeftY(), OIConstants.kDriveDeadband);
         double yPower = -MathUtil.applyDeadband(driverController.getLeftX(), OIConstants.kDriveDeadband);
         double rotPower = -MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
 
-        //Rotation override else automatic angling
+        // Rotation override else automatic angling.
         if (rotPower != 0) {
             drive.drive(
                 xPower,
                 yPower,
                 rotPower,
                 true);
-        }else{
+        } else {
+            // Face whichever loading station is closer based on the pose estimator.
             rotTarget = poseEstimator.isClosestStationRight() ? VisionConstants.coralStationRightHeading : VisionConstants.coralStationLeftHeading;
             rotSpeed = rotPid.calculate(poseEstimator.getDegrees(), rotTarget);
             drive.drive(xPower, yPower, rotSpeed, true);

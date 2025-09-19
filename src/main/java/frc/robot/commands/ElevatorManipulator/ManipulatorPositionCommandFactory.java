@@ -50,6 +50,7 @@ public final class ManipulatorPositionCommandFactory {
             ManipulatorPosition position) {
         SequentialCommandGroup command = new SequentialCommandGroup(
                 Commands.runOnce(() -> {
+                    // Reset state machine flags so the new goal can be evaluated cleanly.
                     manipulatorState.atGoalState(false);
                     manipulatorState.failedToReachGoal(false);
                 }),
@@ -73,6 +74,7 @@ public final class ManipulatorPositionCommandFactory {
             ManipulatorPosition position) {
         SequentialCommandGroup command = new SequentialCommandGroup(
                 Commands.runOnce(() -> {
+                    // Reset state machine flags so the new goal can be evaluated cleanly.
                     manipulatorState.atGoalState(false);
                     manipulatorState.failedToReachGoal(false);
                 }),
@@ -92,6 +94,7 @@ public final class ManipulatorPositionCommandFactory {
             boolean markReadyOnFinish) {
         SequentialCommandGroup command = new SequentialCommandGroup(
                 Commands.runOnce(() -> {
+                    // Reset state machine flags so the new goal can be evaluated cleanly.
                     manipulatorState.atGoalState(false);
                     manipulatorState.failedToReachGoal(false);
                 }),

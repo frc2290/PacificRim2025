@@ -6,10 +6,12 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import frc.utils.FLYTLib.GlobalVar;
 
 
+/** Dashboard helper for publishing REV PDH telemetry using the old FLYT API. */
 public class PDHDashboard extends SuperDashboard{
     
     //Network tables for the controller configuration
     NetworkTable table;
+    /** Power distribution hub instance being monitored. */
     PowerDistribution PDH;
     
     //constructor, just needs motor controller object

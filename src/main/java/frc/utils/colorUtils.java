@@ -2,6 +2,7 @@ package frc.utils;
 
 import edu.wpi.first.wpilibj.util.Color;
 
+/** Helper methods for converting and gamma-correcting LED colors. */
 public class colorUtils {
     /**
      * Im lazy and dont want to put this in for R,G,and B. So I made a new method.

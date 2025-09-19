@@ -2,8 +2,10 @@ package frc.utils.FLYTLib.FLYTMotorLib;
 
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
+/** Base class shared by the FLYT motor controller wrappers. */
 public abstract class FlytMotorController {
 
+    /** Scaling between raw encoder units and mechanism units. */
     protected double conversionFactor = 1;
     protected FlytLogger controllerLogger;
     protected String controllerName;

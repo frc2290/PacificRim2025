@@ -9,14 +9,21 @@ import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.utils.LEDEffects.LEDEffect;
 
-/** Add your docs here. */
+/** Represents a named subset of the full LED buffer that can be animated independently. */
 public class LEDStrip {
+    /** Descriptive name so the coordinator can reference the strip. */
     String name;
+    /** Starting index in the master LED buffer. */
     int start;
+    /** Ending index (exclusive) in the master LED buffer. */
     int stop;
+    /** View into the master buffer used to render effects. */
     AddressableLEDBufferView bufferView;
+    /** Base color for effects when no override is supplied. */
     Color color = LEDEffects.flytBlue;
+    /** Active animation effect to apply. */
     LEDEffect effect = LEDEffect.SOLID;
+    /** Generic helper flag that allows custom behaviors to annotate strips. */
     boolean helperBool = false;
 
     public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop) {

@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 public class FlytLogger {
 
     private String name;
+    /** Collection of all dashboard variables registered with this logger. */
     private ArrayList<FlytDashboardVariable> pubs;
     private boolean debug = false;
 

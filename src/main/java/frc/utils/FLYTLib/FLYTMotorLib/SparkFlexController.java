@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+/** Wrapper that configures a SPARK Flex using the legacy FLYT API. */
 public class SparkFlexController extends FlytMotorController {
 
     /*
@@ -20,6 +21,7 @@ public class SparkFlexController extends FlytMotorController {
      */
     //motor controller
     SparkFlex sparkFlex; //General controller
+    /** Configuration container shared across setup calls. */
     SparkFlexConfig config; //Controller configuration objects
 
     //encoders
@@ -39,6 +41,7 @@ public class SparkFlexController extends FlytMotorController {
     private boolean e_encoderAvailable = false; //check if enxternal encoder connected
     private boolean e_absalute = false; //check if specified encoder is absalute
     private ControlType controlType;
+    /** CAN device ID associated with this controller. */
     private double motorID;
 
     /**

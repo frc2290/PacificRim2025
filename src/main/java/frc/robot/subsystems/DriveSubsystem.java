@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
+/** Controls the robot's swerve drivetrain and exposes helper methods for commands. */
 public class DriveSubsystem extends SubsystemBase {
 
     // Create MAXSwerveModules
@@ -52,13 +53,18 @@ public class DriveSubsystem extends SubsystemBase {
     private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
     // private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
+    /** Scaling factor used when the robot is in "slow" mode for precision driving. */
     private double slowSpeed = 1.0;
 
+    /** PID used for heading control when commands request a specific angle. */
     private PIDController rotPid = new PIDController(0.01, 0.0, 0.0); // 0.015 0 0
+    /** PID used to correct X position errors during auto-alignment routines. */
     private PIDController xPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
+    /** PID used to correct Y position errors during auto-alignment routines. */
     private PIDController yPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
     // Create the SysId routine
+    /** Characterization routine for the drive motors. */
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
         new SysIdRoutine.Mechanism(
@@ -68,6 +74,7 @@ public class DriveSubsystem extends SubsystemBase {
         )
     );
 
+    /** Characterization routine for the steering motors. */
     private SysIdRoutine sysIdRoutineTurn = new SysIdRoutine(
         new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
         new SysIdRoutine.Mechanism(
@@ -95,7 +102,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Nothing
+        // Nothing periodic to do; odometry updates happen in the pose estimator subsystem.
     }
 
     public void setSlowSpeed() {
@@ -270,6 +277,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private void runDriveCharacterization(double output) {
+        // Apply the same voltage to every drive motor so SysId can observe the response.
         m_frontLeft.runDriveCharacterization(output);
         m_frontRight.runDriveCharacterization(output);
         m_rearLeft.runDriveCharacterization(output);
@@ -277,6 +285,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private void runTurnCharacterization(double output) {
+        // Apply the same voltage to every turning motor for SysId logging.
         m_frontLeft.runTurnCharacterization(output);
         m_frontRight.runTurnCharacterization(output);
         m_rearLeft.runTurnCharacterization(output);

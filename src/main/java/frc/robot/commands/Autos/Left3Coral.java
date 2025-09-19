@@ -33,17 +33,21 @@ public class Left3Coral extends SequentialCommandGroup {
                 new AutoRoutineFactory(pose, coordinator, manipulatorState, manipulator);
 
             addCommands(
+                // Match odometry with the starting point of the first path segment.
                 Commands.runOnce(() -> pose.setCurrentPose(startToReef.getStartingHolonomicPose().get())),
                 Commands.runOnce(() -> {
+                    // Enable path following and stage the manipulator in the safe configuration.
                     driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                     coordinator.requestToScore(false);
                     coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
                 }),
+                // Perform three score-intake cycles on the left side of the field.
                 routineFactory.scoreCoral(startToReef, RobotState.L4),
                 routineFactory.intakeCoral(reefToFeeder),
                 routineFactory.scoreCoral(feederToReefTwo, RobotState.L4),
                 routineFactory.intakeCoral(reefTwoToFeeder),
                 routineFactory.scoreCoral(feederToReefThree, RobotState.L4),
+                // Return to the cancelled drive state so teleop can begin cleanly.
                 Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED))
             );
         } catch (Exception ex) {

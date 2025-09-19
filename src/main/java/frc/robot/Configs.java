@@ -7,9 +7,16 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import frc.robot.Constants.ModuleConstants;
 
+/** Utility container for configuration objects that are shared across the robot. */
 public final class Configs {
+    /**
+     * Configuration package for every MAXSwerve module on the drivetrain. The static block ensures
+     * that each module receives identical settings every time the code starts.
+     */
     public static final class MAXSwerveModule {
+        /** Spark Flex configuration that is applied to every driving motor controller. */
         public static final SparkFlexConfig drivingConfig = new SparkFlexConfig();
+        /** Spark MAX configuration that is applied to every turning motor controller. */
         public static final SparkMaxConfig turningConfig = new SparkMaxConfig();
 
         static {

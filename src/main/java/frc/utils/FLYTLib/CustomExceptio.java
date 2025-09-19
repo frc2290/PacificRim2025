@@ -1,6 +1,7 @@
 package frc.utils.FLYTLib;
 
 // Create a custom exception class
+/** Legacy custom exception used by older FLYT utilities. */
 class FLYTLibException extends Exception {
 
     public FLYTLibException(String message) {
