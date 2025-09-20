@@ -35,6 +35,7 @@ public final class Constants {
 
   public static final boolean debugMode = true;
 
+  /** Constants that configure the climb winches and their soft limits. */
   public static final class Climber {
     public static final int kLeftClimberMotorId = 8;
     public static final int kRightClimberMotorId = 81;
@@ -66,6 +67,7 @@ public final class Constants {
     public static final double kSimRetractMassKg = 55.0;
   }
 
+  /** All elevator setpoints and feedforward values. */
   public static final class Elevator {
     public static final int kLeftElevatorMotorId = 50;
     public static final int kRightElevatorMotorId = 51;
@@ -88,7 +90,11 @@ public final class Constants {
     public static final double kG = 0.1987;
 
     public static final double transportSetpoint = 0.3;
-    public static final double intakeSetpoint = 0.1;
+    public static final double intakeSetpoint = 0.25;
+    public static final double L1 = 0;
+    public static final double L2 = 0.50;
+    public static final double L3 = 0.975;
+    public static final double L4 = 1.59;
 
     // Simulation parameters
     // Gear reduction from motor to drum: (7/34) * (15/31)
@@ -99,6 +105,7 @@ public final class Constants {
     public static final double kSimMaxHeightMeters = 1.3; // m
   }
 
+  /** IDs and constants for the manipulator roller. */
   public static final class Manipulator {
     public static final int kManipulatorMotorId = 7;
     // Simulation parameters
@@ -106,6 +113,7 @@ public final class Constants {
     public static final double kSimMOI = 5e-4; // kg*m^2
   }
 
+  /** Extension and rotation constants for the differential arm. */
   public static final class DifferentialArm {
     // Motors
     public static final int kLeftMotorId = 60;
@@ -122,10 +130,18 @@ public final class Constants {
     public static final double v_kd = 0;
     public static final double v_KG = 0;
 
-    public static final double transportExtensionSetpoint = 80;
+    public static final double transportExtensionSetpoint = 140;
     public static final double transportRotationSetpoint = 230;
-    public static final double intakeExtensionSetpoint = 10;
-    public static final double intakeRotationSetpoint = 230;
+    public static final double intakeExtensionSetpoint = 35;
+    public static final double intakeRotationSetpoint = 235;
+
+    public static final double l1Rot = 0;
+    public static final double l2_3Rot = 230;
+    public static final double l4Rot = 80;
+
+    public static final double l1Ext = 0;
+    public static final double l2_3Ext = 140;
+    public static final double l4Ext = 215;
 
     public static final int kLaserCanId = 5;
 
@@ -136,6 +152,7 @@ public final class Constants {
         (kEncoderPositionFactor / 1000.0) / (2.0 * Math.PI);
     public static final double kDifferentialArmRadiusMeters = 0.031831; // m
 
+    // Lookup tables used for interpolating custom scoring positions.
     public static final double[][] l4RotationData = {
       {120, 235},
       {200, 240},
@@ -187,6 +204,77 @@ public final class Constants {
     public static final double kSimStartingThetaRads = 0.0; // rad
   }
 
+  /**
+   * Pre-defined manipulator states that keep the arm and elevator synchronized. Each state is
+   * referenced by the state machines so that drivers only need to ask for goals by name.
+   */
+  public static final class ElevatorManipulatorPositions {
+    private ElevatorManipulatorPositions() {}
+
+    public static final ManipulatorPosition SAFE_CORAL_TRAVEL =
+        new ManipulatorPosition(
+            Elevator.transportSetpoint,
+            DifferentialArm.transportExtensionSetpoint,
+            DifferentialArm.transportRotationSetpoint);
+    public static final ManipulatorPosition START_POSITION = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition PRE_CORAL_INTAKE =
+        new ManipulatorPosition(Elevator.intakeSetpoint, 80, 225);
+
+    public static final ManipulatorPosition INTAKE_CORAL =
+        new ManipulatorPosition(
+            Elevator.intakeSetpoint,
+            DifferentialArm.intakeExtensionSetpoint,
+            DifferentialArm.intakeRotationSetpoint);
+
+    public static final ManipulatorPosition L1_PREP = new ManipulatorPosition(0.675, 80, 235);
+    public static final ManipulatorPosition SCORE_L1 = L1_PREP;
+    public static final ManipulatorPosition L1_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition L2_PREP = new ManipulatorPosition(0.74, 80, 230);
+    public static final ManipulatorPosition SCORE_L2 = L2_PREP;
+    public static final ManipulatorPosition L2_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition L3_PREP = new ManipulatorPosition(1.14, 80, 230);
+    public static final ManipulatorPosition SCORE_L3 = L3_PREP;
+    public static final ManipulatorPosition L3_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition L4_PREP = new ManipulatorPosition(1.72, 140, 235);
+    public static final ManipulatorPosition SCORE_L4 = L4_PREP;
+    public static final ManipulatorPosition L4_POST_SCORE = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition PREP_ALGAE_INTAKE = SAFE_CORAL_TRAVEL;
+    public static final ManipulatorPosition PREP_ALGAE_L2 =
+        new ManipulatorPosition(0.625, 185, 225);
+    public static final ManipulatorPosition PREP_ALGAE_L3 =
+        new ManipulatorPosition(1.025, 185, 225);
+    public static final ManipulatorPosition SAFE_ALGAE_TRAVEL = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition SCORE_PROCESSOR =
+        new ManipulatorPosition(0.125, 80, 195);
+
+    public static final ManipulatorPosition PREP_SCORE_BARGE = SAFE_CORAL_TRAVEL;
+    public static final ManipulatorPosition SCORE_BARGE = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition CLIMB_PREP = SAFE_CORAL_TRAVEL;
+    public static final ManipulatorPosition CLIMB_READY =
+        new ManipulatorPosition(
+            0.525,
+            DifferentialArm.transportExtensionSetpoint,
+            DifferentialArm.transportRotationSetpoint);
+
+    public static final ManipulatorPosition CANCELLED = SAFE_CORAL_TRAVEL;
+
+    public static final ManipulatorPosition L1 = SCORE_L1;
+    public static final ManipulatorPosition L2 = SCORE_L2;
+    public static final ManipulatorPosition L3 = SCORE_L3;
+    public static final ManipulatorPosition L4 = SCORE_L4;
+
+    public record ManipulatorPosition(
+        double elevatorMeters, double extensionMillimeters, double rotationDegrees) {}
+  }
+
+  /** Drivetrain-specific configuration such as module locations and CAN IDs. */
   public static final class DriveConstants {
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26.5);
@@ -202,8 +290,8 @@ public final class Constants {
     public static final SwerveDriveKinematics kDriveKinematics =
         new SwerveDriveKinematics(kModuleTranslations);
 
-    // Driving Parameters - the following limits are derived from the physical
-    // characteristics of the module and robot geometry.
+    // Driving Parameters - Note that these are not the maximum capable speeds of
+    // the robot, rather the allowed maximum speeds
     public static final double kMaxSpeedMetersPerSecond =
         ModuleConstants.kDriveWheelFreeSpeedMetersPerSecond;
     public static final double kMaxAngularSpeed =
@@ -256,6 +344,7 @@ public final class Constants {
                     1.2));
   }
 
+  /** Gear ratios and kinematics values that apply to an individual swerve module. */
   public static final class ModuleConstants {
     // The MAXSwerve module can be configured with one of three pinion gears: 12T,
     // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
@@ -264,8 +353,7 @@ public final class Constants {
 
     // Calculations required for driving motor conversion factors and feed forward
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
-    // Wheel size and gearing
-    public static final double kWheelDiameterMeters = Units.inchesToMeters(3.0);
+    public static final double kWheelDiameterMeters = 0.0736;
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
     // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear,
     // and 15 teeth on the bevel pinion
@@ -296,11 +384,13 @@ public final class Constants {
     public static final DCMotor kSteerMotor = DCMotor.getNeo550(1);
   }
 
+  /** Mappings for the driver controller. */
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
     public static final double kDriveDeadband = 0.05;
   }
 
+  /** Motion limits and controller values that are specific to autonomous pathing. */
   public static final class AutoConstants {
     /** Default translation scalar for DriveTestAuto (1.0 = full speed). */
     public static final double kDriveTestDefaultTranslationScalar = 0.1;
@@ -326,6 +416,7 @@ public final class Constants {
             kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
   }
 
+  /** Specifications that apply to all NEO brushless motors used on the robot. */
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 6784;
   }
@@ -333,6 +424,7 @@ public final class Constants {
   /** Radius around a location that counts as "inside" an intake zone in simulation (m). */
   public static final double SIM_INTAKE_TOLERANCE_METERS = 0.5;
 
+  /** Shared geometry describing the robot's vision sensors and AprilTag layout. */
   public static final class VisionConstants {
     public static final double CAMERA_HEIGHT_METERS = 0.9144;
     public static final double CAMERA_PITCH_RADIANS = degreesToRadians(45);
@@ -506,6 +598,13 @@ public final class Constants {
 
     public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
     public static final Translation2d processor = new Translation2d(6, 0);
+
+    /** Pose used when pointing the drivetrain toward the center of the reef. */
+    public static final Pose2d REEF_CENTER_AIM_POSE = new Pose2d(reefCenter, new Rotation2d());
+
+    /** Pose used when aiming the drivetrain at the processor. */
+    public static final Pose2d PROCESSOR_AIM_POSE = new Pose2d(processor, new Rotation2d());
+
     public static final double halfwayAcrossFieldY = (317 / 2) * inToM;
     public static final double coralStationLeftHeading = -55;
     public static final double coralStationRightHeading = 55;

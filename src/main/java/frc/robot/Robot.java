@@ -52,27 +52,50 @@ import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
 import org.littletonrobotics.urcl.URCL;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
+ * Primary program entry point for Excelsior. {@link TimedRobot} periodically calls each lifecycle
+ * hook so we can schedule commands, monitor subsystems, and react to driver inputs. The goal of
+ * this class is to orchestrate subsystem construction and defer logic to the command-based
+ * framework.
  */
 public class Robot extends TimedRobot {
+  /** Cached handle to the active autonomous routine so we can cancel or reschedule if needed. */
   private Command m_autonomousCommand;
 
+  /** Container that wires up all subsystems, commands, and driver controls. */
   private RobotContainer m_robotContainer;
 
+  /** Dedicated LED helper that allows the state machine to communicate robot status. */
   private final LEDUtility m_ledUtility = new LEDUtility(0);
+
+  /** Cached reference to the primary driver controller so subsystems can read axes. */
   private final XboxController m_driver = new XboxController(0);
-  // The robot's subsystems
+
+  // The robot's subsystems.
+  /** Owns all hardware for swerve driving and exposes the drive commands. */
   private final DriveSubsystem m_robotDrive;
+
+  /** Combines vision and gyro data to maintain the best guess at the robot's pose. */
   private final PoseEstimatorSubsystem m_poseEstimator;
+
+  /** Elevator carriage that moves the manipulator up and down the reef. */
   private final ElevatorSubsystem m_elevator;
+
+  /** Roller intake and sensors that interact directly with game pieces. */
   private final ManipulatorSubsystem m_manipulator;
+
+  /** Differential arm that provides extension and rotation for the manipulator. */
   private final DifferentialSubsystem m_DiffArm;
+
+  /** Hooking subsystem used during endgame climbs. */
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
+
+  /** Coordinates all autonomous and teleop driving modes. */
   private final DriveStateMachine m_driveStateMachine;
+
+  /** Tracks and sequences manipulator states to guarantee safe transitions. */
   private final ManipulatorStateMachine m_manipulatorStateMachine;
+
+  /** Central coordinator that keeps drive and manipulator state machines in sync. */
   private final StateMachineCoardinator m_coordinator;
 
   private final FlytLogger simDash = new FlytLogger("Simulation");
@@ -105,7 +128,8 @@ public class Robot extends TimedRobot {
     m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
     m_manipulatorStateMachine =
         new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
-    m_coordinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine);
+    m_coordinator =
+        new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
   }
 
   /**
@@ -121,8 +145,7 @@ public class Robot extends TimedRobot {
       SimulatedArena.getInstance().addDriveTrainSimulation(m_robotDrive.getDriveSimulation());
     }
 
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
+    // Instantiate the container so bindings, chooser registration, and default commands run once.
     m_robotContainer =
         new RobotContainer(
             m_ledUtility,
@@ -138,8 +161,8 @@ public class Robot extends TimedRobot {
             m_driver);
     DataLogManager.start();
 
+    // Start the logging framework so we can view graphs after a match or practice run.
     URCL.start();
-    // Start URCL once, logging to the WPILib DataLog
     URCL.start(DataLogManager.getLog());
 
     if (RobotBase.isSimulation()) {
@@ -166,10 +189,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
+    // Run the scheduler to poll buttons, execute commands, and invoke subsystem periodic methods.
     CommandScheduler.getInstance().run();
   }
 
@@ -212,19 +232,14 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    // Mark that the robot is in autonomous so the state machines can choose the correct defaults.
     m_coordinator.robotAuto(true);
     m_coordinator.robotDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    /*
-     * String autoSelected = SmartDashboard.getString("Auto Selector",
-     * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-     * = new MyAutoCommand(); break; case "Default Auto": default:
-     * autonomousCommand = new ExampleCommand(); break; }
-     */
-
-    // schedule the autonomous command (example)
+    // Schedule the autonomous command if one was selected.
     if (m_autonomousCommand != null) {
+      // Defer command execution to the scheduler so it can manage interruptions properly.
       m_autonomousCommand.schedule();
     }
   }
@@ -237,11 +252,9 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     m_coordinator.robotAuto(false);
     m_coordinator.robotDisabled(false);
+    // Reset both state machines back to their safe starting configuration for teleop.
     m_coordinator.setRobotGoal(RobotState.START_POSITION);
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
+    // Uncomment if we ever need to forcefully cancel the autonomous command during teleop init.
     // if (m_autonomousCommand != null) {
     //   m_autonomousCommand.cancel();
     // }
