@@ -226,10 +226,7 @@ public class StateSubsystem extends SubsystemBase {
      * Cancels current running command or sequence of commands. Also sets current state to cancelled and sets the subsystems to their current position
      */
     public void cancelCurrentCommand() {
-        if (currentCommand != null) {
-            currentCommand.cancel();
-            currentCommand = null;
-        }
+
         setCurrentState(PositionState.Cancelled);
         //setGoal(PositionState.Cancelled);
         goalState = PositionState.Cancelled;
