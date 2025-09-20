@@ -5,13 +5,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 
-public class ScoreCoral extends Command{
+public class ScoreCoralL4 extends Command{
 
     ManipulatorStateMachine manipulatorSM;
     ManipulatorSubsystem manipulator;
     private Timer timer = new Timer();
 
-    public ScoreCoral(ManipulatorStateMachine m_manipulatorSM, ManipulatorSubsystem m_manipulator){
+    public ScoreCoralL4(ManipulatorStateMachine m_manipulatorSM, ManipulatorSubsystem m_manipulator){
 
         manipulatorSM = m_manipulatorSM;
         manipulator = m_manipulator;
@@ -30,7 +30,7 @@ public class ScoreCoral extends Command{
        @Override
        public void execute() {
            if (manipulatorSM.atGoalState() && manipulatorSM.readyToScore() && manipulatorSM.scoreNow()) {
-               manipulator.intake(1);
+               manipulator.intake(-1);
                if (!timer.isRunning()) {
                    timer.restart();
                }
@@ -45,7 +45,6 @@ public class ScoreCoral extends Command{
         if (!interrupted) {
             manipulator.setCoral(false);
             manipulator.setAlgae(false);
-            
         }
         manipulatorSM.setatGoalState(false);
     }
@@ -53,7 +52,6 @@ public class ScoreCoral extends Command{
     @Override
     public boolean isFinished() {
         return timer.hasElapsed(1);
-
     }
 
 }
