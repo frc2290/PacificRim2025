@@ -1,13 +1,19 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.commands.DriveCommands.DriveCommandFactory;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
-import frc.robot.commands.DriveCommands.DriveCommandFactory;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
+import java.util.EnumMap;
+import java.util.Map;
 
 /** Manages the robot's drive modes using a graph-based state machine. */
 public class DriveStateMachine extends SubsystemBase {
@@ -19,6 +25,9 @@ public class DriveStateMachine extends SubsystemBase {
     private DriveSubsystem drive;
     private PoseEstimatorSubsystem pose;
     private XboxController driverController;
+    private final DriveCommandFactory driveCommandFactory;
+    private double bargeHeadingDegrees;
+    private double climbHeadingDegrees;
 
     /** Enumerates the major driving behaviors the robot can request. */
     public enum DriveState {
@@ -45,15 +54,8 @@ public class DriveStateMachine extends SubsystemBase {
     /*
      * Graph Command Nodes for Drive State Machine
      */
-    GraphCommandNode manualNode;
-    GraphCommandNode followPathNode;
-    GraphCommandNode bargeRelativeNode;
-    GraphCommandNode climbRelativeNode;
-    GraphCommandNode processorRelativeNode;
-    GraphCommandNode coralStationNode;
-    GraphCommandNode reefRelativeNode;
-    GraphCommandNode reefAlignNode;
-    GraphCommandNode cancelledNode;
+    /** Quick lookup from a drive state to the graph node that owns its command. */
+    private final EnumMap<DriveState, GraphCommandNode> nodes = new EnumMap<>(DriveState.class);
 
     // State variables.
     /** True when the driver wants to score on the right branch of the reef. */
@@ -69,6 +71,9 @@ public class DriveStateMachine extends SubsystemBase {
         drive = m_drive;
         pose = m_pose;
         driverController = m_driverController;
+        bargeHeadingDegrees = pose.getDegrees();
+        climbHeadingDegrees = pose.getDegrees();
+        driveCommandFactory = new DriveCommandFactory(drive, pose, driverController);
 
         // Initialize graph command.
         initializeGraphCommand();
@@ -76,7 +81,7 @@ public class DriveStateMachine extends SubsystemBase {
         // Set as default command so it runs all the time.
         m_graphCommand.addRequirements(this);
         this.setDefaultCommand(m_graphCommand);
-        m_graphCommand.setCurrentNode(cancelledNode);
+        m_graphCommand.setCurrentNode(nodes.get(DriveState.CANCELLED));
     }
 
     /**
@@ -86,138 +91,117 @@ public class DriveStateMachine extends SubsystemBase {
      */
     private void initializeGraphCommand() {
         // Create all graph command nodes.
-        manualNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode manualNode = m_graphCommand.new GraphCommandNode(
             "Manual",
             new PrintCommand(""),
             new PrintCommand(""),
-            DriveCommandFactory.createManualCommand(this, drive, pose, driverController));
+            // Field-relative manual driving that mirrors the legacy ManualDrive command.
+            driveCommandFactory.createManualDriveCommand());
+        nodes.put(DriveState.MANUAL, manualNode);
 
-        followPathNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode followPathNode = m_graphCommand.new GraphCommandNode(
             "FollowPath",
-            DriveCommandFactory.createFollowPathCommand(this, drive, pose, driverController),
+            // Autonomous-style follower that keeps path planner targets while honoring rotation overrides.
+            driveCommandFactory.createFollowPathCommand(),
             new PrintCommand(""),
             new PrintCommand(""));
+        nodes.put(DriveState.FOLLOW_PATH, followPathNode);
 
-        bargeRelativeNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode bargeRelativeNode = m_graphCommand.new GraphCommandNode(
             "BargeRelative",
+            // Capture the driver's current heading when this state becomes active.
+            Commands.runOnce(() -> bargeHeadingDegrees = pose.getDegrees()),
             new PrintCommand(""),
-            new PrintCommand(""),
-            DriveCommandFactory.createBargeRelativeCommand(this, drive, pose, driverController));
+            // Hold the stored heading so the driver can strafe relative to the barge structure.
+            driveCommandFactory.createHeadingLockCommand(() -> bargeHeadingDegrees));
+        nodes.put(DriveState.BARGE_RELATIVE, bargeRelativeNode);
 
-        climbRelativeNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode climbRelativeNode = m_graphCommand.new GraphCommandNode(
             "ClimbRelative",
+            // Snapshot the current heading so the climber keeps its orientation steady.
+            Commands.runOnce(() -> climbHeadingDegrees = pose.getDegrees()),
             new PrintCommand(""),
-            new PrintCommand(""),
-            DriveCommandFactory.createClimbRelativeCommand(this, drive, pose, driverController));
+            // Keep the climber pointed the same direction unless the driver twists the stick.
+            driveCommandFactory.createHeadingLockCommand(() -> climbHeadingDegrees));
+        nodes.put(DriveState.CLIMB_RELATIVE, climbRelativeNode);
 
-        processorRelativeNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode processorRelativeNode = m_graphCommand.new GraphCommandNode(
             "ProcessorRelative",
             new PrintCommand(""),
             new PrintCommand(""),
-            DriveCommandFactory.createProcessorRelativeCommand(this, drive, pose, driverController));
+            // Keep the robot pointed at the processor while letting the driver translate freely.
+            driveCommandFactory.createPointingAtPoseCommand(
+                () -> VisionConstants.PROCESSOR_AIM_POSE,
+                false));
+        nodes.put(DriveState.PROCESSOR_RELATIVE, processorRelativeNode);
 
 
-        coralStationNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode coralStationNode = m_graphCommand.new GraphCommandNode(
             "CoralStation",
             new PrintCommand(""),
             new PrintCommand(""),
-            DriveCommandFactory.createCoralStationCommand(this, drive, pose, driverController));
+            // Lock the heading toward whichever coral station is closer based on vision.
+            driveCommandFactory.createHeadingLockCommand(
+                () -> pose.isClosestStationRight()
+                        ? VisionConstants.coralStationRightHeading
+                        : VisionConstants.coralStationLeftHeading));
+        nodes.put(DriveState.CORAL_STATION, coralStationNode);
 
-        reefRelativeNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode reefRelativeNode = m_graphCommand.new GraphCommandNode(
             "ReefRelative",
             new PrintCommand(""),
             new PrintCommand(""),
-            DriveCommandFactory.createReefRelativeCommand(this, drive, pose, driverController));
+            // Field-relative driving while staying aimed at the center of the reef.
+            driveCommandFactory.createPointingAtPoseCommand(
+                () -> VisionConstants.REEF_CENTER_AIM_POSE,
+                false));
+        nodes.put(DriveState.REEF_RELATIVE, reefRelativeNode);
 
-        reefAlignNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode reefAlignNode = m_graphCommand.new GraphCommandNode(
              "ReefAlign",
              new PrintCommand(""),
              new PrintCommand(""),
-             DriveCommandFactory.createReefAlignCommand(this, drive, pose, driverController));
+             // Blend manual control with PID corrections that hold the closest reef branch.
+             driveCommandFactory.createHoldPoseCommand(
+                 () -> pose.getClosestBranch(getRightScore()),
+                 0.5,
+                 true));
+        nodes.put(DriveState.REEF_ALIGN, reefAlignNode);
 
-        cancelledNode = m_graphCommand.new GraphCommandNode(
+        GraphCommandNode cancelledNode = m_graphCommand.new GraphCommandNode(
             "Cancelled",
             new PrintCommand(""),
             new PrintCommand(""),
-            DriveCommandFactory.createCancelledCommand(drive));
+            driveCommandFactory.createCancelledCommand());
+        nodes.put(DriveState.CANCELLED, cancelledNode);
 
         // Graph Command setup.
         m_graphCommand.setGraphRootNode(cancelledNode); // Should not drive.
 
         // Define transitions between drive states.
-        cancelledNode.AddNode(manualNode, 1.0);
-        cancelledNode.AddNode(processorRelativeNode, 1.0);
-        cancelledNode.AddNode(coralStationNode, 1.0);
-        cancelledNode.AddNode(reefRelativeNode, 1.0);
-        cancelledNode.AddNode(followPathNode, 1.0);
-        cancelledNode.AddNode(bargeRelativeNode, 1.0);
-        cancelledNode.AddNode(climbRelativeNode, 1.0);
-        cancelledNode.AddNode(reefAlignNode, 1.0);
-        manualNode.AddNode(cancelledNode, 1.0);
-        manualNode.AddNode(processorRelativeNode, 1.0);
-        manualNode.AddNode(coralStationNode, 1.0);
-        manualNode.AddNode(reefRelativeNode, 1.0);
-        manualNode.AddNode(followPathNode, 1.0);
-        manualNode.AddNode(bargeRelativeNode, 1.0);
-        manualNode.AddNode(climbRelativeNode, 1.0);
-        manualNode.AddNode(reefAlignNode, 1.0);
-        processorRelativeNode.AddNode(manualNode, 1.0);
-        processorRelativeNode.AddNode(cancelledNode, 1.0);
-        processorRelativeNode.AddNode(coralStationNode, 1.0);
-        processorRelativeNode.AddNode(reefRelativeNode, 1.0);
-        processorRelativeNode.AddNode(followPathNode, 1.0);
-        processorRelativeNode.AddNode(bargeRelativeNode, 1.0);
-        processorRelativeNode.AddNode(climbRelativeNode, 1.0);
-        processorRelativeNode.AddNode(reefAlignNode, 1.0);
-        coralStationNode.AddNode(manualNode, 1.0);
-        coralStationNode.AddNode(cancelledNode, 1.0);
-        coralStationNode.AddNode(processorRelativeNode, 1.0);
-        coralStationNode.AddNode(reefRelativeNode, 1.0);
-        coralStationNode.AddNode(followPathNode, 1.0);
-        coralStationNode.AddNode(bargeRelativeNode, 1.0);
-        coralStationNode.AddNode(climbRelativeNode, 1.0);
-        coralStationNode.AddNode(reefAlignNode, 1.0);
-        reefRelativeNode.AddNode(manualNode, 1.0);
-        reefRelativeNode.AddNode(cancelledNode, 1.0);
-        reefRelativeNode.AddNode(processorRelativeNode, 1.0);
-        reefRelativeNode.AddNode(coralStationNode, 1.0);
-        reefRelativeNode.AddNode(followPathNode, 1.0);
-        reefRelativeNode.AddNode(bargeRelativeNode, 1.0);
-        reefRelativeNode.AddNode(climbRelativeNode, 1.0);
-        reefRelativeNode.AddNode(reefAlignNode, 1.0);
-        followPathNode.AddNode(cancelledNode, 1.0);
-        followPathNode.AddNode(manualNode, 1.0);
-        followPathNode.AddNode(processorRelativeNode, 1.0);
-        followPathNode.AddNode(coralStationNode, 1.0);
-        followPathNode.AddNode(reefRelativeNode, 1.0);
-        followPathNode.AddNode(bargeRelativeNode, 1.0);
-        followPathNode.AddNode(climbRelativeNode, 1.0);
-        followPathNode.AddNode(reefAlignNode, 1.0);
-        bargeRelativeNode.AddNode(cancelledNode, 1.0);
-        bargeRelativeNode.AddNode(manualNode, 1.0);
-        bargeRelativeNode.AddNode(processorRelativeNode, 1.0);
-        bargeRelativeNode.AddNode(coralStationNode, 1.0);
-        bargeRelativeNode.AddNode(reefRelativeNode, 1.0);
-        bargeRelativeNode.AddNode(followPathNode, 1.0);
-        bargeRelativeNode.AddNode(climbRelativeNode, 1.0);
-        bargeRelativeNode.AddNode(reefAlignNode, 1.0);
-        climbRelativeNode.AddNode(cancelledNode, 1.0);
-        climbRelativeNode.AddNode(manualNode, 1.0);
-        climbRelativeNode.AddNode(processorRelativeNode, 1.0);
-        climbRelativeNode.AddNode(coralStationNode, 1.0);
-        climbRelativeNode.AddNode(reefRelativeNode, 1.0);
-        climbRelativeNode.AddNode(followPathNode, 1.0);
-        climbRelativeNode.AddNode(bargeRelativeNode, 1.0);
-        climbRelativeNode.AddNode(reefAlignNode, 1.0);
-        reefAlignNode.AddNode(cancelledNode, 1.0);
-        reefAlignNode.AddNode(manualNode, 1.0);
-        reefAlignNode.AddNode(processorRelativeNode, 1.0);
-        reefAlignNode.AddNode(coralStationNode, 1.0);
-        reefAlignNode.AddNode(reefRelativeNode, 1.0);
-        reefAlignNode.AddNode(followPathNode, 1.0);
-        reefAlignNode.AddNode(bargeRelativeNode, 1.0);
-        reefAlignNode.AddNode(climbRelativeNode, 1.0);
+        connectAllNodes();
 
+    }
+
+    /** Links every state to every other state so the driver can request any transition. */
+    private void connectAllNodes() {
+        for (DriveState fromState : DriveState.values()) {
+            GraphCommandNode fromNode = nodes.get(fromState);
+            if (fromNode == null) {
+                continue;
+            }
+
+            for (DriveState toState : DriveState.values()) {
+                if (fromState == toState) {
+                    continue;
+                }
+
+                GraphCommandNode toNode = nodes.get(toState);
+                if (toNode != null) {
+                    fromNode.AddNode(toNode, 1.0);
+                }
+            }
+        }
     }
 
     // Branch selection helpers.
@@ -229,7 +213,7 @@ public class DriveStateMachine extends SubsystemBase {
 
     /** Sets which reef branch the driver wants to score on. */
     public void setRightScore(boolean right) {
-        // true means the driver wants to aim for the right branch, false targets the left.
+        // True means the driver wants to aim for the right branch, while false targets the left.
         rightScore = right;
     }
 
@@ -240,39 +224,12 @@ public class DriveStateMachine extends SubsystemBase {
      * Requests a new drive state. The underlying {@link GraphCommand} handles whatever transitions
      * are necessary to reach the node safely.
      */
-    public void setDriveCommand(DriveState m_driveState){
-        switch(m_driveState){
-            case MANUAL:
-                m_graphCommand.setTargetNode(manualNode);
-                break;
-            case FOLLOW_PATH:
-                m_graphCommand.setTargetNode(followPathNode);
-                break;
-            case BARGE_RELATIVE:
-                m_graphCommand.setTargetNode(bargeRelativeNode);
-                break;
-            case CLIMB_RELATIVE:
-                m_graphCommand.setTargetNode(climbRelativeNode);
-                break;
-            case PROCESSOR_RELATIVE:
-                m_graphCommand.setTargetNode(processorRelativeNode);
-                break;
-            case CORAL_STATION:
-                m_graphCommand.setTargetNode(coralStationNode);
-                break;
-            case REEF_RELATIVE:
-                m_graphCommand.setTargetNode(reefRelativeNode);
-                break;
-            case REEF_ALIGN:
-                m_graphCommand.setTargetNode(reefAlignNode);
-                break;
-            case CANCELLED:
-                m_graphCommand.setTargetNode(cancelledNode);
-                break;
-            default:
-                m_graphCommand.setTargetNode(manualNode);
-                break;
+    public void setDriveCommand(DriveState driveState) {
+        GraphCommandNode targetNode = nodes.get(driveState);
+        if (targetNode == null) {
+            targetNode = nodes.get(DriveState.MANUAL);
         }
+        m_graphCommand.setTargetNode(targetNode);
     }
 
     /**
@@ -283,7 +240,7 @@ public class DriveStateMachine extends SubsystemBase {
     }
 
     /** @return true when the pose estimator reports the drivetrain is at the requested pose. */
-    public boolean atPosition(){
+    public boolean atPosition() {
         return pose.atTargetPose();
     }
     // State getters.
@@ -291,15 +248,11 @@ public class DriveStateMachine extends SubsystemBase {
     /** Returns the drive state associated with the current graph node. */
     public DriveState getCurrentState() {
         GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
-        if (currentNode == manualNode) return DriveState.MANUAL;
-        if (currentNode == followPathNode) return DriveState.FOLLOW_PATH;
-        if (currentNode == bargeRelativeNode) return DriveState.BARGE_RELATIVE;
-        if (currentNode == climbRelativeNode) return DriveState.CLIMB_RELATIVE;
-        if (currentNode == processorRelativeNode) return DriveState.PROCESSOR_RELATIVE;
-        if (currentNode == coralStationNode) return DriveState.CORAL_STATION;
-        if (currentNode == reefRelativeNode) return DriveState.REEF_RELATIVE;
-        if (currentNode == reefAlignNode) return DriveState.REEF_ALIGN;
-        if (currentNode == cancelledNode) return DriveState.CANCELLED;
+        for (Map.Entry<DriveState, GraphCommandNode> entry : nodes.entrySet()) {
+            if (entry.getValue() == currentNode) {
+                return entry.getKey();
+            }
+        }
         return DriveState.MANUAL; // Default
     }
 
@@ -308,10 +261,30 @@ public class DriveStateMachine extends SubsystemBase {
     @Override
     public void periodic() {
         // Update dashboard with the human-friendly state name.
+        refreshLatchedHeadings();
         dashboard.putString("Current State", getCurrentState().toString());
         dashboard.putBoolean("At State", !isTransitioning());
         dashboard.putString("Branch", getRightScore() ? "Right" : "Left");
         dashboard.putBoolean("At Drive Position", atPosition());
-        
+
+    }
+
+    /** Updates latched headings whenever the driver rotates the robot manually. */
+    private void refreshLatchedHeadings() {
+        double manualRot = MathUtil.applyDeadband(driverController.getRightX(), OIConstants.kDriveDeadband);
+        if (manualRot == 0.0) {
+            return;
+        }
+
+        switch (getCurrentState()) {
+            case BARGE_RELATIVE:
+                bargeHeadingDegrees = pose.getDegrees();
+                break;
+            case CLIMB_RELATIVE:
+                climbHeadingDegrees = pose.getDegrees();
+                break;
+            default:
+                break;
+        }
     }
 }
