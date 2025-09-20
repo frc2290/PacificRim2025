@@ -474,6 +474,12 @@ public final class Constants {
 
         public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
         public static final Translation2d processor = new Translation2d(6, 0);
+        /** Pose used when pointing the drivetrain toward the center of the reef. */
+        public static final Pose2d REEF_CENTER_AIM_POSE =
+                new Pose2d(reefCenter, new Rotation2d());
+        /** Pose used when aiming the drivetrain at the processor. */
+        public static final Pose2d PROCESSOR_AIM_POSE =
+                new Pose2d(processor, new Rotation2d());
         public static final double halfwayAcrossFieldY = (317 / 2) * inToM;
         public static final double coralStationLeftHeading = -55;
         public static final double coralStationRightHeading = 55;
