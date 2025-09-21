@@ -145,54 +145,57 @@ public final class Constants {
 
                 // ============================ Setpoints ============================
                 // Elevator setpoints
-                public static final double kElevatorTransport = 0.2;
+                public static final double kElevatorStart = 0.0;
+                public static final double kElevatorTransport = 0.25;
                 public static final double kElevatorIntake = 0.25;
-                public static final double kElevatorL1 = 0.0;
-                public static final double kElevatorL2 = 0.50;
-                public static final double kElevatorL3 = 0.975;
-                public static final double kElevatorL4 = 1.59;
-                public static final double kElevatorPreCoralIntake = kElevatorIntake;
-                public static final double kElevatorL1Prep = 0.675;
-                public static final double kElevatorL2Prep = 0.74;
-                public static final double kElevatorL3Prep = 1.14;
-                public static final double kElevatorL4Prep = 1.72;
-                public static final double kElevatorPrepAlgaeL2 = 0.625;
-                public static final double kElevatorPrepAlgaeL3 = 1.025;
-                public static final double kElevatorScoreProcessor = 0.125;
-                public static final double kElevatorClimbReady = 0.525;
+                public static final double kElevatorL1 = 0.675;
+                public static final double kElevatorL2 = 0.74;
+                public static final double kElevatorL3 = 1.14;
+                public static final double kElevatorL4 = 1.72;
+                public static final double kElevatorAlgaeLow = 0.625;
+                public static final double kElevatorAlgaeHigh = 1.025;
+                public static final double kElevatorProcessor = 0.125;
+                public static final double kElevatorClimb = 0.525;
+                public static final double kElevatorBarge = 1.72;
 
                 // Extension setpoints
-                public static final double kExtensionTransport = 140;
+                public static final double kExtensionStart = 0;
+                public static final double kExtensionTransport = 35;
                 public static final double kExtensionIntake = 35;
-                public static final double kExtensionPreCoralIntake = 80;
-                // Clearance extension used when collapsing the arm before rotating.
-                public static final double kExtensionSafeReturnClearance = 230;
-                public static final double kExtensionL1Prep = 80;
-                public static final double kExtensionL2Prep = 80;
-                public static final double kExtensionL3Prep = 80;
-                public static final double kExtensionL4Prep = 140;
-                public static final double kExtensionPrepAlgaeL2 = 185;
-                public static final double kExtensionPrepAlgaeL3 = 185;
-                public static final double kExtensionScoreProcessor = 80;
+                public static final double kExtensionPrep = 80;
+                public static final double kExtensionL1 = 80;
+                public static final double kExtensionL2 = 80;
+                public static final double kExtensionL3 = 80;
+                public static final double kExtensionL4 = 140;
+                public static final double kExtensionAlgaeIntake = 185;
+                public static final double kExtensionProcessor = 80;
+                public static final double kExtensionClimb = 80;
+                public static final double kExtensionBarge = 140;
 
                 // Rotation setpoints
-                public static final double kRotationTransport = 230;
+                public static final double kRotationStart = 0;
+                public static final double kRotationTransport = 235;
                 public static final double kRotationIntake = 235;
-                public static final double kRotationPreCoralIntake = 235;
-                public static final double kRotationL1Prep = 235;
-                public static final double kRotationL2Prep = 230;
-                public static final double kRotationL3Prep = 230;
-                public static final double kRotationL4Prep = 235;
-                public static final double kRotationPrepAlgaeL2 = 225;
-                public static final double kRotationPrepAlgaeL3 = 225;
-                public static final double kRotationScoreProcessor = 195;
+                public static final double kRotationPrep = 235;
+                public static final double kRotationL1 = 235;
+                public static final double kRotationL2 = 230;
+                public static final double kRotationL3 = 230;
+                public static final double kRotationL4 = 235;
+                public static final double kRotationAlgaeIntake = 225;
+                public static final double kRotationProcessor = 195;
+                public static final double kRotationClimb = 80;
+                public static final double kRotationBarge = 195;
 
                 // ======================= Travel / Start =======================
-                public static final ManipulatorPosition SAFE_CORAL_TRAVEL = new ManipulatorPosition(
+                public static final ManipulatorPosition CORAL_TRANSPORT = new ManipulatorPosition(
                                 kElevatorTransport,
                                 kExtensionTransport,
                                 kRotationTransport);
-                public static final ManipulatorPosition START_POSITION = SAFE_CORAL_TRAVEL;
+
+                public static final ManipulatorPosition START_POSITION = new ManipulatorPosition(
+                                kElevatorStart,
+                                kExtensionStart,
+                                kRotationStart);
 
                 // ========================= Coral Intake =========================
                 public static final ManipulatorPosition INTAKE_CORAL = new ManipulatorPosition(kElevatorIntake,
@@ -201,53 +204,58 @@ public final class Constants {
 
                 // ====================== Coral Scoring (L1–L4) ======================
                 public static final ManipulatorPosition L1_PREP = new ManipulatorPosition(kElevatorL1,
-                                kExtensionL1Prep, kRotationL1Prep);
-                public static final ManipulatorPosition SCORE_L1 = L1_PREP;
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition SCORE_L1 = new ManipulatorPosition(kElevatorL1,
+                                kExtensionL1, kRotationL1);
                 public static final ManipulatorPosition L1_POST_SCORE = L1_PREP;
 
                 public static final ManipulatorPosition L2_PREP = new ManipulatorPosition(kElevatorL2,
-                                kExtensionL2Prep, kRotationL2Prep);
-                public static final ManipulatorPosition SCORE_L2 = L2_PREP;
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition SCORE_L2 = new ManipulatorPosition(kElevatorL2,
+                                kExtensionL2, kRotationL2);
                 public static final ManipulatorPosition L2_POST_SCORE = L2_PREP;
 
                 public static final ManipulatorPosition L3_PREP = new ManipulatorPosition(kElevatorL3,
-                                kExtensionL3Prep, kRotationL3Prep);
-                public static final ManipulatorPosition SCORE_L3 = L3_PREP;
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition SCORE_L3 = new ManipulatorPosition(kElevatorL3,
+                                kExtensionL3, kRotationL3);
                 public static final ManipulatorPosition L3_POST_SCORE = L3_PREP;
 
                 public static final ManipulatorPosition L4_PREP = new ManipulatorPosition(kElevatorL4,
-                                kExtensionL4Prep, kRotationL4Prep);
-                public static final ManipulatorPosition SCORE_L4 = L4_PREP;
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition SCORE_L4 = new ManipulatorPosition(kElevatorL4,
+                                kExtensionL4, kRotationL4);
                 public static final ManipulatorPosition L4_POST_SCORE = L4_PREP;
 
                 // ============================== Algae ==============================
-                public static final ManipulatorPosition PREP_ALGAE_INTAKE = SAFE_CORAL_TRAVEL;
-                public static final ManipulatorPosition PREP_ALGAE_L2 = new ManipulatorPosition(kElevatorPrepAlgaeL2,
-                                kExtensionPrepAlgaeL2, kRotationPrepAlgaeL2);
-                public static final ManipulatorPosition PREP_ALGAE_L3 = new ManipulatorPosition(kElevatorPrepAlgaeL3,
-                                kExtensionPrepAlgaeL3, kRotationPrepAlgaeL3);
-                public static final ManipulatorPosition SAFE_ALGAE_TRAVEL = SAFE_CORAL_TRAVEL;
+                public static final ManipulatorPosition PREP_ALGAE_LOW = new ManipulatorPosition(kElevatorAlgaeLow,
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition ALGAE_LOW = new ManipulatorPosition(kElevatorAlgaeLow,
+                                kExtensionAlgaeIntake, kRotationAlgaeIntake);
+                public static final ManipulatorPosition PREP_ALGAE_HIGH = new ManipulatorPosition(kElevatorAlgaeHigh,
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition ALGAE_HIGH = new ManipulatorPosition(kElevatorAlgaeHigh,
+                                kExtensionAlgaeIntake, kRotationAlgaeIntake);
+
+                public static final ManipulatorPosition ALGAE_TRANSPORT = CORAL_TRANSPORT;
 
                 // ========================= Processor / Barge =========================
-                public static final ManipulatorPosition SCORE_PROCESSOR = new ManipulatorPosition(kElevatorScoreProcessor,
-                                kExtensionScoreProcessor, kRotationScoreProcessor);
+                public static final ManipulatorPosition SCORE_PROCESSOR = new ManipulatorPosition(kElevatorProcessor,
+                                kExtensionProcessor, kRotationProcessor);
 
-                public static final ManipulatorPosition PREP_SCORE_BARGE = SAFE_CORAL_TRAVEL;
-                public static final ManipulatorPosition SCORE_BARGE = SAFE_CORAL_TRAVEL;
+                public static final ManipulatorPosition PREP_BARGE = new ManipulatorPosition(kElevatorBarge,
+                                kExtensionPrep, kRotationPrep);
+                public static final ManipulatorPosition SCORE_BARGE = new ManipulatorPosition(kElevatorBarge,
+                                kExtensionBarge, kRotationBarge);
+                public static final ManipulatorPosition BARGE_POST_SCORE = PREP_BARGE;
 
                 // =============================== Climb ===============================
-                public static final ManipulatorPosition CLIMB_PREP = SAFE_CORAL_TRAVEL;
-                public static final ManipulatorPosition CLIMB_READY = new ManipulatorPosition(kElevatorClimbReady,
-                                kExtensionTransport,
-                                kRotationTransport);
+                public static final ManipulatorPosition CLIMB = new ManipulatorPosition(kElevatorClimb,
+                                kExtensionClimb,
+                                kRotationClimb);
 
                 // ============================== Misc / Aliases ==============================
-                public static final ManipulatorPosition CANCELLED = SAFE_CORAL_TRAVEL;
-
-                public static final ManipulatorPosition L1 = SCORE_L1;
-                public static final ManipulatorPosition L2 = SCORE_L2;
-                public static final ManipulatorPosition L3 = SCORE_L3;
-                public static final ManipulatorPosition L4 = SCORE_L4;
+                public static final ManipulatorPosition CANCELLED = CORAL_TRANSPORT;
 
                 public record ManipulatorPosition(double elevatorMeters, double extensionMillimeters,
                                 double rotationDegrees) {
