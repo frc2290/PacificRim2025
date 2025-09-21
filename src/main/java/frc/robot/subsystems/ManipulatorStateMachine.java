@@ -68,7 +68,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
      * Graph Command Nodes for Drive State Machine
      */
     GraphCommandNode startPositionNode;
-    GraphCommandNode preCoralIntakeNode;
     GraphCommandNode intakeCoralNode;
     GraphCommandNode safeCoralTravelNode;
     GraphCommandNode l1PrepNode;
@@ -149,13 +148,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
             startPositionNode = m_graphCommand.new GraphCommandNode(
                 "StartPosition",
                 new PrintCommand("At Start Position"),
-                new PrintCommand(""),
-                new PrintCommand(""));
-
-        preCoralIntakeNode = m_graphCommand.new GraphCommandNode(
-                "PreCoralIntake",
-                ManipulatorPositionCommandFactory.createPrepCommand(
-                        this, m_diff, m_elevator, ElevatorManipulatorPositions.PRE_CORAL_INTAKE),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -320,12 +312,11 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
         // Safe travel connections
         startPositionNode.AddNode(safeCoralTravelNode, 1.0); //start position to safe travel
-        safeCoralTravelNode.AddNode(preCoralIntakeNode, 1.0); //safe travel to pre coral intake
+        safeCoralTravelNode.AddNode(intakeCoralNode, 1.0); //safe travel to coral intake
         safeCoralTravelNode.AddNode(l1PrepNode, 1.0); //safe travel to l1 prep
         safeCoralTravelNode.AddNode(l2PrepNode, 1.0); //safe travel to l2 prep
         safeCoralTravelNode.AddNode(l3PrepNode, 1.0); //safe travel to l3 prep
         safeCoralTravelNode.AddNode(l4PrepNode, 1.0); //safe travel to l4 prep
-        preCoralIntakeNode.AddNode(intakeCoralNode, 1.0); //pre coral intake to coral intake
         intakeCoralNode.AddNode(safeCoralTravelNode, 1.0); //coral intake to safe travel
         //l1PrepNode.AddNode(l2PrepNode, 1.0); //l1 prep to l2 prep
         //l1PrepNode.AddNode(l3PrepNode, 1.0); //l1 prep to l3 prep

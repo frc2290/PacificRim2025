@@ -195,33 +195,30 @@ public final class Constants {
                 public static final ManipulatorPosition START_POSITION = SAFE_CORAL_TRAVEL;
 
                 // ========================= Coral Intake =========================
-                public static final ManipulatorPosition PRE_CORAL_INTAKE = new ManipulatorPosition(
-                                kElevatorPreCoralIntake, kExtensionPreCoralIntake, kRotationPreCoralIntake);
-
                 public static final ManipulatorPosition INTAKE_CORAL = new ManipulatorPosition(kElevatorIntake,
                                 kExtensionIntake,
                                 kRotationIntake);
 
                 // ====================== Coral Scoring (L1–L4) ======================
-                public static final ManipulatorPosition L1_PREP = new ManipulatorPosition(kElevatorL1Prep,
+                public static final ManipulatorPosition L1_PREP = new ManipulatorPosition(kElevatorL1,
                                 kExtensionL1Prep, kRotationL1Prep);
                 public static final ManipulatorPosition SCORE_L1 = L1_PREP;
-                public static final ManipulatorPosition L1_POST_SCORE = SAFE_CORAL_TRAVEL;
+                public static final ManipulatorPosition L1_POST_SCORE = L1_PREP;
 
-                public static final ManipulatorPosition L2_PREP = new ManipulatorPosition(kElevatorL2Prep,
+                public static final ManipulatorPosition L2_PREP = new ManipulatorPosition(kElevatorL2,
                                 kExtensionL2Prep, kRotationL2Prep);
                 public static final ManipulatorPosition SCORE_L2 = L2_PREP;
-                public static final ManipulatorPosition L2_POST_SCORE = SAFE_CORAL_TRAVEL;
+                public static final ManipulatorPosition L2_POST_SCORE = L2_PREP;
 
-                public static final ManipulatorPosition L3_PREP = new ManipulatorPosition(kElevatorL3Prep,
+                public static final ManipulatorPosition L3_PREP = new ManipulatorPosition(kElevatorL3,
                                 kExtensionL3Prep, kRotationL3Prep);
                 public static final ManipulatorPosition SCORE_L3 = L3_PREP;
-                public static final ManipulatorPosition L3_POST_SCORE = SAFE_CORAL_TRAVEL;
+                public static final ManipulatorPosition L3_POST_SCORE = L3_PREP;
 
-                public static final ManipulatorPosition L4_PREP = new ManipulatorPosition(kElevatorL4Prep,
+                public static final ManipulatorPosition L4_PREP = new ManipulatorPosition(kElevatorL4,
                                 kExtensionL4Prep, kRotationL4Prep);
                 public static final ManipulatorPosition SCORE_L4 = L4_PREP;
-                public static final ManipulatorPosition L4_POST_SCORE = SAFE_CORAL_TRAVEL;
+                public static final ManipulatorPosition L4_POST_SCORE = L4_PREP;
 
                 // ============================== Algae ==============================
                 public static final ManipulatorPosition PREP_ALGAE_INTAKE = SAFE_CORAL_TRAVEL;
