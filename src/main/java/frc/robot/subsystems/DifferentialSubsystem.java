@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -30,12 +29,17 @@ import frc.robot.commands.Waits.RotationSetWait;
 import frc.utils.LinearInterpolator;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
-/** Owns the differential arm that controls manipulator rotation and extension. */
+/**
+ * Owns the differential arm that controls manipulator rotation and extension.
+ */
 public class DifferentialSubsystem extends SubsystemBase {
 
     /** Motion-profiled PID that handles telescoping the arm in millimeters. */
     private ProfiledPIDController extensionPid = new ProfiledPIDController(30, 0, 1.5, new Constraints(3000, 12000));
-    /** Motion-profiled PID that rotates the arm while respecting acceleration limits. */
+    /**
+     * Motion-profiled PID that rotates the arm while respecting acceleration
+     * limits.
+     */
     private ProfiledPIDController rotationPid = new ProfiledPIDController(60, 0, 4, new Constraints(1400, 5600));
 
     private SparkMax leftMotor;
@@ -61,7 +65,10 @@ public class DifferentialSubsystem extends SubsystemBase {
     @SuppressWarnings("unused")
     private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
 
-    /** Laser rangefinder mounted near the manipulator for interpolation of scoring positions. */
+    /**
+     * Laser rangefinder mounted near the manipulator for interpolation of scoring
+     * positions.
+     */
     private LaserCan lc;
     private int laserCanDistance = 0;
     private boolean hasLaserCanDistance = false;
@@ -86,12 +93,11 @@ public class DifferentialSubsystem extends SubsystemBase {
 
         leftConfig.inverted(true)
                 .idleMode(IdleMode.kBrake)
-                .smartCurrentLimit(50)
-                .encoder
-                    .positionConversionFactor(34.2857)
-                    .velocityConversionFactor(0.5714)
-                    .quadratureMeasurementPeriod(10)
-                    .quadratureAverageDepth(2);
+                .smartCurrentLimit(50).encoder
+                .positionConversionFactor(34.2857)
+                .velocityConversionFactor(0.5714)
+                .quadratureMeasurementPeriod(10)
+                .quadratureAverageDepth(2);
         leftConfig.closedLoop
                 .p(DifferentialArm.v_kp, ClosedLoopSlot.kSlot0)
                 .i(DifferentialArm.v_ki, ClosedLoopSlot.kSlot0)
@@ -117,7 +123,8 @@ public class DifferentialSubsystem extends SubsystemBase {
 
         lc = new LaserCan(DifferentialArm.kLaserCanId);
 
-        // Configure the LaserCAN for close range measurements so the interpolators have reliable data.
+        // Configure the LaserCAN for close range measurements so the interpolators have
+        // reliable data.
         try {
             lc.setRangingMode(LaserCan.RangingMode.SHORT);
             lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
@@ -140,15 +147,19 @@ public class DifferentialSubsystem extends SubsystemBase {
         differentialDash.addDoublePublisher("Right Current", true, () -> rightMotor.getOutputCurrent());
         differentialDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
         differentialDash.addDoublePublisher("Ext Command Vel", true, () -> extensionVelocity);
-        differentialDash.addDoublePublisher("Ext Vel", true, () -> (leftEnc.getVelocity() + rightEnc.getVelocity()) / 2);
+        differentialDash.addDoublePublisher("Ext Vel", true,
+                () -> (leftEnc.getVelocity() + rightEnc.getVelocity()) / 2);
         differentialDash.addDoublePublisher("Rot Command Vel", true, () -> rotationVelocity);
-        differentialDash.addDoublePublisher("Rot Vel", true, () -> (leftEnc.getVelocity() - rightEnc.getVelocity()) / 2);
+        differentialDash.addDoublePublisher("Rot Vel", true,
+                () -> (leftEnc.getVelocity() - rightEnc.getVelocity()) / 2);
         differentialDash.addDoublePublisher("Left Command", true, () -> leftCommand);
         differentialDash.addDoublePublisher("Right Command", true, () -> rightCommand);
         differentialDash.addIntegerPublisher("LaserCan Distance", true, () -> laserCanDistance);
     }
 
-    /** Direct percent-output control for telescoping, primarily used for testing. */
+    /**
+     * Direct percent-output control for telescoping, primarily used for testing.
+     */
     public void extend(double setpoint) {
         leftMotor.set(setpoint);
         rightMotor.set(setpoint);
@@ -166,7 +177,8 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     public Command setExtensionSetpointCommand(double setpoint) {
         return new ExtensionSetWait(this, setpoint);
-        //return Commands.run(() -> setExtensionSetpoint(setpoint)).until(() -> atExtenstionSetpoint());
+        // return Commands.run(() -> setExtensionSetpoint(setpoint)).until(() ->
+        // atExtenstionSetpoint());
     }
 
     public void setRotationSetpoint(double setpoint) {
@@ -175,16 +187,17 @@ public class DifferentialSubsystem extends SubsystemBase {
 
     public Command setRotationSetpointCommand(double setpoint) {
         return new RotationSetWait(this, setpoint);
-        //return Commands.run(() -> setRotationSetpoint(setpoint)).until(() -> atRotationSetpoint());
+        // return Commands.run(() -> setRotationSetpoint(setpoint)).until(() ->
+        // atRotationSetpoint());
     }
 
     public Command setRotAndExtSetpointCommand(double ext, double rot) {
         return new ExtensionAndRotationWait(this, ext, rot);
         // return Commands.run(() -> {
-        //     setExtensionSetpoint(ext);
-        //     setRotationSetpoint(rot);
+        // setExtensionSetpoint(ext);
+        // setRotationSetpoint(rot);
         // }).until(() -> {
-        //     return atRotationSetpoint() && atExtenstionSetpoint();
+        // return atRotationSetpoint() && atExtenstionSetpoint();
         // });
     }
 
@@ -262,20 +275,24 @@ public class DifferentialSubsystem extends SubsystemBase {
     public void periodic() {
         // Poll the LaserCAN for distance data that helps compute interpolated presets.
         LaserCan.Measurement measurement = lc.getMeasurement();
-        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT && measurement.distance_mm < 430) {
+        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
+                && measurement.distance_mm < 430) {
             laserCanDistance = measurement.distance_mm;
             hasLaserCanDistance = true;
-            //System.out.println("The target is " + measurement.distance_mm + "mm away!");
+            // System.out.println("The target is " + measurement.distance_mm + "mm away!");
         } else {
             hasLaserCanDistance = false;
         }
 
-        // Convert PID outputs into velocity commands for each motor. Extension is the average, rotation
+        // Convert PID outputs into velocity commands for each motor. Extension is the
+        // average, rotation
         // is produced by commanding opposite directions on the two motors.
         extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
         rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
-        //double extFeed = extFeedforward.calculate(extensionVelocity);
-        //double rotFeed = rotFeedforward.calculate((degreesToRadians(getRotationPosition()) - 0.139), rotationVelocity);
+        // double extFeed = extFeedforward.calculate(extensionVelocity);
+        // double rotFeed =
+        // rotFeedforward.calculate((degreesToRadians(getRotationPosition()) - 0.139),
+        // rotationVelocity);
         leftCommand = extensionVelocity - degreesToMM(rotationVelocity);
         rightCommand = extensionVelocity + degreesToMM(rotationVelocity);
         leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);

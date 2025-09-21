@@ -148,15 +148,15 @@ public final class Constants {
                 public static final double kElevatorStart = 0.0;
                 public static final double kElevatorTransport = 0.25;
                 public static final double kElevatorIntake = 0.25;
-                public static final double kElevatorL1 = 0.675;
-                public static final double kElevatorL2 = 0.74;
-                public static final double kElevatorL3 = 1.14;
-                public static final double kElevatorL4 = 1.72;
+                public static final double kElevatorL1 = 0.125;
+                public static final double kElevatorL2 = 0.5;
+                public static final double kElevatorL3 = kElevatorL2 + 0.4;
+                public static final double kElevatorL4 = 1.59;
                 public static final double kElevatorAlgaeLow = 0.625;
-                public static final double kElevatorAlgaeHigh = 1.025;
+                public static final double kElevatorAlgaeHigh = kElevatorAlgaeLow  + 0.4;
                 public static final double kElevatorProcessor = 0.125;
                 public static final double kElevatorClimb = 0.525;
-                public static final double kElevatorBarge = 1.72;
+                public static final double kElevatorBarge = 1.59;
 
                 // Extension setpoints
                 public static final double kExtensionStart = 0;
@@ -164,9 +164,9 @@ public final class Constants {
                 public static final double kExtensionIntake = 35;
                 public static final double kExtensionPrep = 80;
                 public static final double kExtensionL1 = 80;
-                public static final double kExtensionL2 = 80;
-                public static final double kExtensionL3 = 80;
-                public static final double kExtensionL4 = 140;
+                public static final double kExtensionL2 = 140;
+                public static final double kExtensionL3 = 140;
+                public static final double kExtensionL4 = 215;
                 public static final double kExtensionAlgaeIntake = 185;
                 public static final double kExtensionProcessor = 80;
                 public static final double kExtensionClimb = 80;
@@ -177,14 +177,14 @@ public final class Constants {
                 public static final double kRotationTransport = 235;
                 public static final double kRotationIntake = 235;
                 public static final double kRotationPrep = 235;
-                public static final double kRotationL1 = 235;
+                public static final double kRotationL1 = 195;
                 public static final double kRotationL2 = 230;
                 public static final double kRotationL3 = 230;
-                public static final double kRotationL4 = 235;
+                public static final double kRotationL4 = 80;
                 public static final double kRotationAlgaeIntake = 225;
                 public static final double kRotationProcessor = 195;
                 public static final double kRotationClimb = 80;
-                public static final double kRotationBarge = 195;
+                public static final double kRotationBarge = 80;
 
                 // ======================= Travel / Start =======================
                 public static final ManipulatorPosition CORAL_TRANSPORT = new ManipulatorPosition(

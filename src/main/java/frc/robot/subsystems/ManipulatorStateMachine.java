@@ -329,26 +329,26 @@ public class ManipulatorStateMachine extends SubsystemBase {
         safeCoralTravelNode.AddNode(l3PrepNode, 1.0); // safe travel to l3 prep
         safeCoralTravelNode.AddNode(l4PrepNode, 1.0); // safe travel to l4 prep
         intakeCoralNode.AddNode(safeCoralTravelNode, 1.0); // coral intake to safe travel
-        // l1PrepNode.AddNode(l2PrepNode, 1.0); //l1 prep to l2 prep
-        // l1PrepNode.AddNode(l3PrepNode, 1.0); //l1 prep to l3 prep
-        // l1PrepNode.AddNode(l4PrepNode, 1.0); //l1 prep to l4 prep
-        // l2PrepNode.AddNode(l1PrepNode, 1.0); //l2 prep to l1 prep
-        // l2PrepNode.AddNode(l3PrepNode, 1.0); //l2 prep to l3 prep
-        // l2PrepNode.AddNode(l4PrepNode, 1.0); //l2 prep to l4 prep
-        // l3PrepNode.AddNode(l1PrepNode, 1.0); //l3 prep to l1 prep
-        // l3PrepNode.AddNode(l2PrepNode, 1.0); //l3 prep to l2 prep
-        // l3PrepNode.AddNode(l4PrepNode, 1.0); //l3 prep to l4 prep
-        // l4PrepNode.AddNode(l1PrepNode, 1.0); //l4 prep to l1 prep
-        // l4PrepNode.AddNode(l2PrepNode, 1.0); //l4 prep to l2 prep
-        // l4PrepNode.AddNode(l3PrepNode, 1.0); //l4 prep to l3 prep
+        l1PrepNode.AddNode(l2PrepNode, 1.0); // l1 prep to l2 prep
+        l1PrepNode.AddNode(l3PrepNode, 1.0); // l1 prep to l3 prep
+        l1PrepNode.AddNode(l4PrepNode, 1.0); // l1 prep to l4 prep
+        l2PrepNode.AddNode(l1PrepNode, 1.0); // l2 prep to l1 prep
+        l2PrepNode.AddNode(l3PrepNode, 1.0); // l2 prep to l3 prep
+        l2PrepNode.AddNode(l4PrepNode, 1.0); // l2 prep to l4 prep
+        l3PrepNode.AddNode(l1PrepNode, 1.0); // l3 prep to l1 prep
+        l3PrepNode.AddNode(l2PrepNode, 1.0); // l3 prep to l2 prep
+        l3PrepNode.AddNode(l4PrepNode, 1.0); // l3 prep to l4 prep
+        l4PrepNode.AddNode(l1PrepNode, 1.0); // l4 prep to l1 prep
+        l4PrepNode.AddNode(l2PrepNode, 1.0); // l4 prep to l2 prep
+        l4PrepNode.AddNode(l3PrepNode, 1.0); // l4 prep to l3 prep
         l1PrepNode.AddNode(scoreL1Node, 1.0); // l1 prep to score l1
         l2PrepNode.AddNode(scoreL2Node, 1.0); // l2 prep to score l2
         l3PrepNode.AddNode(scoreL3Node, 1.0); // l3 prep to score l3
         l4PrepNode.AddNode(scoreL4Node, 1.0); // l4 prep to score l4
-        // scoreL1Node.AddNode(l1PrepNode, 1.0); //score l1 to l1 prep
-        // scoreL2Node.AddNode(l2PrepNode, 1.0); //score l2 to l2 prep
-        // scoreL3Node.AddNode(l3PrepNode, 1.0); //score l3 to l3 prep
-        // scoreL4Node.AddNode(l4PrepNode, 1.0); //score l4 to l4 prep
+        scoreL1Node.AddNode(l1PrepNode, 1.0); // score l1 to l1 prep
+        scoreL2Node.AddNode(l2PrepNode, 1.0); // score l2 to l2 prep
+        scoreL3Node.AddNode(l3PrepNode, 1.0); // score l3 to l3 prep
+        scoreL4Node.AddNode(l4PrepNode, 1.0); // score l4 to l4 prep
         scoreL1Node.AddNode(l1PostScoreNode, 1.0); // score l1 to l1 post score
         scoreL2Node.AddNode(l2PostScoreNode, 1.0); // score l2 to l2 post score
         scoreL3Node.AddNode(l3PostScoreNode, 1.0); // score l3 to l3 post score
