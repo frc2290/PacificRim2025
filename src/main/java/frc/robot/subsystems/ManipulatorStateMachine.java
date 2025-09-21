@@ -11,10 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.robot.Constants.ElevatorManipulatorPositions;
-import frc.robot.commands.ElevatorManipulator.IntakeCoral;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
-import frc.robot.commands.ElevatorManipulator.PrepCoralIntake;
-import frc.robot.commands.ElevatorManipulator.SafeTravelSequential;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
@@ -155,21 +152,24 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new PrintCommand(""),
                 new PrintCommand(""));
 
-            preCoralIntakeNode = m_graphCommand.new GraphCommandNode(
-                "PreCoralIntake", 
-                new PrepCoralIntake(this, m_diff, m_elevator),
+        preCoralIntakeNode = m_graphCommand.new GraphCommandNode(
+                "PreCoralIntake",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                        this, m_diff, m_elevator, ElevatorManipulatorPositions.PRE_CORAL_INTAKE),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
-            intakeCoralNode = m_graphCommand.new GraphCommandNode(
-                "IntakeCoral", 
-                new IntakeCoral(this, m_diff, m_elevator),
+        intakeCoralNode = m_graphCommand.new GraphCommandNode(
+                "IntakeCoral",
+                ManipulatorPositionCommandFactory.createPrepCommand(
+                        this, m_diff, m_elevator, ElevatorManipulatorPositions.INTAKE_CORAL),
                 new PrintCommand(""),
                 new ManipulatorIntakeCoral(m_manipulator));
 
-            safeCoralTravelNode = m_graphCommand.new GraphCommandNode(
-                "SafeCoralTravelPos", 
-                new SafeTravelSequential(m_diff, m_elevator),
+        safeCoralTravelNode = m_graphCommand.new GraphCommandNode(
+                "SafeCoralTravelPos",
+                ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                        this, m_diff, m_elevator, ElevatorManipulatorPositions.SAFE_CORAL_TRAVEL),
                 new PrintCommand(""),
                 new PrintCommand(""));
             
