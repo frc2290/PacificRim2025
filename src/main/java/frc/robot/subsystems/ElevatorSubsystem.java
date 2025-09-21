@@ -29,14 +29,12 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 /** Controls the elevator carriage that raises and lowers the manipulator. */
 public class ElevatorSubsystem extends SubsystemBase {
 
-    //motor group
-    //FlytMotorController leftMotor; 
-    //FlytMotorController rightMotor;
-
-    /** Motion-profiled PID that commands elevator velocity while respecting trapezoid limits. */
-    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 1, new TrapezoidProfile.Constraints(2.5, 9));
-    /** Feedforward tuned for the elevator to counteract gravity and inertia. */
-    private ElevatorFeedforward feedforward = new ElevatorFeedforward(Elevator.kS, Elevator.kG, Elevator.kV, Elevator.kA);
+    /**
+     * Motion-profiled PID that commands elevator velocity while respecting
+     * trapezoid limits.
+     */
+    private ProfiledPIDController traPidController = new ProfiledPIDController(64, 0, 1,
+            new TrapezoidProfile.Constraints(2.5, 9));
 
     private SparkFlex leftMotor;
     private SparkFlex rightMotor;
@@ -54,19 +52,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     /** Desired carriage height in meters. */
     private double elevatorSetpoint = 0;
 
-    /** Experimental controller kept for future tuning experiments. */
-    private ExponentialProfiledPIDController expPidController = new ExponentialProfiledPIDController(0.0, 0.0, 0.0, ExponentialProfile.Constraints.fromCharacteristics(0.0, 0.0, 0.0));
-
-    //private SlewRateLimiter elevatorSlew = new SlewRateLimiter(3);
-
     public ElevatorSubsystem() {
-        // leftMotor = new SparkFlexController(getName(), Elevator.kLeftElevatorMotorId, true, true, true); //motor construct
-        // //motor1.advanceControl(0,0,0,0);//setup advace control
-        // //motor1.pidSetup(-1, 1, 0, 0, true, 0); //setup pid
-        // //motor1.motionProfile(0, 0); //create motion profile
-        // //motor1.pidTune(0, 0, 0, 0); //tune pid
-        // rightMotor = new SparkFlexController(getName(), Elevator.kRightElevatorMotorId, true, true, false); //creat second motor
-        // rightMotor.followeMe(Elevator.kLeftElevatorMotorId, true); //make it follow motor 1
 
         leftMotor = new SparkFlex(Elevator.kLeftElevatorMotorId, MotorType.kBrushless);
         rightMotor = new SparkFlex(Elevator.kRightElevatorMotorId, MotorType.kBrushless);
@@ -77,28 +63,24 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftEnc.setPosition(0);
 
         leftConfig.inverted(true)
-                    .idleMode(IdleMode.kBrake)
-                    .smartCurrentLimit(50)
-                    .encoder
-                        .positionConversionFactor(Elevator.kPositionConversion)
-                        .velocityConversionFactor(Elevator.kVelocityConversion);
-            leftConfig.closedLoop
-                        .p(Elevator.kP, ClosedLoopSlot.kSlot0)
-                        .i(Elevator.kI, ClosedLoopSlot.kSlot0)
-                        .d(Elevator.kD, ClosedLoopSlot.kSlot0)
-                        .outputRange(-1, 1);
+                .idleMode(IdleMode.kBrake)
+                .smartCurrentLimit(50).encoder
+                .positionConversionFactor(Elevator.kPositionConversion)
+                .velocityConversionFactor(Elevator.kVelocityConversion);
+        leftConfig.closedLoop
+                .p(Elevator.kP, ClosedLoopSlot.kSlot0)
+                .i(Elevator.kI, ClosedLoopSlot.kSlot0)
+                .d(Elevator.kD, ClosedLoopSlot.kSlot0)
+                .outputRange(-1, 1);
 
         leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        
+
         rightConfig.follow(Elevator.kLeftElevatorMotorId, true)
-                    .idleMode(IdleMode.kBrake);
+                .idleMode(IdleMode.kBrake);
 
         rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         traPidController.reset(elevatorSetpoint);
-
-        expPidController.setTolerance(0.0, 0.0);
-
 
         elevatorDash.addDoublePublisher("Elevator POS", false, () -> getPosition());
         elevatorDash.addDoublePublisher("Elevator Setpoint", false, () -> getElevatorSetpoint());
@@ -110,16 +92,18 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     /**
      * Change the current setpoint for the Elevator
+     * 
      * @param setpoint - Desired position for elevator
      */
-    public void setElevatorSetpoint(double setpoint){
-        //leftMotor.set(setpoint);
+    public void setElevatorSetpoint(double setpoint) {
+        // leftMotor.set(setpoint);
         elevatorSetpoint = setpoint;
     }
 
     public Command setElevatorSetpointCommand(double setpoint) {
         return new ElevatorSetWait(this, setpoint);
-        //return Commands.run(() -> setElevatorSetpoint(setpoint)).until(() -> atPosition());
+        // return Commands.run(() -> setElevatorSetpoint(setpoint)).until(() ->
+        // atPosition());
     }
 
     public Command incrementElevatorSetpoint(double increment) {
@@ -132,6 +116,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     /**
      * Set speed of elevator (value between -1 and 1)
+     * 
      * @param power - Speed setting (between -1 and 1)
      */
     public void setSpeed(double power) {
@@ -140,6 +125,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     /**
      * Returns current pos of Elevator
+     * 
      * @return Pos of Elevator
      */
     public double getPosition() {
@@ -148,6 +134,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     /**
      * Determines if Elevator is at current setpoint
+     * 
      * @return True if at setpoint
      */
     public boolean atPosition() {
@@ -156,17 +143,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // if (Constants.debugMode) {
-        //     double tempSetpoint = elevatorDash.getDouble("Elevator Setpoint");
-        //     if (elevatorSetpoint != tempSetpoint) {
-        //         elevatorSetpoint = tempSetpoint > 1.3 ? 1.3 : tempSetpoint;
-        //     }
-        // }
         double velocity = traPidController.calculate(getPosition(), elevatorSetpoint);
-        @SuppressWarnings("unused")
-        double elevFeed = feedforward.calculate(velocity);
-        elevator.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);//, elevFeed);
-        //elevator.setReference(elevatorSlew.calculate(elevatorSetpoint), ControlType.kPosition, ClosedLoopSlot.kSlot0, Elevator.kKG);
+        elevator.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
         elevatorDash.update(Constants.debugMode);
     }
 }
