@@ -145,7 +145,7 @@ public final class Constants {
 
                 // ============================ Setpoints ============================
                 // Elevator setpoints
-                public static final double kElevatorTransport = 0.3;
+                public static final double kElevatorTransport = 0.2;
                 public static final double kElevatorIntake = 0.25;
                 public static final double kElevatorL1 = 0.0;
                 public static final double kElevatorL2 = 0.50;
@@ -165,6 +165,8 @@ public final class Constants {
                 public static final double kExtensionTransport = 140;
                 public static final double kExtensionIntake = 35;
                 public static final double kExtensionPreCoralIntake = 80;
+                // Clearance extension used when collapsing the arm before rotating.
+                public static final double kExtensionSafeReturnClearance = 230;
                 public static final double kExtensionL1Prep = 80;
                 public static final double kExtensionL2Prep = 80;
                 public static final double kExtensionL3Prep = 80;
@@ -176,7 +178,7 @@ public final class Constants {
                 // Rotation setpoints
                 public static final double kRotationTransport = 230;
                 public static final double kRotationIntake = 235;
-                public static final double kRotationPreCoralIntake = 225;
+                public static final double kRotationPreCoralIntake = 235;
                 public static final double kRotationL1Prep = 235;
                 public static final double kRotationL2Prep = 230;
                 public static final double kRotationL3Prep = 230;
