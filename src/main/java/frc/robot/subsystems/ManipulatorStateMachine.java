@@ -51,7 +51,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
         ALGAE_L3,
         PROCESSOR,
         BARGE,
-        CLIMB,
+        CLIMB_READY,
+        CLIMBED,
+        CLIMB_ABORT,
         MANUAL,
         RESET,
 
@@ -86,13 +88,16 @@ public class ManipulatorStateMachine extends SubsystemBase {
     GraphCommandNode l3PostScoreNode;
     GraphCommandNode l4PostScoreNode;
     GraphCommandNode prepAlgaeIntakeNode;
-    GraphCommandNode prepAlgaeL2Node;
-    GraphCommandNode prepAlgaeL3Node;
+    GraphCommandNode prepAlgaeLowNode;
+    GraphCommandNode prepAlgaeHighNode;
     GraphCommandNode safeAlgaeTravelNode;
-    GraphCommandNode scoreProssesorNode;
+    GraphCommandNode scoreProcessorNode;
     GraphCommandNode prepScoreBargeNode;
     GraphCommandNode scoreBargeNode;
-    GraphCommandNode climbNode;
+    GraphCommandNode bargePostScoreNode;
+    GraphCommandNode climbReadyNode;
+    GraphCommandNode climbedNode;
+    GraphCommandNode climbAbortNode;
     GraphCommandNode cancelledNode;
 
     // variables
@@ -266,14 +271,14 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new PrintCommand(""),
                 new PrintCommand(""));
 
-        prepAlgaeL2Node = m_graphCommand.new GraphCommandNode(
+        prepAlgaeLowNode = m_graphCommand.new GraphCommandNode(
                 "PrepAlgaeLow",
                 ManipulatorPositionCommandFactory.createPrepCommand(
                         this, m_diff, m_elevator, ElevatorManipulatorPositions.PREP_ALGAE_LOW),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
-        prepAlgaeL3Node = m_graphCommand.new GraphCommandNode(
+        prepAlgaeHighNode = m_graphCommand.new GraphCommandNode(
                 "PrepAlgaeHigh",
                 ManipulatorPositionCommandFactory.createPrepCommand(
                         this, m_diff, m_elevator, ElevatorManipulatorPositions.PREP_ALGAE_HIGH),
@@ -287,7 +292,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new PrintCommand(""),
                 new PrintCommand(""));
 
-        scoreProssesorNode = m_graphCommand.new GraphCommandNode(
+        scoreProcessorNode = m_graphCommand.new GraphCommandNode(
                 "ScoreProcessor",
                 ManipulatorPositionCommandFactory.createScoreCommand(
                         this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_PROCESSOR),
@@ -308,10 +313,34 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 new PrintCommand(""),
                 new PrintCommand(""));
 
-        climbNode = m_graphCommand.new GraphCommandNode(
-                "Climb",
-                ManipulatorPositionCommandFactory.createPrepCommand(
-                        this, m_diff, m_elevator, ElevatorManipulatorPositions.CLIMB),
+        bargePostScoreNode = m_graphCommand.new GraphCommandNode(
+                "BargePostScore",
+                ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                        this, m_diff, m_elevator, ElevatorManipulatorPositions.BARGE_POST_SCORE),
+                new PrintCommand(""),
+                new PrintCommand(""));
+
+        climbReadyNode = m_graphCommand.new GraphCommandNode(
+                "ClimbReady",
+                Commands.sequence(
+                        ManipulatorPositionCommandFactory.createPrepCommand(
+                                this, m_diff, m_elevator, ElevatorManipulatorPositions.CLIMB),
+                        Commands.runOnce(() -> m_climb.setServoOpen(), m_climb)),
+                new PrintCommand(""),
+                new PrintCommand(""));
+
+        climbedNode = m_graphCommand.new GraphCommandNode(
+                "Climbed",
+                new PrintCommand(""),
+                new PrintCommand(""),
+                new PrintCommand(""));
+
+        climbAbortNode = m_graphCommand.new GraphCommandNode(
+                "ClimbAbort",
+                Commands.sequence(
+                        Commands.runOnce(() -> m_climb.setServoClose(), m_climb),
+                        ManipulatorPositionCommandFactory.createSafeReturnCommand(
+                                this, m_diff, m_elevator, ElevatorManipulatorPositions.CORAL_TRANSPORT)),
                 new PrintCommand(""),
                 new PrintCommand(""));
 
@@ -357,21 +386,26 @@ public class ManipulatorStateMachine extends SubsystemBase {
         l2PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l2 post score to safe travel
         l3PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l3 post score to safe travel
         l4PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l4 post score to safe travel
-        safeCoralTravelNode.AddNode(prepAlgaeIntakeNode, 1.0); // safe travel to prep algae intake
-        prepAlgaeIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // prep algae intake to safe algae travel
-        prepAlgaeIntakeNode.AddNode(prepAlgaeL2Node, 1.0); // prep algae intake to prep algae l2
-        prepAlgaeIntakeNode.AddNode(prepAlgaeL3Node, 1.0); // prep algae intake to prep algae l3
-        prepAlgaeL2Node.AddNode(prepAlgaeIntakeNode, 1.0); // prep algae l2 to prep algae intake
-        prepAlgaeL3Node.AddNode(prepAlgaeIntakeNode, 1.0); // prep algae l3 to prep algae intake
-        prepAlgaeL2Node.AddNode(safeAlgaeTravelNode, 1.0); // prep algae l2 to safe algae travel
-        prepAlgaeL3Node.AddNode(safeAlgaeTravelNode, 1.0); // prep algae l3 to safe algae travel
-        safeAlgaeTravelNode.AddNode(scoreProssesorNode, 1.0); // safe algae travel to score processor
+        safeCoralTravelNode.AddNode(prepAlgaeLowNode, 1.0); // safe travel to prep algae low
+        safeCoralTravelNode.AddNode(prepAlgaeHighNode, 1.0); // safe travel to prep algae high
+        prepAlgaeLowNode.AddNode(prepAlgaeHighNode, 1.0); // prep algae low to prep algae high
+        prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae high to prep algae low
+        prepAlgaeLowNode.AddNode(prepAlgaeIntakeNode, 1.0); // prep algae low to prep algae intake
+        prepAlgaeHighNode.AddNode(prepAlgaeIntakeNode, 1.0); // prep algae high to prep algae intake
+        prepAlgaeIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae intake to prep algae low
+        prepAlgaeIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // prep algae intake to prep algae high
+        prepAlgaeLowNode.AddNode(safeAlgaeTravelNode, 1.0); // prep algae low to safe algae travel
+        prepAlgaeHighNode.AddNode(safeAlgaeTravelNode, 1.0); // prep algae high to safe algae travel
+        safeAlgaeTravelNode.AddNode(scoreProcessorNode, 1.0); // safe algae travel to score processor
         safeAlgaeTravelNode.AddNode(prepScoreBargeNode, 1.0); // safe algae travel to prep score barge
         prepScoreBargeNode.AddNode(scoreBargeNode, 1.0); // prep score barge to score barge
-        scoreProssesorNode.AddNode(safeCoralTravelNode, 1.0); // score processor to safe coral travel
-        scoreBargeNode.AddNode(safeCoralTravelNode, 1.0); // score barge to safe coral travel
-        safeCoralTravelNode.AddNode(climbNode, 1.0); // safe coral travel to climb
-        climbNode.AddNode(safeCoralTravelNode, 1.0); // climb to safe coral travel
+        scoreBargeNode.AddNode(bargePostScoreNode, 1.0); // score barge to barge post score
+        scoreProcessorNode.AddNode(safeCoralTravelNode, 1.0); // score processor to safe coral travel
+        bargePostScoreNode.AddNode(safeCoralTravelNode, 1.0); // barge post score to safe coral travel
+        safeCoralTravelNode.AddNode(climbReadyNode, 1.0); // safe coral travel to climb ready
+        climbReadyNode.AddNode(climbedNode, 1.0); // climb ready to climbed
+        climbReadyNode.AddNode(climbAbortNode, 1.0); // climb ready to climb abort
+        climbAbortNode.AddNode(safeCoralTravelNode, 1.0); // climb abort to safe coral travel
 
     }
 
@@ -502,19 +536,25 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 m_graphCommand.setTargetNode(scoreL4Node);
                 break;
             case ALGAE_L2:
-                m_graphCommand.setTargetNode(prepAlgaeL2Node);
+                m_graphCommand.setTargetNode(prepAlgaeLowNode);
                 break;
             case ALGAE_L3:
-                m_graphCommand.setTargetNode(prepAlgaeL3Node);
+                m_graphCommand.setTargetNode(prepAlgaeHighNode);
                 break;
             case PROCESSOR:
-                m_graphCommand.setTargetNode(scoreProssesorNode);
+                m_graphCommand.setTargetNode(scoreProcessorNode);
                 break;
             case BARGE:
                 m_graphCommand.setTargetNode(scoreBargeNode);
                 break;
-            case CLIMB:
-                m_graphCommand.setTargetNode(climbNode);
+            case CLIMB_READY:
+                m_graphCommand.setTargetNode(climbReadyNode);
+                break;
+            case CLIMBED:
+                m_graphCommand.setTargetNode(climbedNode);
+                break;
+            case CLIMB_ABORT:
+                m_graphCommand.setTargetNode(climbAbortNode);
                 break;
             case MANUAL:
                 break;
@@ -560,16 +600,20 @@ public class ManipulatorStateMachine extends SubsystemBase {
             return ElevatorManipulatorState.L4;
         if (currentNode == l4PostScoreNode)
             return ElevatorManipulatorState.PostL4;
-        if (currentNode == prepAlgaeL2Node)
+        if (currentNode == prepAlgaeLowNode)
             return ElevatorManipulatorState.ALGAE_L2;
-        if (currentNode == prepAlgaeL3Node)
+        if (currentNode == prepAlgaeHighNode)
             return ElevatorManipulatorState.ALGAE_L3;
-        if (currentNode == scoreProssesorNode)
+        if (currentNode == scoreProcessorNode)
             return ElevatorManipulatorState.PROCESSOR;
-        if (currentNode == prepScoreBargeNode || currentNode == scoreBargeNode)
+        if (currentNode == prepScoreBargeNode || currentNode == scoreBargeNode || currentNode == bargePostScoreNode)
             return ElevatorManipulatorState.BARGE;
-        if (currentNode == climbNode)
-            return ElevatorManipulatorState.CLIMB;
+        if (currentNode == climbReadyNode)
+            return ElevatorManipulatorState.CLIMB_READY;
+        if (currentNode == climbedNode)
+            return ElevatorManipulatorState.CLIMBED;
+        if (currentNode == climbAbortNode)
+            return ElevatorManipulatorState.CLIMB_ABORT;
         if (currentNode == cancelledNode)
             return ElevatorManipulatorState.RESET;
         return ElevatorManipulatorState.MANUAL;
