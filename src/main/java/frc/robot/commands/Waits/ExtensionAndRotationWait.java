@@ -1,6 +1,9 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 
 package frc.robot.commands.Waits;
 
@@ -17,7 +20,8 @@ public class ExtensionAndRotationWait extends Command {
   private double rotSetpoint;
 
   /** Creates a new ExtensionSetWait. */
-  public ExtensionAndRotationWait(DifferentialSubsystem _diff, double _extSetpoint, double _rotSetpoint) {
+  public ExtensionAndRotationWait(
+      DifferentialSubsystem _diff, double _extSetpoint, double _rotSetpoint) {
     diff = _diff;
     extSetpoint = _extSetpoint;
     rotSetpoint = _rotSetpoint;

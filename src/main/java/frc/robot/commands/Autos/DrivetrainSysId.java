@@ -1,6 +1,9 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 
 package frc.robot.commands.Autos;
 
@@ -16,7 +19,8 @@ public class DrivetrainSysId extends SequentialCommandGroup {
   public DrivetrainSysId(DriveSubsystem drive) {
     // Run forward and reverse quasistatic tests followed by dynamic tests. The boolean parameter
     // enables logging so the data can be exported into SysId later.
-    addCommands(drive.getQuasistaticForward(true),
+    addCommands(
+        drive.getQuasistaticForward(true),
         drive.getQuasistaticReverse(true),
         drive.getDynamicForward(true),
         drive.getDynamicReverse(true));

@@ -1,3 +1,10 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.utils;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -5,28 +12,29 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 /** Miscellaneous pose-related helper utilities. */
 public class PoseUtils {
-    public static int getSpeakerTag() {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
-            return alliance.get() == DriverStation.Alliance.Red ? 4 : 7;
-        } else {
-            return 4;
-        }
+  public static int getSpeakerTag() {
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      return alliance.get() == DriverStation.Alliance.Red ? 4 : 7;
+    } else {
+      return 4;
     }
+  }
 
-    public static boolean inRange(double range) {
-        return (1 <= range || range <= 6);
+  public static boolean inRange(double range) {
+    return (1 <= range || range <= 6);
+  }
+
+  public static class Heading {
+    /** Timestamp associated with the gyro reading. */
+    public double timestamp;
+
+    /** Robot rotation captured at the timestamp. */
+    public Rotation2d rotation;
+
+    public Heading(double _timestamp, Rotation2d _rotation) {
+      timestamp = _timestamp;
+      rotation = _rotation;
     }
-
-    public static class Heading {
-        /** Timestamp associated with the gyro reading. */
-        public double timestamp;
-        /** Robot rotation captured at the timestamp. */
-        public Rotation2d rotation;
-
-        public Heading(double _timestamp, Rotation2d _rotation) {
-            timestamp = _timestamp;
-            rotation = _rotation;
-        }
-    }
+  }
 }

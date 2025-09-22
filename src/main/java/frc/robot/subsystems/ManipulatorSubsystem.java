@@ -1,17 +1,21 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLimitSwitch;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,101 +28,100 @@ import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 /** Controls the manipulator roller and tracks whether game pieces are held. */
 public class ManipulatorSubsystem extends SubsystemBase {
 
-    private SparkFlex manipulatorMotor;
-    private SparkFlexConfig manipulatorConfig = new SparkFlexConfig();
+  private SparkFlex manipulatorMotor;
+  private SparkFlexConfig manipulatorConfig = new SparkFlexConfig();
 
-    private SparkAbsoluteEncoder manipulatorAbsEncoder;
-    private RelativeEncoder relEncoder;
+  private SparkAbsoluteEncoder manipulatorAbsEncoder;
+  private RelativeEncoder relEncoder;
 
-    private SparkLimitSwitch manipulatorLimitSwitch;
+  private SparkLimitSwitch manipulatorLimitSwitch;
 
-    /** Debounce used to filter the beam break input so bumps do not cause false drops. */
-    Debouncer coralDebounce = new Debouncer(0.05);
+  /** Debounce used to filter the beam break input so bumps do not cause false drops. */
+  Debouncer coralDebounce = new Debouncer(0.05);
 
-    /** Tracks whether a coral is currently held. */
-    private boolean hasCoral = true;
-    /** Tracks whether algae is currently held. */
-    private boolean hasAlgae = false;
+  /** Tracks whether a coral is currently held. */
+  private boolean hasCoral = true;
 
-    /** Dashboard logger providing intake telemetry to AdvantageScope. */
-    private FlytLogger manipDash = new FlytLogger("Manipulator");
+  /** Tracks whether algae is currently held. */
+  private boolean hasAlgae = false;
 
-    public ManipulatorSubsystem (){
-        manipulatorMotor = new SparkFlex(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
+  /** Dashboard logger providing intake telemetry to AdvantageScope. */
+  private FlytLogger manipDash = new FlytLogger("Manipulator");
 
-        manipulatorConfig.idleMode(IdleMode.kBrake)
-                            .smartCurrentLimit(50);
-        manipulatorConfig.limitSwitch.forwardLimitSwitchEnabled(false);
-        manipulatorMotor.configure(manipulatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  public ManipulatorSubsystem() {
+    manipulatorMotor = new SparkFlex(Manipulator.kManipulatorMotorId, MotorType.kBrushless);
 
-        manipulatorAbsEncoder = manipulatorMotor.getAbsoluteEncoder();
-        relEncoder = manipulatorMotor.getEncoder();
-        manipulatorLimitSwitch = manipulatorMotor.getForwardLimitSwitch();
+    manipulatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(50);
+    manipulatorConfig.limitSwitch.forwardLimitSwitchEnabled(false);
+    manipulatorMotor.configure(
+        manipulatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        manipDash.addDoublePublisher("Motor Pos", true, () -> getMotorPos());
-        manipDash.addBoolPublisher("Got Coral", false, () -> hasCoral());
-        manipDash.addBoolPublisher("Got Algae", true, () -> hasAlgae());
-        manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
-        manipDash.addBoolPublisher("Sees Coral", true, () -> seesCoral());
-    }
-    
-    public void intake(double power){
-        manipulatorMotor.set(power);
-    }
+    manipulatorAbsEncoder = manipulatorMotor.getAbsoluteEncoder();
+    relEncoder = manipulatorMotor.getEncoder();
+    manipulatorLimitSwitch = manipulatorMotor.getForwardLimitSwitch();
 
-    public Command runIntake(double power) {
-        return Commands.runOnce(() -> intake(power));
-    }
+    manipDash.addDoublePublisher("Motor Pos", true, () -> getMotorPos());
+    manipDash.addBoolPublisher("Got Coral", false, () -> hasCoral());
+    manipDash.addBoolPublisher("Got Algae", true, () -> hasAlgae());
+    manipDash.addDoublePublisher("Manip Current", true, () -> manipulatorMotor.getOutputCurrent());
+    manipDash.addBoolPublisher("Sees Coral", true, () -> seesCoral());
+  }
 
-    public double getWristPos(){
-        return manipulatorAbsEncoder.getPosition();
+  public void intake(double power) {
+    manipulatorMotor.set(power);
+  }
 
-    }
+  public Command runIntake(double power) {
+    return Commands.runOnce(() -> intake(power));
+  }
 
-    public double getOutputCurrent() {
-        return manipulatorMotor.getOutputCurrent();
-    }
+  public double getWristPos() {
+    return manipulatorAbsEncoder.getPosition();
+  }
 
-    public double getMotorPos() {
-        return relEncoder.getPosition();
-    }
+  public double getOutputCurrent() {
+    return manipulatorMotor.getOutputCurrent();
+  }
 
-    public void resetMotorPos() {
-        relEncoder.setPosition(0);
-    }
+  public double getMotorPos() {
+    return relEncoder.getPosition();
+  }
 
-    public boolean hasCoral() {
-        return hasCoral;
-    }
+  public void resetMotorPos() {
+    relEncoder.setPosition(0);
+  }
 
-    public void setCoral(boolean coral) {
-        hasCoral = coral;
-    }
+  public boolean hasCoral() {
+    return hasCoral;
+  }
 
-    public boolean hasAlgae() {
-        return hasAlgae;
-    }
+  public void setCoral(boolean coral) {
+    hasCoral = coral;
+  }
 
-    public void setAlgae(boolean algae) {
-        hasAlgae = algae;
-    }
+  public boolean hasAlgae() {
+    return hasAlgae;
+  }
 
-    public Trigger hasCoralTrigger() {
-        return new Trigger(() -> hasCoral());
-    }
+  public void setAlgae(boolean algae) {
+    hasAlgae = algae;
+  }
 
-    public Trigger hasAlgaeTrigger() {
-        return new Trigger(() -> hasAlgae());
-    }
+  public Trigger hasCoralTrigger() {
+    return new Trigger(() -> hasCoral());
+  }
 
-    public boolean seesCoral() {
-        // Debounce the beam break so momentary drops from vibration do not toggle state.
-        return coralDebounce.calculate(manipulatorLimitSwitch.isPressed());
-    }
+  public Trigger hasAlgaeTrigger() {
+    return new Trigger(() -> hasAlgae());
+  }
 
-    @Override
-    public void periodic() {
-        manipDash.update(Constants.debugMode);
-    }
-    
+  public boolean seesCoral() {
+    // Debounce the beam break so momentary drops from vibration do not toggle state.
+    return coralDebounce.calculate(manipulatorLimitSwitch.isPressed());
+  }
+
+  @Override
+  public void periodic() {
+    manipDash.update(Constants.debugMode);
+  }
 }
