@@ -166,6 +166,12 @@ public class GraphCommand extends Command {
 
     /** Requests a new target node for the graph to route toward. */
     public void setTargetNode(GraphCommandNode node) {
+        // this is here to prevent a null pointer exception when the default next node
+        // for a node is null
+        if (node == null) {
+            return;
+        }
+
         // if the graph isn't transitioning set the next node and move on
         if (!m_isTransitioning) {
             m_targetNode = node;
@@ -290,6 +296,11 @@ public class GraphCommand extends Command {
          * @return The waypoint to visit next or {@code null} if the node is already at the target.
          */
         public GraphCommandNode getNextNodeGivenTarget(GraphCommandNode node) {
+            // trying to go to null!
+            if (node == null) {
+                return null;
+            }
+
             GraphCommandNodeLink link = m_optimizedLinks.get(node.m_nodeName);
 
             // cannot get to the node
