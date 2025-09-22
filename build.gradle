@@ -1,7 +1,7 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2025.3.2"
-    id 'com.diffplug.spotless' version '6.20.0'
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 java {
@@ -119,6 +119,7 @@ spotless {
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
+        licenseHeader("// Copyright (c) 2025 FRC 2290\n// http://https://github.com/frc2290\n//\n// Use of this source code is governed by an MIT-style\n// license that can be found in the LICENSE file at\n// the root directory of this project.\n\n")
     }
     groovyGradle {
         target fileTree('.') {
