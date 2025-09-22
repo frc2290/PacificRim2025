@@ -4,18 +4,18 @@
 
 package frc.utils;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
-
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Thin wrapper around a PhotonCamera that refreshes its latest result each loop. */
 public class VisionUtils extends SubsystemBase {
   /** Underlying PhotonVision camera. */
   PhotonCamera camera;
+
   /** Cached copy of the most recent pipeline result. */
   PhotonPipelineResult detections;
-  
+
   /** Creates a new VisionUtils. */
   public VisionUtils(String cameraName) {
     camera = new PhotonCamera(cameraName);

@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-
-import org.littletonrobotics.urcl.URCL;
-
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -24,7 +21,7 @@ import frc.robot.subsystems.StateMachineCoardinator;
 import frc.robot.subsystems.StateMachineCoardinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
-
+import org.littletonrobotics.urcl.URCL;
 
 /**
  * Primary program entry point for Excelsior. {@link TimedRobot} periodically calls each lifecycle
@@ -41,27 +38,40 @@ public class Robot extends TimedRobot {
 
   /** Dedicated LED helper that allows the state machine to communicate robot status. */
   private final LEDUtility m_ledUtility = new LEDUtility(0);
+
   /** Cached reference to the primary driver controller so subsystems can read axes. */
   private XboxController m_driver = new XboxController(0);
+
   // The robot's subsystems.
   /** Owns all hardware for swerve driving and exposes the drive commands. */
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+
   /** Combines vision and gyro data to maintain the best guess at the robot's pose. */
   private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+
   /** Elevator carriage that moves the manipulator up and down the reef. */
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+
   /** Roller intake and sensors that interact directly with game pieces. */
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
+
   /** Differential arm that provides extension and rotation for the manipulator. */
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
+
   /** Hooking subsystem used during endgame climbs. */
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
+
   /** Coordinates all autonomous and teleop driving modes. */
-  private final DriveStateMachine m_driveStateMachine = new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
+  private final DriveStateMachine m_driveStateMachine =
+      new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
+
   /** Tracks and sequences manipulator states to guarantee safe transitions. */
-  private final ManipulatorStateMachine m_manipulatorStateMachine = new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
+  private final ManipulatorStateMachine m_manipulatorStateMachine =
+      new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
+
   /** Central coordinator that keeps drive and manipulator state machines in sync. */
-  private final StateMachineCoardinator m_coardinator = new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
+  private final StateMachineCoardinator m_coardinator =
+      new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
 
   public Robot() {
     // Ensure the CANivore bridge is connected before any CAN devices are created.
@@ -76,7 +86,19 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate the container so bindings, chooser registration, and default commands run once.
     // All command bindings and default commands live in the container; create it once here.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_driveStateMachine, m_manipulatorStateMachine, m_coardinator, m_driver);
+    m_robotContainer =
+        new RobotContainer(
+            m_ledUtility,
+            m_robotDrive,
+            m_poseEstimator,
+            m_elevator,
+            m_manipulator,
+            m_DiffArm,
+            m_climber,
+            m_driveStateMachine,
+            m_manipulatorStateMachine,
+            m_coardinator,
+            m_driver);
     DataLogManager.start();
 
     // Start the logging framework so we can view graphs after a match or practice run.

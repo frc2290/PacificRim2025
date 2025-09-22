@@ -2,7 +2,6 @@ package frc.utils.FLYTLib;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -12,73 +11,59 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.FLYTLib.FLYTDashboard.OldStuff.PDHDashboard;
 
 /** Legacy subsystem that exposes the NavX and PDH over NetworkTables. */
-public class RobotSystem extends SubsystemBase{
+public class RobotSystem extends SubsystemBase {
 
+  // set naviax2mxp gyro on spi
+  private AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
+  // Rev power distribution panel
+  private PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev); // set it up
 
-    //set naviax2mxp gyro on spi
-    private AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
+  /** Dashboard view that publishes PDH telemetry over NetworkTables. */
+  private PDHDashboard PDHDash = new PDHDashboard(PDH); // initialize the dashboard
 
-    //Rev power distribution panel
-    private PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);//set it up
-    /** Dashboard view that publishes PDH telemetry over NetworkTables. */
-    private PDHDashboard PDHDash = new PDHDashboard(PDH); //initialize the dashboard
+  // Network tables for the controller configuration
+  NetworkTable table;
+  private NetworkTableEntry kGyroOffest;
 
-    
-    //Network tables for the controller configuration
-    NetworkTable table;
-    private NetworkTableEntry kGyroOffest;
+  private double gyro_yawOffset = 0.0; // set gyro offset
 
+  public RobotSystem() {
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    table = inst.getTable("Gyro");
+    kGyroOffest = table.getEntry("GyroOffset");
+    // set up the gyro
+    gyro.reset();
+  }
 
-    private double gyro_yawOffset = 0.0; //set gyro offset
+  /**
+   * Returns the current yaw angle of the gyro
+   *
+   * @return
+   */
+  public double gyro_getYaw() {
+    return (gyro.getYaw() + gyro_yawOffset + 360) % 360;
+  }
 
-    public RobotSystem(){
-            NetworkTableInstance inst = NetworkTableInstance.getDefault();
-            table = inst.getTable("Gyro");
-            kGyroOffest = table.getEntry("GyroOffset");
-            //set up the gyro
-            gyro.reset();
+  /**
+   * Takes in the angle offset to compensate gyro drifft or offset
+   *
+   * @param angle
+   */
+  public void gyro_setYaw(double angle) {
+    gyro_yawOffset = angle - gyro.getYaw();
+  }
 
+  @Override
+  public void periodic() {
+
+    if (GlobalVar.debug) {
+      // update the gyro offset
+      gyro_setYaw(kGyroOffest.getDouble(0.0));
+
+      // update the network tables
+      table.getEntry("GyroYaw").setDouble(gyro.getYaw());
+      table.getEntry("GyroYawOffset").setDouble(gyro_yawOffset);
     }
-
-
-
-
-    /**
-     * Returns the current yaw angle of the gyro
-     * @return
-     */
-    public double gyro_getYaw(){
-        return (gyro.getYaw() + gyro_yawOffset + 360) % 360;
-
-    }
-
-    /**
-     * Takes in the angle offset to compensate gyro drifft or offset
-     * @param angle
-     */
-    public void gyro_setYaw(double angle){
-        gyro_yawOffset = angle - gyro.getYaw();
-    }
-
-
-    @Override
-    public void periodic(){
-
-        if(GlobalVar.debug){
-                    //update the gyro offset
-        gyro_setYaw(kGyroOffest.getDouble(0.0));
-
-        
-        //update the network tables
-        table.getEntry("GyroYaw").setDouble(gyro.getYaw());
-        table.getEntry("GyroYawOffset").setDouble(gyro_yawOffset);
-            
-        }
-
-        
-    }
-
-
-
+  }
 }

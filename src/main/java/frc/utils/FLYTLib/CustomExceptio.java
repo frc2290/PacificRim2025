@@ -4,11 +4,10 @@ package frc.utils.FLYTLib;
 /** Legacy custom exception used by older FLYT utilities. */
 class FLYTLibException extends Exception {
 
-    public FLYTLibException(String message) {
-        super(message);
-    }
+  public FLYTLibException(String message) {
+    super(message);
+  }
 }
-
 
 /*
 public class Main {
