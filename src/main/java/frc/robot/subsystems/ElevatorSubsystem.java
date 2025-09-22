@@ -1,10 +1,19 @@
 // Copyright (c) 2025 FRC 2290
 // http://https://github.com/frc2290
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
@@ -35,7 +44,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   /** Motion-profiled PID that commands elevator velocity while respecting trapezoid limits. */
   private ProfiledPIDController traPidController =
-      new ProfiledPIDController(64, 0, 1, new TrapezoidProfile.Constraints(2.5, 9));
+      new ProfiledPIDController(
+          Elevator.kProfiledKp,
+          Elevator.kProfiledKi,
+          Elevator.kProfiledKd,
+          new TrapezoidProfile.Constraints(
+              Elevator.kProfiledMaxVelocityMetersPerSecond,
+              Elevator.kProfiledMaxAccelerationMetersPerSecondSquared));
 
   private SparkFlex leftMotor;
   private SparkFlex rightMotor;
@@ -66,7 +81,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     leftConfig
         .inverted(true)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(50)
+        .smartCurrentLimit(Elevator.kCurrentLimitAmps)
         .encoder
         .positionConversionFactor(Elevator.kPositionConversion)
         .velocityConversionFactor(Elevator.kVelocityConversion);
@@ -142,7 +157,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if at setpoint
    */
   public boolean atPosition() {
-    return (elevatorSetpoint - 0.04) <= getPosition() && getPosition() <= (elevatorSetpoint + 0.04);
+    return Math.abs(getPosition() - elevatorSetpoint) <= Elevator.kPositionToleranceMeters;
   }
 
   @Override

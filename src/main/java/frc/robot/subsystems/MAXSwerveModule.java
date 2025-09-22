@@ -1,10 +1,19 @@
 // Copyright (c) 2025 FRC 2290
 // http://https://github.com/frc2290
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.subsystems;
 
 import com.revrobotics.AbsoluteEncoder;
@@ -17,7 +26,6 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -37,9 +45,6 @@ public class MAXSwerveModule {
 
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
-
-  @SuppressWarnings("unused")
-  private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.13569, 2.2311);
 
   /** Logger used to inspect per-module telemetry during tuning sessions. */
   private FlytLogger test = new FlytLogger("Swerve");
@@ -130,9 +135,7 @@ public class MAXSwerveModule {
 
     // Command driving and turning SPARKS towards their respective setpoints.
     m_drivingClosedLoopController.setReference(
-        correctedDesiredState.speedMetersPerSecond,
-        ControlType.kVelocity); // , ClosedLoopSlot.kSlot0,
-    // feedforward.calculate(correctedDesiredState.speedMetersPerSecond));
+        correctedDesiredState.speedMetersPerSecond, ControlType.kVelocity);
     m_turningClosedLoopController.setReference(
         correctedDesiredState.angle.getRadians(), ControlType.kPosition);
 

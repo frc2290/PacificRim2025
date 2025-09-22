@@ -1,10 +1,19 @@
 // Copyright (c) 2025 FRC 2290
 // http://https://github.com/frc2290
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot;
 
 import static edu.wpi.first.math.util.Units.degreesToRadians;
@@ -76,6 +85,15 @@ public final class Constants {
     public static final double kV = 5.8979;
     public static final double kA = 0.1156;
     public static final double kG = 0.1987;
+
+    public static final int kCurrentLimitAmps = 50;
+    public static final double kPositionToleranceMeters = 0.04;
+
+    public static final double kProfiledKp = 64.0;
+    public static final double kProfiledKi = 0.0;
+    public static final double kProfiledKd = 1.0;
+    public static final double kProfiledMaxVelocityMetersPerSecond = 2.5;
+    public static final double kProfiledMaxAccelerationMetersPerSecondSquared = 9.0;
   }
 
   /** IDs and constants for the manipulator roller. */
@@ -88,17 +106,45 @@ public final class Constants {
     // Motors
     public static final int kLeftMotorId = 60;
     public static final int kRightMotorId = 61;
-    // configuration
-    public static final double voltageComp = 0;
-    public static final int currentStallLim = 0;
-    public static final int currentFreeLim = 0;
 
-    public static final double v_kp = 0.00009;
-    public static final double v_ki = (0.002 * v_kp);
-    public static final double v_kd = 0;
-    public static final double v_KG = 0;
+    public static final int kArmCurrentLimit = 50;
+    public static final double kPositionConversionFactor = 34.2857;
+    public static final double kVelocityConversionFactor = 0.5714;
+    public static final int kQuadratureMeasurementPeriod = 10;
+    public static final int kQuadratureAverageDepth = 2;
+
+    public static final double kVelocityLoopP = 0.00009;
+    public static final double kVelocityLoopI = 0.002 * kVelocityLoopP;
+    public static final double kVelocityLoopD = 0.0;
+    public static final double kVelocityLoopG = 0.0;
+
+    public static final double kExtensionProfiledKp = 30.0;
+    public static final double kExtensionProfiledKi = 0.0;
+    public static final double kExtensionProfiledKd = 1.5;
+    public static final double kExtensionMaxVelocityMillimetersPerSecond = 3000.0;
+    public static final double kExtensionMaxAccelerationMillimetersPerSecondSquared = 12000.0;
+
+    public static final double kRotationProfiledKp = 60.0;
+    public static final double kRotationProfiledKi = 0.0;
+    public static final double kRotationProfiledKd = 4.0;
+    public static final double kRotationMaxVelocityDegreesPerSecond = 1400.0;
+    public static final double kRotationMaxAccelerationDegreesPerSecondSquared = 5600.0;
+
+    public static final double kExtensionSlewRateMillimetersPerSecond = 700.0;
+    public static final double kRotationSlewRateDegreesPerSecond = 120.0;
+
+    public static final double kExtensionPositionToleranceMillimeters = 5.0;
+    public static final double kRotationToleranceDegrees = 5.0;
+
+    public static final double kMillimetersPerRotation = 200.0;
+    public static final double kDegreesPerRotation = 360.0;
 
     public static final int kLaserCanId = 5;
+    public static final int kLaserRegionX = 8;
+    public static final int kLaserRegionY = 8;
+    public static final int kLaserRegionWidth = 16;
+    public static final int kLaserRegionHeight = 16;
+    public static final int kLaserMaxValidDistanceMillimeters = 430;
 
     // Lookup tables used for interpolating custom scoring positions.
     public static final double[][] l4RotationData = {
@@ -305,6 +351,21 @@ public final class Constants {
         (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
     public static final double kDriveWheelFreeSpeedRps =
         (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDrivingMotorReduction;
+
+    public static final double kDrivingVelocityFF = 0.13569;
+    public static final double kDrivingP = 0.012343;
+    public static final double kDrivingI = 0.0;
+    public static final double kDrivingD = 0.0;
+
+    public static final double kTurningP = 4.3865;
+    public static final double kTurningI = 0.0;
+    public static final double kTurningD = 0.0;
+
+    public static final int kDrivingCurrentLimit = 50;
+    public static final int kTurningCurrentLimit = 20;
+    public static final double kNominalVoltage = 12.0;
+
+    public static final double kTurningEncoderFactor = 2 * Math.PI;
   }
 
   /** Mappings for the driver controller. */

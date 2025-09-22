@@ -1,10 +1,19 @@
 // Copyright (c) 2025 FRC 2290
 // http://https://github.com/frc2290
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.subsystems;
 
 import au.grapplerobotics.ConfigurationFailedException;
@@ -38,11 +47,23 @@ public class DifferentialSubsystem extends SubsystemBase {
 
   /** Motion-profiled PID that handles telescoping the arm in millimeters. */
   private ProfiledPIDController extensionPid =
-      new ProfiledPIDController(30, 0, 1.5, new Constraints(3000, 12000));
+      new ProfiledPIDController(
+          DifferentialArm.kExtensionProfiledKp,
+          DifferentialArm.kExtensionProfiledKi,
+          DifferentialArm.kExtensionProfiledKd,
+          new Constraints(
+              DifferentialArm.kExtensionMaxVelocityMillimetersPerSecond,
+              DifferentialArm.kExtensionMaxAccelerationMillimetersPerSecondSquared));
 
   /** Motion-profiled PID that rotates the arm while respecting acceleration limits. */
   private ProfiledPIDController rotationPid =
-      new ProfiledPIDController(60, 0, 4, new Constraints(1400, 5600));
+      new ProfiledPIDController(
+          DifferentialArm.kRotationProfiledKp,
+          DifferentialArm.kRotationProfiledKi,
+          DifferentialArm.kRotationProfiledKd,
+          new Constraints(
+              DifferentialArm.kRotationMaxVelocityDegreesPerSecond,
+              DifferentialArm.kRotationMaxAccelerationDegreesPerSecondSquared));
 
   private SparkMax leftMotor;
   private SparkMax rightMotor;
@@ -63,10 +84,12 @@ public class DifferentialSubsystem extends SubsystemBase {
   private double rotationSetpoint = 0;
 
   @SuppressWarnings("unused")
-  private SlewRateLimiter extendSlew = new SlewRateLimiter(700);
+  private SlewRateLimiter extendSlew =
+      new SlewRateLimiter(DifferentialArm.kExtensionSlewRateMillimetersPerSecond);
 
   @SuppressWarnings("unused")
-  private SlewRateLimiter rotateSlew = new SlewRateLimiter(120);
+  private SlewRateLimiter rotateSlew =
+      new SlewRateLimiter(DifferentialArm.kRotationSlewRateDegreesPerSecond);
 
   /** Laser rangefinder mounted near the manipulator for interpolation of scoring positions. */
   private LaserCan lc;
@@ -102,17 +125,17 @@ public class DifferentialSubsystem extends SubsystemBase {
     leftConfig
         .inverted(true)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(50)
+        .smartCurrentLimit(DifferentialArm.kArmCurrentLimit)
         .encoder
-        .positionConversionFactor(34.2857)
-        .velocityConversionFactor(0.5714)
-        .quadratureMeasurementPeriod(10)
-        .quadratureAverageDepth(2);
+        .positionConversionFactor(DifferentialArm.kPositionConversionFactor)
+        .velocityConversionFactor(DifferentialArm.kVelocityConversionFactor)
+        .quadratureMeasurementPeriod(DifferentialArm.kQuadratureMeasurementPeriod)
+        .quadratureAverageDepth(DifferentialArm.kQuadratureAverageDepth);
     leftConfig
         .closedLoop
-        .p(DifferentialArm.v_kp, ClosedLoopSlot.kSlot0)
-        .i(DifferentialArm.v_ki, ClosedLoopSlot.kSlot0)
-        .d(DifferentialArm.v_kd, ClosedLoopSlot.kSlot0)
+        .p(DifferentialArm.kVelocityLoopP, ClosedLoopSlot.kSlot0)
+        .i(DifferentialArm.kVelocityLoopI, ClosedLoopSlot.kSlot0)
+        .d(DifferentialArm.kVelocityLoopD, ClosedLoopSlot.kSlot0)
         .outputRange(-1, 1);
 
     leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -139,7 +162,12 @@ public class DifferentialSubsystem extends SubsystemBase {
     // reliable data.
     try {
       lc.setRangingMode(LaserCan.RangingMode.SHORT);
-      lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
+      lc.setRegionOfInterest(
+          new LaserCan.RegionOfInterest(
+              DifferentialArm.kLaserRegionX,
+              DifferentialArm.kLaserRegionY,
+              DifferentialArm.kLaserRegionWidth,
+              DifferentialArm.kLaserRegionHeight));
       lc.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
     } catch (ConfigurationFailedException e) {
       System.out.println("LaserCan Configuration failed! " + e);
@@ -241,18 +269,19 @@ public class DifferentialSubsystem extends SubsystemBase {
   }
 
   public double getRotationPosition() {
-    return -(((getLeftPos() - getRightPos()) / 2) / 200) * 360;
+    return -(((getLeftPos() - getRightPos()) / 2) / DifferentialArm.kMillimetersPerRotation)
+        * DifferentialArm.kDegreesPerRotation;
     // return endeffector.getWristPos();
   }
 
   public boolean atExtenstionSetpoint() {
-    return (extensionSetpoint - 5) <= getExtensionPosition()
-        && getExtensionPosition() <= (extensionSetpoint + 5);
+    return Math.abs(getExtensionPosition() - extensionSetpoint)
+        <= DifferentialArm.kExtensionPositionToleranceMillimeters;
   }
 
   public boolean atRotationSetpoint() {
-    return (rotationSetpoint - 5) <= getRotationPosition()
-        && getRotationPosition() <= (rotationSetpoint + 5);
+    return Math.abs(getRotationPosition() - rotationSetpoint)
+        <= DifferentialArm.kRotationToleranceDegrees;
   }
 
   public int getLaserCanDistance() {
@@ -280,7 +309,8 @@ public class DifferentialSubsystem extends SubsystemBase {
   }
 
   private double degreesToMM(double degrees) {
-    return (degrees / 360) * 200;
+    return (degrees / DifferentialArm.kDegreesPerRotation)
+        * DifferentialArm.kMillimetersPerRotation;
   }
 
   @Override
@@ -289,7 +319,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     LaserCan.Measurement measurement = lc.getMeasurement();
     if (measurement != null
         && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
-        && measurement.distance_mm < 430) {
+        && measurement.distance_mm < DifferentialArm.kLaserMaxValidDistanceMillimeters) {
       laserCanDistance = measurement.distance_mm;
       hasLaserCanDistance = true;
       // System.out.println("The target is " + measurement.distance_mm + "mm away!");
