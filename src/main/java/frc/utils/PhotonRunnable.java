@@ -79,6 +79,9 @@ public class PhotonRunnable implements Runnable {
         photonPoseEstimator.addHeadingData(tempHeading.timestamp, tempHeading.rotation);
         Optional<EstimatedRobotPose> photonPose =
             photonPoseEstimator.update(result, Optional.empty(), Optional.empty(), params);
+        if (!result.hasTargets()) {
+          continue;
+        }
         if (photonPose.isPresent()) {
           double tagDist = result.getBestTarget().bestCameraToTarget.getTranslation().getNorm();
           double poseAmbig = result.getBestTarget().getPoseAmbiguity();
