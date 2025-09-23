@@ -94,6 +94,7 @@ public final class Constants {
     public static final double kProfiledKd = 1.0;
     public static final double kProfiledMaxVelocityMetersPerSecond = 2.5;
     public static final double kProfiledMaxAccelerationMetersPerSecondSquared = 9.0;
+    public static final double kProfileGoalPositionTolerance = 1e-3;
   }
 
   /** IDs and constants for the manipulator roller. */
@@ -123,12 +124,14 @@ public final class Constants {
     public static final double kExtensionProfiledKd = 1.5;
     public static final double kExtensionMaxVelocityMillimetersPerSecond = 3000.0;
     public static final double kExtensionMaxAccelerationMillimetersPerSecondSquared = 12000.0;
+    public static final double kExtensionProfileGoalPositionTolerance = 1e-2;
 
     public static final double kRotationProfiledKp = 60.0;
     public static final double kRotationProfiledKi = 0.0;
     public static final double kRotationProfiledKd = 4.0;
     public static final double kRotationMaxVelocityDegreesPerSecond = 1400.0;
     public static final double kRotationMaxAccelerationDegreesPerSecondSquared = 5600.0;
+    public static final double kRotationProfileGoalPositionTolerance = 1e-3;
 
     public static final double kExtensionSlewRateMillimetersPerSecond = 700.0;
     public static final double kRotationSlewRateDegreesPerSecond = 120.0;

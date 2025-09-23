@@ -28,6 +28,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -154,7 +155,9 @@ public class DifferentialSubsystem extends SubsystemBase {
     rightArm = rightMotor.getClosedLoopController();
 
     extensionPid.reset(extensionSetpoint);
+    extensionPid.setTolerance(DifferentialArm.kExtensionPositionToleranceMillimeters);
     rotationPid.reset(rotationSetpoint);
+    rotationPid.setTolerance(DifferentialArm.kRotationToleranceDegrees);
 
     lc = new LaserCan(DifferentialArm.kLaserCanId);
 
@@ -275,13 +278,29 @@ public class DifferentialSubsystem extends SubsystemBase {
   }
 
   public boolean atExtenstionSetpoint() {
-    return Math.abs(getExtensionPosition() - extensionSetpoint)
-        <= DifferentialArm.kExtensionPositionToleranceMillimeters;
+    return extensionPid.atSetpoint() && isExtenstionProfileFinished();
   }
 
   public boolean atRotationSetpoint() {
-    return Math.abs(getRotationPosition() - rotationSetpoint)
-        <= DifferentialArm.kRotationToleranceDegrees;
+    return rotationPid.atSetpoint() && isRotationProfileFinished();
+  }
+
+  private boolean isExtenstionProfileFinished() {
+    var goal = extensionPid.getGoal();
+    var setpoint = extensionPid.getSetpoint();
+    return MathUtil.isNear(
+        goal.position,
+        setpoint.position,
+        DifferentialArm.kExtensionProfileGoalPositionTolerance);
+  }
+
+  private boolean isRotationProfileFinished() {
+    var goal = rotationPid.getGoal();
+    var setpoint = rotationPid.getSetpoint();
+    return MathUtil.isNear(
+        goal.position,
+        setpoint.position,
+        DifferentialArm.kRotationProfileGoalPositionTolerance);
   }
 
   public int getLaserCanDistance() {

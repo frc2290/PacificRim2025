@@ -26,6 +26,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -100,6 +101,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     traPidController.reset(elevatorSetpoint);
+    traPidController.setTolerance(Elevator.kPositionToleranceMeters);
 
     elevatorDash.addDoublePublisher("Elevator POS", false, () -> getPosition());
     elevatorDash.addDoublePublisher("Elevator Setpoint", false, () -> getElevatorSetpoint());
@@ -157,7 +159,16 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if at setpoint
    */
   public boolean atPosition() {
-    return Math.abs(getPosition() - elevatorSetpoint) <= Elevator.kPositionToleranceMeters;
+    return traPidController.atSetpoint() && isProfileFinished();
+  }
+
+  private boolean isProfileFinished() {
+    var goal = traPidController.getGoal();
+    var setpoint = traPidController.getSetpoint();
+    return MathUtil.isNear(
+        goal.position,
+        setpoint.position,
+        Elevator.kProfileGoalPositionTolerance);
   }
 
   @Override
