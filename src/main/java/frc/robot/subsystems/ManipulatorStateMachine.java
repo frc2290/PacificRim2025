@@ -96,9 +96,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
   GraphCommandNode l2PostScoreNode;
   GraphCommandNode l3PostScoreNode;
   GraphCommandNode l4PostScoreNode;
-  GraphCommandNode prepAlgaeIntakeNode;
   GraphCommandNode prepAlgaeLowNode;
+  GraphCommandNode algaeLowIntakeNode;
   GraphCommandNode prepAlgaeHighNode;
+  GraphCommandNode algaeHighIntakeNode;
   GraphCommandNode safeAlgaeTravelNode;
   GraphCommandNode scoreProcessorNode;
   GraphCommandNode prepScoreBargeNode;
@@ -309,8 +310,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
             null,
             null);
 
-    prepAlgaeIntakeNode = m_graphCommand.new GraphCommandNode("PrepAlgaeIntake", null, null, null);
-
     prepAlgaeLowNode =
         m_graphCommand
         .new GraphCommandNode(
@@ -320,12 +319,30 @@ public class ManipulatorStateMachine extends SubsystemBase {
             null,
             null);
 
+    algaeLowIntakeNode =
+        m_graphCommand
+        .new GraphCommandNode(
+            "AlgaeLowIntake",
+            ManipulatorPositionCommandFactory.createScoreCommand(
+                this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_LOW),
+            null,
+            null);
+
     prepAlgaeHighNode =
         m_graphCommand
         .new GraphCommandNode(
             "PrepAlgaeHigh",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.PREP_ALGAE_HIGH),
+            null,
+            null);
+
+    algaeHighIntakeNode =
+        m_graphCommand
+        .new GraphCommandNode(
+            "AlgaeHighIntake",
+            ManipulatorPositionCommandFactory.createScoreCommand(
+                this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_HIGH),
             null,
             null);
 
@@ -440,12 +457,14 @@ public class ManipulatorStateMachine extends SubsystemBase {
     safeCoralTravelNode.AddNode(prepAlgaeHighNode, 1.0); // safe travel to prep algae high
     prepAlgaeLowNode.AddNode(prepAlgaeHighNode, 1.0); // prep algae low to prep algae high
     prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae high to prep algae low
-    prepAlgaeLowNode.AddNode(prepAlgaeIntakeNode, 1.0); // prep algae low to prep algae intake
-    prepAlgaeHighNode.AddNode(prepAlgaeIntakeNode, 1.0); // prep algae high to prep algae intake
-    prepAlgaeIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae intake to prep algae low
-    prepAlgaeIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // prep algae intake to prep algae high
-    prepAlgaeLowNode.AddNode(safeAlgaeTravelNode, 1.0); // prep algae low to safe algae travel
-    prepAlgaeHighNode.AddNode(safeAlgaeTravelNode, 1.0); // prep algae high to safe algae travel
+    prepAlgaeLowNode.AddNode(algaeLowIntakeNode, 1.0); // prep algae low to algae low intake
+    algaeLowIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // algae low intake to prep algae low
+    algaeLowIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // algae low intake to prep algae high
+    algaeLowIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae low intake to safe algae travel
+    prepAlgaeHighNode.AddNode(algaeHighIntakeNode, 1.0); // prep algae high to algae high intake
+    algaeHighIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // algae high intake to prep algae high
+    algaeHighIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // algae high intake to prep algae low
+    algaeHighIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae high intake to safe algae travel
     safeAlgaeTravelNode.AddNode(scoreProcessorNode, 1.0); // safe algae travel to score processor
     safeAlgaeTravelNode.AddNode(prepScoreBargeNode, 1.0); // safe algae travel to prep score barge
     prepScoreBargeNode.AddNode(scoreBargeNode, 1.0); // prep score barge to score barge
@@ -580,10 +599,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand.setTargetNode(scoreL4Node);
         break;
       case ALGAE_L2:
-        m_graphCommand.setTargetNode(prepAlgaeLowNode);
+        m_graphCommand.setTargetNode(algaeLowIntakeNode);
         break;
       case ALGAE_L3:
-        m_graphCommand.setTargetNode(prepAlgaeHighNode);
+        m_graphCommand.setTargetNode(algaeHighIntakeNode);
         break;
       case PROCESSOR:
         m_graphCommand.setTargetNode(scoreProcessorNode);
@@ -629,8 +648,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
     if (currentNode == l4PrepNode) return ElevatorManipulatorState.PrepL4;
     if (currentNode == scoreL4Node) return ElevatorManipulatorState.L4;
     if (currentNode == l4PostScoreNode) return ElevatorManipulatorState.PostL4;
-    if (currentNode == prepAlgaeLowNode) return ElevatorManipulatorState.ALGAE_L2;
-    if (currentNode == prepAlgaeHighNode) return ElevatorManipulatorState.ALGAE_L3;
+    if (currentNode == prepAlgaeLowNode || currentNode == algaeLowIntakeNode)
+      return ElevatorManipulatorState.ALGAE_L2;
+    if (currentNode == prepAlgaeHighNode || currentNode == algaeHighIntakeNode)
+      return ElevatorManipulatorState.ALGAE_L3;
     if (currentNode == scoreProcessorNode) return ElevatorManipulatorState.PROCESSOR;
     if (currentNode == prepScoreBargeNode
         || currentNode == scoreBargeNode
