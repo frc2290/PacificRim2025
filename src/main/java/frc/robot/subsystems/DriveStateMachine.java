@@ -19,7 +19,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.VisionConstants;
@@ -204,10 +203,7 @@ public class DriveStateMachine extends SubsystemBase {
     GraphCommandNode cancelledNode =
         m_graphCommand
         .new GraphCommandNode(
-            "Cancelled",
-            null,
-            null,
-            driveCommandFactory.createCancelledCommand());
+            "Cancelled", null, null, driveCommandFactory.createCancelledCommand());
     nodes.put(DriveState.CANCELLED, cancelledNode);
 
     // Graph Command setup.

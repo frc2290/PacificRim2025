@@ -20,7 +20,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
@@ -64,7 +63,8 @@ public class AutoRoutineFactory {
         Commands.parallel(new SwerveAutoStep(path, pose), manipulatorState.waitUntilReady()),
         // Once staged, request the scoring action.
         Commands.runOnce(() -> coordinator.requestToScore(true)),
-        new ScoreCoral(manipulatorState, manipulator),
+        // Wait for the manipulator to confirm the coral has been released before cleaning up.
+        Commands.waitUntil(() -> !manipulator.hasCoral()),
         Commands.runOnce(
             () -> {
               // Reset to a safe travel configuration after scoring completes.

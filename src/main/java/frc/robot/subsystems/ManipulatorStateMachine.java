@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
@@ -310,10 +309,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             null,
             null);
 
-    prepAlgaeIntakeNode =
-        m_graphCommand
-        .new GraphCommandNode(
-            "PrepAlgaeIntake", null, null, null);
+    prepAlgaeIntakeNode = m_graphCommand.new GraphCommandNode("PrepAlgaeIntake", null, null, null);
 
     prepAlgaeLowNode =
         m_graphCommand
@@ -389,10 +385,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             null,
             null);
 
-    climbedNode =
-        m_graphCommand
-        .new GraphCommandNode(
-            "Climbed", null, null, null);
+    climbedNode = m_graphCommand.new GraphCommandNode("Climbed", null, null, null);
 
     climbAbortNode =
         m_graphCommand
@@ -405,10 +398,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             null,
             null);
 
-    cancelledNode =
-        m_graphCommand
-        .new GraphCommandNode(
-            "Cancelled", null, null, null);
+    cancelledNode = m_graphCommand.new GraphCommandNode("Cancelled", null, null, null);
 
     // Safe travel connections
     startPositionNode.AddNode(safeCoralTravelNode, 1.0); // start position to safe travel
