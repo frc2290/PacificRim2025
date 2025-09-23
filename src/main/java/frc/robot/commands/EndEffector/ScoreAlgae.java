@@ -21,31 +21,35 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 
-/** Runs the manipulator roller in reverse to score a coral into the reef. */
-public class ScoreCoral extends Command {
+/** Spins the manipulator roller to dump algae into a processor or barge. */
+public class ScoreAlgae extends Command {
 
-  private static final double kScoreDurationSeconds = 1.0;
+  private static final double kEjectCurrentThresholdAmps = 30.0;
+  private static final double kEjectDelaySeconds = 1.0;
+  private static final double kEjectDurationSeconds = 0.5;
 
   private final ManipulatorStateMachine manipulatorSM;
   private final ManipulatorSubsystem manipulator;
   private final Timer ejectTimer = new Timer();
+  private final Timer delayTimer = new Timer();
   private final double ejectPower;
 
   private boolean spinning = false;
 
   /**
-   * Creates a command that waits for the manipulator state machine to report ready, then runs the
-   * roller to deposit the coral.
+   * Creates a command that waits for the manipulator to reach its goal, then spins the roller to
+   * eject algae.
    */
-  public ScoreCoral(
+  public ScoreAlgae(
       ManipulatorStateMachine manipulatorStateMachine, ManipulatorSubsystem manipulatorSubsystem) {
     this(manipulatorStateMachine, manipulatorSubsystem, 1.0);
   }
 
   /**
-   * Creates a coral scoring command that uses the supplied roller power.
+   * Creates a command that waits for the manipulator to reach its goal, then spins the roller to
+   * eject algae using the supplied power.
    */
-  protected ScoreCoral(
+  public ScoreAlgae(
       ManipulatorStateMachine manipulatorStateMachine,
       ManipulatorSubsystem manipulatorSubsystem,
       double power) {
@@ -58,32 +62,50 @@ public class ScoreCoral extends Command {
 
   @Override
   public void initialize() {
-    manipulator.resetMotorPos();
     ejectTimer.stop();
     ejectTimer.reset();
+    delayTimer.stop();
+    delayTimer.reset();
     spinning = false;
   }
 
-  // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    boolean readyToSpin =
-        manipulatorSM.atGoalState() && manipulatorSM.readyToScore() && manipulatorSM.scoreNow();
-
-    if (readyToSpin && !spinning) {
+    if (!spinning
+        && manipulatorSM.atGoalState()
+        && manipulatorSM.readyToScore()
+        && manipulatorSM.scoreNow()) {
       spinning = true;
-      ejectTimer.restart();
+      delayTimer.stop();
+      delayTimer.reset();
+      ejectTimer.stop();
+      ejectTimer.reset();
     }
 
-    manipulator.intake(spinning ? ejectPower : 0);
+    if (spinning) {
+      manipulator.intake(ejectPower);
+
+      if (Math.abs(manipulator.getOutputCurrent()) > kEjectCurrentThresholdAmps) {
+        if (!delayTimer.isRunning()) {
+          delayTimer.restart();
+        } else if (!ejectTimer.isRunning() && delayTimer.hasElapsed(kEjectDelaySeconds)) {
+          delayTimer.stop();
+          ejectTimer.restart();
+        }
+      }
+    } else {
+      manipulator.intake(0);
+    }
   }
 
   @Override
   public void end(boolean interrupted) {
     ejectTimer.stop();
+    ejectTimer.reset();
+    delayTimer.stop();
+    delayTimer.reset();
     manipulator.intake(0);
     if (!interrupted) {
-      // Clear the coral/algae flags so the subsystem knows it is empty again.
       manipulator.setCoral(false);
       manipulator.setAlgae(false);
     }
@@ -93,7 +115,6 @@ public class ScoreCoral extends Command {
 
   @Override
   public boolean isFinished() {
-    // Run the roller for a fixed amount of time to guarantee the coral is released.
-    return spinning && ejectTimer.hasElapsed(kScoreDurationSeconds);
+    return ejectTimer.hasElapsed(kEjectDurationSeconds);
   }
 }

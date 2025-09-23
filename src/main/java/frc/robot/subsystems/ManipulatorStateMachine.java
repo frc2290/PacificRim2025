@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
+import frc.robot.commands.EndEffector.ScoreAlgae;
 import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.commands.EndEffector.ScoreCoralL4;
 import frc.robot.commands.GraphCommand;
@@ -359,8 +360,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreProcessor",
-            ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_PROCESSOR),
+            new ParallelCommandGroup(
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_PROCESSOR),
+                new ScoreAlgae(this, m_manipulator)),
             null,
             null);
 
@@ -377,8 +380,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreBarge",
-            ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_BARGE),
+            new ParallelCommandGroup(
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_BARGE),
+                new ScoreAlgae(this, m_manipulator, -1.0)),
             null,
             null);
 
@@ -459,12 +464,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
     prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae high to prep algae low
     prepAlgaeLowNode.AddNode(algaeLowIntakeNode, 1.0); // prep algae low to algae low intake
     algaeLowIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // algae low intake to prep algae low
-    algaeLowIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // algae low intake to prep algae high
-    algaeLowIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae low intake to safe algae travel
     prepAlgaeHighNode.AddNode(algaeHighIntakeNode, 1.0); // prep algae high to algae high intake
     algaeHighIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // algae high intake to prep algae high
-    algaeHighIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // algae high intake to prep algae low
-    algaeHighIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae high intake to safe algae travel
     safeAlgaeTravelNode.AddNode(scoreProcessorNode, 1.0); // safe algae travel to score processor
     safeAlgaeTravelNode.AddNode(prepScoreBargeNode, 1.0); // safe algae travel to prep score barge
     prepScoreBargeNode.AddNode(scoreBargeNode, 1.0); // prep score barge to score barge
