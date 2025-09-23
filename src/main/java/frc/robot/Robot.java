@@ -122,6 +122,13 @@ public class Robot extends TimedRobot {
 
     // Display the Command Scheduler Status
     SmartDashboard.putData(CommandScheduler.getInstance());
+
+    // Display Subsystem Status
+    SmartDashboard.putData(m_elevator);
+    SmartDashboard.putData(m_DiffArm);
+    SmartDashboard.putData(m_manipulator);
+    SmartDashboard.putData(m_robotDrive);
+    SmartDashboard.putData(m_manipulatorStateMachine);
   }
 
   /**
