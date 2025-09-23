@@ -57,7 +57,7 @@ public class StateMachineCoardinator extends SubsystemBase {
 
   public enum RobotState {
     START_POSITION,
-    SAFE_CORAL_TRAVEL,
+    SAFE_CORAL_TRANSPORT,
     INTAKE_CORAL,
     L1,
     L2,
@@ -177,7 +177,7 @@ public class StateMachineCoardinator extends SubsystemBase {
         setElevatorManipulatorGoal(ElevatorManipulatorState.START_POSITION);
         setDriveGoal(DriveState.CANCELLED);
         break;
-      case SAFE_CORAL_TRAVEL:
+      case SAFE_CORAL_TRANSPORT:
         setElevatorManipulatorGoal(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
         setDriveGoal(DriveState.REEF_RELATIVE);
         break;
@@ -241,14 +241,12 @@ public class StateMachineCoardinator extends SubsystemBase {
   private void handleAutomaticTransitions() {
 
     // robot is not disabled, and driver station is enabled
-    if (!isDisabled
-        && DriverStation.isEnabled()
-        && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
+    if (!isDisabled&& DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
 
       // this should only run once and at the beggining to automaticaly take robot out of the start
       // position
       if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.START_POSITION) {
-        setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+        setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT); 
       }
 
       // Manages Reef_ALIGN
@@ -258,12 +256,12 @@ public class StateMachineCoardinator extends SubsystemBase {
         driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
       }
 
-      if (!manipulatorSM.isTransitioning()) {
+      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
 
         if (gethasCoral()) {
-          // if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
-          //          setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
-          // }
+           if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
+                    setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
+           }
 
         } else {
           if (getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL) {

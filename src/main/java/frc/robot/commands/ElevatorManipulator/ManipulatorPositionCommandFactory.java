@@ -121,9 +121,8 @@ public final class ManipulatorPositionCommandFactory {
                   manipulatorState.failedToReachGoal(false);
                 }),
             new ParallelCommandGroup(
-                diffArm.setExtensionSetpointCommand(position.extensionMillimeters()),
-                elevator.setElevatorSetpointCommand(position.elevatorMeters())),
-            diffArm.setRotationSetpointCommand(position.rotationDegrees()));
+                diffArm.setRotAndExtSetpointCommand(position.extensionMillimeters(), position.rotationDegrees()),
+                elevator.setElevatorSetpointCommand(position.elevatorMeters())));
 
     if (markReadyOnFinish) {
       command.addCommands(Commands.runOnce(() -> manipulatorState.atGoalState(true)));

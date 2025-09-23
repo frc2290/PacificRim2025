@@ -54,7 +54,7 @@ public class Left3Coral extends SequentialCommandGroup {
                 // Enable path following and stage the manipulator in the safe configuration.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
               }),
           // Perform three score-intake cycles on the left side of the field.
           routineFactory.scoreCoral(startToReef, RobotState.L4),

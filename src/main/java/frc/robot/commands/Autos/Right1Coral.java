@@ -50,7 +50,7 @@ public class Right1Coral extends SequentialCommandGroup {
                 // Enable path following and prep the manipulator for scoring.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
               }),
           // Drive out and score the preloaded coral, then stop path following.
           routineFactory.scoreCoral(startToReef, RobotState.L4),

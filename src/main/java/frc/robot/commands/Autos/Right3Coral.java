@@ -54,7 +54,7 @@ public class Right3Coral extends SequentialCommandGroup {
                 // Start path following and make sure the manipulator begins in the safe pose.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
               }),
           // Score, reload, and score two additional corals.
           routineFactory.scoreCoral(startToReef, RobotState.L4),

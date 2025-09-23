@@ -19,12 +19,14 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreCoral;
+import frc.robot.commands.EndEffector.ScoreCoralL4;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.utils.FlytDashboardV2;
@@ -189,7 +191,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "SafeCoralTravelPos",
-            ManipulatorPositionCommandFactory.createSafeReturnCommand(
+            ManipulatorPositionCommandFactory.createSafeDeployCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.CORAL_TRANSPORT),
             new PrintCommand(""),
             new PrintCommand(""));
@@ -237,34 +239,29 @@ public class ManipulatorStateMachine extends SubsystemBase {
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L1),
             new PrintCommand(""),
-            new ScoreCoral(this, m_manipulator));
+            new PrintCommand(""));
 
-    scoreL2Node =
-        m_graphCommand
+    scoreL2Node = m_graphCommand
         .new GraphCommandNode(
             "ScoreL2",
-            ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L2),
+            new ParallelCommandGroup(ManipulatorPositionCommandFactory.createScoreCommand(
+                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L2), new ScoreCoral(this, m_manipulator)),
             new PrintCommand(""),
-            new ScoreCoral(this, m_manipulator));
+            new PrintCommand(""));
 
-    scoreL3Node =
-        m_graphCommand
-        .new GraphCommandNode(
+    scoreL3Node = m_graphCommand.new GraphCommandNode(
             "ScoreL3",
-            ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L3),
+            new ParallelCommandGroup(ManipulatorPositionCommandFactory.createScoreCommand(
+                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L3), new ScoreCoral(this, m_manipulator)),
             new PrintCommand(""),
-            new ScoreCoral(this, m_manipulator));
+            new PrintCommand(""));
 
-    scoreL4Node =
-        m_graphCommand
-        .new GraphCommandNode(
+    scoreL4Node = m_graphCommand.new GraphCommandNode(
             "ScoreL4",
-            ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L4),
+            new ParallelCommandGroup(ManipulatorPositionCommandFactory.createScoreCommand(
+                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L4), new ScoreCoralL4(this, m_manipulator)),
             new PrintCommand(""),
-            new ScoreCoral(this, m_manipulator));
+            new PrintCommand(""));
 
     l1PostScoreNode =
         m_graphCommand

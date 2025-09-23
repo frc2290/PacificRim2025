@@ -69,7 +69,7 @@ public class AutoRoutineFactory {
             () -> {
               // Reset to a safe travel configuration after scoring completes.
               coordinator.requestToScore(false);
-              coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+              coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
             }),
         manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL));
   }
@@ -89,7 +89,7 @@ public class AutoRoutineFactory {
             new SwerveAutoStep(path, pose), Commands.waitUntil(() -> manipulator.hasCoral())),
         manipulatorState.waitForState(ElevatorManipulatorState.INTAKE_CORAL),
         // Once a coral is detected, command the manipulator to stow safely again.
-        Commands.runOnce(() -> coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL)),
+        Commands.runOnce(() -> coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT)),
         manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL));
   }
 }

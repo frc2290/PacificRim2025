@@ -22,7 +22,7 @@ import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 
 /** Runs the manipulator roller in reverse to score a coral into the reef. */
-public class ScoreCoral extends Command {
+public class ScoreCoralL4 extends Command {
 
   ManipulatorStateMachine manipulatorSM;
   ManipulatorSubsystem manipulator;
@@ -32,7 +32,7 @@ public class ScoreCoral extends Command {
    * Creates a command that waits for the manipulator state machine to report ready, then runs the
    * roller to deposit the coral.
    */
-  public ScoreCoral(ManipulatorStateMachine m_manipulatorSM, ManipulatorSubsystem m_manipulator) {
+  public ScoreCoralL4(ManipulatorStateMachine m_manipulatorSM, ManipulatorSubsystem m_manipulator) {
 
     manipulatorSM = m_manipulatorSM;
     manipulator = m_manipulator;
@@ -51,9 +51,9 @@ public class ScoreCoral extends Command {
   public void execute() {
     // if ((pose.atTargetPose(diff.hasLaserCanDistance()) && state.atCurrentState()) ||
     // !state.getRotationLock()) {
-    if (manipulatorSM.scoreNow() && manipulatorSM.atGoalState()) {
+    if (manipulatorSM.atGoalState() && manipulatorSM.readyToScore() && manipulatorSM.scoreNow()) {
       // Spin the roller to eject the coral once the state machine declares it is ready.
-      manipulator.intake(1);
+      manipulator.intake(-1);
       if (!timer.isRunning()) {
         timer.restart();
       }
