@@ -20,6 +20,7 @@ import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -118,6 +119,9 @@ public class Robot extends TimedRobot {
 
     // If logging only to DataLog.
     URCL.start(DataLogManager.getLog());
+
+    // Display the Command Scheduler Status
+    SmartDashboard.putData(CommandScheduler.getInstance());
   }
 
   /**
