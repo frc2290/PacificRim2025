@@ -115,8 +115,8 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "Manual",
-            new PrintCommand(""),
-            new PrintCommand(""),
+            null,
+            null,
             // Field-relative manual driving that mirrors the legacy ManualDrive command.
             driveCommandFactory.createManualDriveCommand());
     nodes.put(DriveState.MANUAL, manualNode);
@@ -128,8 +128,8 @@ public class DriveStateMachine extends SubsystemBase {
             // Autonomous-style follower that keeps path planner targets while honoring rotation
             // overrides.
             driveCommandFactory.createFollowPathCommand(),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
     nodes.put(DriveState.FOLLOW_PATH, followPathNode);
 
     GraphCommandNode bargeRelativeNode =
@@ -138,7 +138,7 @@ public class DriveStateMachine extends SubsystemBase {
             "BargeRelative",
             // Capture the driver's current heading when this state becomes active.
             Commands.runOnce(() -> bargeHeadingDegrees = pose.getDegrees()),
-            new PrintCommand(""),
+            null,
             // Hold the stored heading so the driver can strafe relative to the barge structure.
             driveCommandFactory.createHeadingLockCommand(() -> bargeHeadingDegrees));
     nodes.put(DriveState.BARGE_RELATIVE, bargeRelativeNode);
@@ -149,7 +149,7 @@ public class DriveStateMachine extends SubsystemBase {
             "ClimbRelative",
             // Snapshot the current heading so the climber keeps its orientation steady.
             Commands.runOnce(() -> climbHeadingDegrees = pose.getDegrees()),
-            new PrintCommand(""),
+            null,
             // Keep the climber pointed the same direction unless the driver twists the stick.
             driveCommandFactory.createHeadingLockCommand(() -> climbHeadingDegrees));
     nodes.put(DriveState.CLIMB_RELATIVE, climbRelativeNode);
@@ -158,8 +158,8 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ProcessorRelative",
-            new PrintCommand(""),
-            new PrintCommand(""),
+            null,
+            null,
             // Keep the robot pointed at the processor while letting the driver translate freely.
             driveCommandFactory.createPointingAtPoseCommand(
                 () -> VisionConstants.PROCESSOR_AIM_POSE, false));
@@ -169,8 +169,8 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "CoralStation",
-            new PrintCommand(""),
-            new PrintCommand(""),
+            null,
+            null,
             // Lock the heading toward whichever coral station is closer based on vision.
             driveCommandFactory.createHeadingLockCommand(
                 () ->
@@ -183,8 +183,8 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ReefRelative",
-            new PrintCommand(""),
-            new PrintCommand(""),
+            null,
+            null,
             // Field-relative driving while staying aimed at the center of the reef.
             driveCommandFactory.createPointingAtPoseCommand(
                 () -> VisionConstants.REEF_CENTER_AIM_POSE, false));
@@ -194,8 +194,8 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ReefAlign",
-            new PrintCommand(""),
-            new PrintCommand(""),
+            null,
+            null,
             // Blend manual control with PID corrections that hold the closest reef branch.
             driveCommandFactory.createHoldPoseCommand(
                 () -> pose.getClosestBranch(getRightScore()), 0.5, true));
@@ -205,8 +205,8 @@ public class DriveStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "Cancelled",
-            new PrintCommand(""),
-            new PrintCommand(""),
+            null,
+            null,
             driveCommandFactory.createCancelledCommand());
     nodes.put(DriveState.CANCELLED, cancelledNode);
 

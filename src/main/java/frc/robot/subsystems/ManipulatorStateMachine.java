@@ -175,8 +175,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "StartPosition",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.START_POSITION),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     intakeCoralNode =
         m_graphCommand
@@ -184,7 +184,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "IntakeCoral",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.INTAKE_CORAL),
-            new PrintCommand(""),
+            null,
             new ManipulatorIntakeCoral(m_manipulator));
 
     safeCoralTravelNode =
@@ -193,8 +193,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "SafeCoralTravelPos",
             ManipulatorPositionCommandFactory.createSafeDeployCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.CORAL_TRANSPORT),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l1PrepNode =
         m_graphCommand
@@ -202,8 +202,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L1Prep",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L1_PREP),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l2PrepNode =
         m_graphCommand
@@ -211,8 +211,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L2Prep",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L2_PREP),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l3PrepNode =
         m_graphCommand
@@ -220,8 +220,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L3Prep",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L3_PREP),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l4PrepNode =
         m_graphCommand
@@ -229,8 +229,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L4Prep",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L4_PREP),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     scoreL1Node =
         m_graphCommand
@@ -238,8 +238,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "ScoreL1",
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L1),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     scoreL2Node =
         m_graphCommand
@@ -249,8 +249,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L2),
                 new ScoreCoral(this, m_manipulator)),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     scoreL3Node =
         m_graphCommand
@@ -260,8 +260,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L3),
                 new ScoreCoral(this, m_manipulator)),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     scoreL4Node =
         m_graphCommand
@@ -271,8 +271,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L4),
                 new ScoreCoralL4(this, m_manipulator)),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l1PostScoreNode =
         m_graphCommand
@@ -280,8 +280,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L1PostScore",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L1_POST_SCORE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l2PostScoreNode =
         m_graphCommand
@@ -289,8 +289,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L2PostScore",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L2_POST_SCORE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l3PostScoreNode =
         m_graphCommand
@@ -298,8 +298,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L3PostScore",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L3_POST_SCORE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     l4PostScoreNode =
         m_graphCommand
@@ -307,13 +307,13 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "L4PostScore",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.L4_POST_SCORE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     prepAlgaeIntakeNode =
         m_graphCommand
         .new GraphCommandNode(
-            "PrepAlgaeIntake", new PrintCommand(""), new PrintCommand(""), new PrintCommand(""));
+            "PrepAlgaeIntake", null, null, null);
 
     prepAlgaeLowNode =
         m_graphCommand
@@ -321,8 +321,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "PrepAlgaeLow",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.PREP_ALGAE_LOW),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     prepAlgaeHighNode =
         m_graphCommand
@@ -330,8 +330,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "PrepAlgaeHigh",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.PREP_ALGAE_HIGH),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     safeAlgaeTravelNode =
         m_graphCommand
@@ -339,8 +339,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "SafeAlgaeTravelPos",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_TRANSPORT),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     scoreProcessorNode =
         m_graphCommand
@@ -348,8 +348,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "ScoreProcessor",
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_PROCESSOR),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     prepScoreBargeNode =
         m_graphCommand
@@ -357,8 +357,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "PrepScoreBarge",
             ManipulatorPositionCommandFactory.createPrepCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.PREP_BARGE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     scoreBargeNode =
         m_graphCommand
@@ -366,8 +366,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "ScoreBarge",
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_BARGE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     bargePostScoreNode =
         m_graphCommand
@@ -375,8 +375,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
             "BargePostScore",
             ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.BARGE_POST_SCORE),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     climbReadyNode =
         m_graphCommand
@@ -386,13 +386,13 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 ManipulatorPositionCommandFactory.createPrepCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.CLIMB),
                 Commands.runOnce(() -> m_climb.setServoOpen(), m_climb)),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     climbedNode =
         m_graphCommand
         .new GraphCommandNode(
-            "Climbed", new PrintCommand(""), new PrintCommand(""), new PrintCommand(""));
+            "Climbed", null, null, null);
 
     climbAbortNode =
         m_graphCommand
@@ -402,13 +402,13 @@ public class ManipulatorStateMachine extends SubsystemBase {
                 Commands.runOnce(() -> m_climb.setServoClose(), m_climb),
                 ManipulatorPositionCommandFactory.createSafeReturnCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.CORAL_TRANSPORT)),
-            new PrintCommand(""),
-            new PrintCommand(""));
+            null,
+            null);
 
     cancelledNode =
         m_graphCommand
         .new GraphCommandNode(
-            "Cancelled", new PrintCommand(""), new PrintCommand(""), new PrintCommand(""));
+            "Cancelled", null, null, null);
 
     // Safe travel connections
     startPositionNode.AddNode(safeCoralTravelNode, 1.0); // start position to safe travel
