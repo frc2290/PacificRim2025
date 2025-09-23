@@ -42,9 +42,7 @@ public class ScoreCoral extends Command {
     this(manipulatorStateMachine, manipulatorSubsystem, 1.0);
   }
 
-  /**
-   * Creates a coral scoring command that uses the supplied roller power.
-   */
+  /** Creates a coral scoring command that uses the supplied roller power. */
   protected ScoreCoral(
       ManipulatorStateMachine manipulatorStateMachine,
       ManipulatorSubsystem manipulatorSubsystem,

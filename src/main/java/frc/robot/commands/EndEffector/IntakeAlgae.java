@@ -29,6 +29,7 @@ public class IntakeAlgae extends Command {
   /** Creates a new IntakeOn. */
   public IntakeAlgae(ManipulatorSubsystem m_manip) {
     // Use addRequirements() here to declare subsystem dependencies.
+    manipulator = m_manip;
     addRequirements(manipulator);
   }
 
