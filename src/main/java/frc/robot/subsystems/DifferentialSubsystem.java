@@ -37,9 +37,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.commands.Waits.ExtensionAndRotationWait;
-import frc.robot.commands.Waits.ExtensionSetWait;
-import frc.robot.commands.Waits.RotationSetWait;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.LinearInterpolator;
 
@@ -217,9 +214,8 @@ public class DifferentialSubsystem extends SubsystemBase {
   }
 
   public Command setExtensionSetpointCommand(double setpoint) {
-    return new ExtensionSetWait(this, setpoint);
-    // return Commands.run(() -> setExtensionSetpoint(setpoint)).until(() ->
-    // atExtenstionSetpoint());
+    return Commands.run(() -> setExtensionSetpoint(setpoint), this)
+        .until(this::atExtenstionSetpoint);
   }
 
   public void setRotationSetpoint(double setpoint) {
@@ -227,19 +223,17 @@ public class DifferentialSubsystem extends SubsystemBase {
   }
 
   public Command setRotationSetpointCommand(double setpoint) {
-    return new RotationSetWait(this, setpoint);
-    // return Commands.run(() -> setRotationSetpoint(setpoint)).until(() ->
-    // atRotationSetpoint());
+    return Commands.run(() -> setRotationSetpoint(setpoint), this).until(this::atRotationSetpoint);
   }
 
   public Command setRotAndExtSetpointCommand(double ext, double rot) {
-    return new ExtensionAndRotationWait(this, ext, rot);
-    // return Commands.run(() -> {
-    // setExtensionSetpoint(ext);
-    // setRotationSetpoint(rot);
-    // }).until(() -> {
-    // return atRotationSetpoint() && atExtenstionSetpoint();
-    // });
+    return Commands.run(
+            () -> {
+              setExtensionSetpoint(ext);
+              setRotationSetpoint(rot);
+            },
+            this)
+        .until(() -> atRotationSetpoint() && atExtenstionSetpoint());
   }
 
   public double getExtensionSetpoint() {

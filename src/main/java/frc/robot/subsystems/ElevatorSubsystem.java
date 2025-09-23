@@ -34,7 +34,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Elevator;
-import frc.robot.commands.Waits.ElevatorSetWait;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
 // import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
@@ -122,9 +121,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command setElevatorSetpointCommand(double setpoint) {
-    return new ElevatorSetWait(this, setpoint);
-    // return Commands.run(() -> setElevatorSetpoint(setpoint)).until(() ->
-    // atPosition());
+    return Commands.run(() -> setElevatorSetpoint(setpoint), this).until(this::atPosition);
   }
 
   public Command incrementElevatorSetpoint(double increment) {
