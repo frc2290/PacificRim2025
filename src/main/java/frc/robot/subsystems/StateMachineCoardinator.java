@@ -241,12 +241,14 @@ public class StateMachineCoardinator extends SubsystemBase {
   private void handleAutomaticTransitions() {
 
     // robot is not disabled, and driver station is enabled
-    if (!isDisabled&& DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
+    if (!isDisabled
+        && DriverStation.isEnabled()
+        && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
 
       // this should only run once and at the beggining to automaticaly take robot out of the start
       // position
       if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.START_POSITION) {
-        setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT); 
+        setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
       }
 
       // Manages Reef_ALIGN
@@ -256,12 +258,13 @@ public class StateMachineCoardinator extends SubsystemBase {
         driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
       }
 
-      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
+      if (!manipulatorSM.isTransitioning()
+          && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
 
         if (gethasCoral()) {
-           if(manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL){
-                    setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
-           }
+          if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL) {
+            setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
+          }
 
         } else {
           if (getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL) {

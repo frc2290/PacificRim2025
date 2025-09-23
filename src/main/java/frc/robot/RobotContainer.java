@@ -268,10 +268,18 @@ public class RobotContainer {
     // hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
 
     // Manual controls.
-    dpad_up.and(not_right_stick).toggleOnTrue(new ParallelCommandGroup(
-        new InstantCommand(() -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)),
-        new InstantCommand(() ->m_coardinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT)))); // Coral profile with safe travel goal.
-        
+    dpad_up
+        .and(not_right_stick)
+        .toggleOnTrue(
+            new ParallelCommandGroup(
+                new InstantCommand(
+                    () -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)),
+                new InstantCommand(
+                    () ->
+                        m_coardinator.setRobotGoal(
+                            RobotState
+                                .SAFE_CORAL_TRANSPORT)))); // Coral profile with safe travel goal.
+
     dpad_down
         .and(not_right_stick)
         .toggleOnTrue(

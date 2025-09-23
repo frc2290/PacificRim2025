@@ -289,18 +289,14 @@ public class DifferentialSubsystem extends SubsystemBase {
     var goal = extensionPid.getGoal();
     var setpoint = extensionPid.getSetpoint();
     return MathUtil.isNear(
-        goal.position,
-        setpoint.position,
-        DifferentialArm.kExtensionProfileGoalPositionTolerance);
+        goal.position, setpoint.position, DifferentialArm.kExtensionProfileGoalPositionTolerance);
   }
 
   private boolean isRotationProfileFinished() {
     var goal = rotationPid.getGoal();
     var setpoint = rotationPid.getSetpoint();
     return MathUtil.isNear(
-        goal.position,
-        setpoint.position,
-        DifferentialArm.kRotationProfileGoalPositionTolerance);
+        goal.position, setpoint.position, DifferentialArm.kRotationProfileGoalPositionTolerance);
   }
 
   public int getLaserCanDistance() {

@@ -241,25 +241,36 @@ public class ManipulatorStateMachine extends SubsystemBase {
             new PrintCommand(""),
             new PrintCommand(""));
 
-    scoreL2Node = m_graphCommand
+    scoreL2Node =
+        m_graphCommand
         .new GraphCommandNode(
             "ScoreL2",
-            new ParallelCommandGroup(ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L2), new ScoreCoral(this, m_manipulator)),
+            new ParallelCommandGroup(
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L2),
+                new ScoreCoral(this, m_manipulator)),
             new PrintCommand(""),
             new PrintCommand(""));
 
-    scoreL3Node = m_graphCommand.new GraphCommandNode(
+    scoreL3Node =
+        m_graphCommand
+        .new GraphCommandNode(
             "ScoreL3",
-            new ParallelCommandGroup(ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L3), new ScoreCoral(this, m_manipulator)),
+            new ParallelCommandGroup(
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L3),
+                new ScoreCoral(this, m_manipulator)),
             new PrintCommand(""),
             new PrintCommand(""));
 
-    scoreL4Node = m_graphCommand.new GraphCommandNode(
+    scoreL4Node =
+        m_graphCommand
+        .new GraphCommandNode(
             "ScoreL4",
-            new ParallelCommandGroup(ManipulatorPositionCommandFactory.createScoreCommand(
-                this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L4), new ScoreCoralL4(this, m_manipulator)),
+            new ParallelCommandGroup(
+                ManipulatorPositionCommandFactory.createScoreCommand(
+                    this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L4),
+                new ScoreCoralL4(this, m_manipulator)),
             new PrintCommand(""),
             new PrintCommand(""));
 

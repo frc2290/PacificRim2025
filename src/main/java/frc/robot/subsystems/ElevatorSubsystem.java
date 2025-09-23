@@ -166,9 +166,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     var goal = traPidController.getGoal();
     var setpoint = traPidController.getSetpoint();
     return MathUtil.isNear(
-        goal.position,
-        setpoint.position,
-        Elevator.kProfileGoalPositionTolerance);
+        goal.position, setpoint.position, Elevator.kProfileGoalPositionTolerance);
   }
 
   @Override
