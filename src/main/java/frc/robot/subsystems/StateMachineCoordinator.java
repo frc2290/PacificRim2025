@@ -76,7 +76,8 @@ public class StateMachineCoordinator extends SubsystemBase {
   public enum ControllerProfile {
     DEFAULT_CORAL,
     ALGAE,
-    MANUAL;
+    MANUAL,
+    Climb;
   }
 
   public StateMachineCoordinator(
@@ -90,9 +91,10 @@ public class StateMachineCoordinator extends SubsystemBase {
 
   // Triggers
 
-  /*
-   * Setters
-   */
+/**
+ * Sets which side of the reef to score on.
+ * @param isRight
+ */
   public void setRightScore(boolean isRight) {
     driveSM.setRightScore(isRight);
   }
@@ -110,7 +112,6 @@ public class StateMachineCoordinator extends SubsystemBase {
     reefAligned = align;
   }
 
-  
   /*
    * Getters
    */
@@ -245,6 +246,10 @@ public class StateMachineCoordinator extends SubsystemBase {
 
   /** Handles automatic state transitions based on current subsystem states. */
   private void handleAutomaticTransitions() {
+
+    //tell manipulator when drive is at position
+    manipulatorSM.setDriveAtPose(driveSM.atPosition());
+   
 
     // Only process automatic transitions while the robot is enabled and not in manual mode.
     if (!isDisabled
