@@ -333,35 +333,34 @@ public class StateMachineCoordinator extends SubsystemBase {
         ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
         ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);
       }
-      // } else if (getCurrentState() == PositionState.IntakePosition && manipulator.hasCoral() &&
-      // getDriveState() == DriveState.CoralStation) {
-      //     ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
-      //     ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
-      // } else if (!getRotationLock()) {
-      //     ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
-      //     ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
-      //     ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-      //     ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-      // } else if (getDriveState() == DriveState.Teleop) {
-      //     if (getRightScore()) {
-      //         ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
-      //         ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
-      //     } else {
-      //         ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
-      //         ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
-      //     }
-      //     ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-      //     ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-      // } else if (getDriveState() == DriveState.ReefScoreMove) {
-      //     ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-      //     ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-      // } else if (getDriveState() == DriveState.ReefScore) {
-      //     ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
-      //     ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
-      // }
+      } else if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL && manipulatorSM.getHasCoral() &&
+       driveSM.getCurrentState() == DriveState.CORAL_STATION) {
+           ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+           ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+       } else if (getCurrentControllerProfile() == ControllerProfile.MANUAL) {
+          ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
+          ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
+          ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+          ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+      } else if (driveSM.getCurrentState() == DriveState.REEF_RELATIVE) {
+          if (getRightScore()) {
+             ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
+             ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
+         } else {
+             ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
+             ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
+          }
+          ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+          ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+      } else if (driveSM.getCurrentState() == DriveState.REEF_ALIGN) {
+          ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+          ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+      } else if (driveSM.atPosition() && manipulatorSM.readyToScore()) {
+          ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+          ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+      }
     }
-  }
-
+  
   @Override
   public void periodic() {
 
