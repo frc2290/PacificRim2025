@@ -488,6 +488,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
     driveAtPose = atPose;
   }
 
+  public boolean atDrivePose(){
+    return driveAtPose;
+  }
+
   public void setInterpolation(boolean m_interpolate) {
     interpolate = m_interpolate;
   }

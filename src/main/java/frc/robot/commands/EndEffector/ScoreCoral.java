@@ -65,8 +65,7 @@ public class ScoreCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    boolean readyToSpin =
-        manipulatorSM.atGoalState() && manipulatorSM.readyToScore() && manipulatorSM.scoreNow();
+    boolean readyToSpin = manipulatorSM.atGoalState() && manipulatorSM.atDrivePose() && manipulatorSM.scoreNow();
 
     if (readyToSpin && !spinning) {
       spinning = true;
