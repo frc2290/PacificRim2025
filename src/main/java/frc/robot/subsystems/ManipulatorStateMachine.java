@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
+import frc.robot.commands.EndEffector.IntakeAlgae;
 import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreAlgae;
 import frc.robot.commands.EndEffector.ScoreCoral;
@@ -53,6 +54,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
   public enum ElevatorManipulatorState {
     START_POSITION,
     SAFE_CORAL_TRAVEL,
+    SAFE_ALGAE_TRAVEL,
     INTAKE_CORAL,
     L1,
     L2,
@@ -327,7 +329,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_LOW),
             null,
-            null);
+            Commands.runOnce(() -> new IntakeAlgae(this, m_manipulator).schedule()));
 
     prepAlgaeHighNode =
         m_graphCommand
@@ -345,7 +347,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_HIGH),
             null,
-            null);
+            Commands.runOnce(() -> new IntakeAlgae(this, m_manipulator).schedule()));
 
     safeAlgaeTravelNode =
         m_graphCommand
@@ -464,8 +466,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
     prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae high to prep algae low
     prepAlgaeLowNode.AddNode(algaeLowIntakeNode, 1.0); // prep algae low to algae low intake
     algaeLowIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // algae low intake to prep algae low
+    algaeLowIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae low intake to safe algae travel
     prepAlgaeHighNode.AddNode(algaeHighIntakeNode, 1.0); // prep algae high to algae high intake
     algaeHighIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // algae high intake to prep algae high
+    algaeHighIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae high intake to safe algae travel
     safeAlgaeTravelNode.AddNode(scoreProcessorNode, 1.0); // safe algae travel to score processor
     safeAlgaeTravelNode.AddNode(prepScoreBargeNode, 1.0); // safe algae travel to prep score barge
     prepScoreBargeNode.AddNode(scoreBargeNode, 1.0); // prep score barge to score barge
@@ -529,6 +533,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
     return m_manipulator.hasCoral();
   }
 
+  public boolean getHasAlgae() {
+    return m_manipulator.hasAlgae();
+  }
+
   public boolean readyToScore() {
     return canScore;
   }
@@ -584,6 +592,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
       case SAFE_CORAL_TRAVEL:
         m_graphCommand.setTargetNode(safeCoralTravelNode);
         break;
+      case SAFE_ALGAE_TRAVEL:
+        m_graphCommand.setTargetNode(safeAlgaeTravelNode);
+        break;
       case INTAKE_CORAL:
         m_graphCommand.setTargetNode(intakeCoralNode);
         break;
@@ -627,6 +638,11 @@ public class ManipulatorStateMachine extends SubsystemBase {
     }
   }
 
+  /** Directs the graph to the safe algae travel pose. */
+  public void requestAlgaeTravel() {
+    m_graphCommand.setTargetNode(safeAlgaeTravelNode);
+  }
+
   /**
    * Return current state
    *
@@ -636,6 +652,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
     if (currentNode == startPositionNode) return ElevatorManipulatorState.START_POSITION;
     if (currentNode == safeCoralTravelNode) return ElevatorManipulatorState.SAFE_CORAL_TRAVEL;
+    if (currentNode == safeAlgaeTravelNode) return ElevatorManipulatorState.SAFE_ALGAE_TRAVEL;
     if (currentNode == intakeCoralNode) return ElevatorManipulatorState.INTAKE_CORAL;
     if (currentNode == l1PrepNode) return ElevatorManipulatorState.PrepL1;
     if (currentNode == scoreL1Node) return ElevatorManipulatorState.L1;

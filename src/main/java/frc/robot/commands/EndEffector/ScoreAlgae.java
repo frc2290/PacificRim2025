@@ -71,10 +71,7 @@ public class ScoreAlgae extends Command {
 
   @Override
   public void execute() {
-    if (!spinning
-        && manipulatorSM.atGoalState()
-        && manipulatorSM.readyToScore()
-        && manipulatorSM.scoreNow()) {
+    if (!spinning && manipulatorSM.atGoalState() && manipulatorSM.scoreNow()) {
       spinning = true;
       delayTimer.stop();
       delayTimer.reset();

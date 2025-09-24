@@ -283,9 +283,14 @@ public class RobotContainer {
     dpad_down
         .and(not_right_stick)
         .toggleOnTrue(
-            new InstantCommand(
-                () ->
-                    m_coardinator.setControllerProfile(ControllerProfile.ALGAE))); // Algae profile.
+            new ParallelCommandGroup(
+                new InstantCommand(
+                    () -> m_coardinator.setControllerProfile(ControllerProfile.ALGAE)),
+                new InstantCommand(
+                    () ->
+                        m_coardinator.setRobotGoal(
+                            RobotState
+                                .SAFE_ALGAE_TRANSPORT)))); // Algae profile with safe travel goal.
     dpad_left
         .and(not_right_stick)
         .toggleOnTrue(

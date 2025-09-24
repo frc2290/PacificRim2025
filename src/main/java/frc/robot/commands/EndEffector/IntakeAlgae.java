@@ -18,17 +18,20 @@ package frc.robot.commands.EndEffector;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 
 public class IntakeAlgae extends Command {
   private ManipulatorSubsystem manipulator;
+  private ManipulatorStateMachine manipulatorStateMachine;
 
   private Timer currentTimer = new Timer();
   private Timer delayTimer = new Timer();
 
   /** Creates a new IntakeOn. */
-  public IntakeAlgae(ManipulatorSubsystem m_manip) {
+  public IntakeAlgae(ManipulatorStateMachine stateMachine, ManipulatorSubsystem m_manip) {
     // Use addRequirements() here to declare subsystem dependencies.
+    manipulatorStateMachine = stateMachine;
     manipulator = m_manip;
     addRequirements(manipulator);
   }
@@ -62,6 +65,7 @@ public class IntakeAlgae extends Command {
     if (!interrupted) {
       manipulator.intake(-0.5);
       manipulator.setAlgae(true);
+      manipulatorStateMachine.requestAlgaeTravel();
     }
   }
 

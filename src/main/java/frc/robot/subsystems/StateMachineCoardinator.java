@@ -30,9 +30,6 @@ import frc.utils.LEDUtility;
 public class StateMachineCoardinator extends SubsystemBase {
 
   // attributes
-  /** Tracks whether the manipulator currently holds algae. */
-  private boolean hasAlgae = false;
-
   /** Mirrors the robot enable state so LEDs can be updated appropriately. */
   private boolean isDisabled = true;
 
@@ -48,6 +45,9 @@ public class StateMachineCoardinator extends SubsystemBase {
   /** Latest global goal state requested by the driver or auto routine. */
   private RobotState goalState = RobotState.START_POSITION;
 
+  /** Active algae intake goal to revisit when algae is not secured. */
+  private RobotState algaeIntakeGoal = RobotState.ALGAE_L2;
+
   private DriveStateMachine driveSM;
   private ManipulatorStateMachine manipulatorSM;
   private FlytDashboardV2 dashboard = new FlytDashboardV2("Coardinator");
@@ -58,6 +58,7 @@ public class StateMachineCoardinator extends SubsystemBase {
   public enum RobotState {
     START_POSITION,
     SAFE_CORAL_TRANSPORT,
+    SAFE_ALGAE_TRANSPORT,
     INTAKE_CORAL,
     L1,
     L2,
@@ -147,6 +148,10 @@ public class StateMachineCoardinator extends SubsystemBase {
    */
   public boolean gethasCoral() {
     return manipulatorSM.getHasCoral();
+  }
+
+  public boolean gethasAlgae() {
+    return manipulatorSM.getHasAlgae();
   }
 
   public boolean getManipulatorAtGoalState() {
@@ -273,6 +278,29 @@ public class StateMachineCoardinator extends SubsystemBase {
         }
       }
 
+      if (!manipulatorSM.isTransitioning()
+          && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
+
+        boolean hasAlgaeNow = manipulatorSM.getHasAlgae();
+        ElevatorManipulatorState currentManipulatorState = manipulatorSM.getCurrentState();
+
+        if (hasAlgaeNow) {
+          if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2
+                  || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3)
+              && goalState != RobotState.SAFE_ALGAE_TRANSPORT) {
+            setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
+          }
+        } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT
+                || currentManipulatorState == ElevatorManipulatorState.SAFE_ALGAE_TRAVEL)
+            && goalState != algaeIntakeGoal) {
+          setRobotGoal(algaeIntakeGoal);
+        } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2
+            && currentManipulatorState != ElevatorManipulatorState.ALGAE_L3
+            && goalState != algaeIntakeGoal) {
+          setRobotGoal(algaeIntakeGoal);
+        }
+      }
+
       // Sets elevator state machine ready to score when drivestatemachine is at position (add state
       // check later)
       if (driveSM.atPosition()) {
@@ -341,6 +369,7 @@ public class StateMachineCoardinator extends SubsystemBase {
     dashboard.putBoolean("Reef Align", getReefAlign());
     dashboard.putString("Controller Profile", getCurrentControllerProfile().toString());
     dashboard.putBoolean("Has Coral", gethasCoral());
+    dashboard.putBoolean("Has Algae", gethasAlgae());
     dashboard.putBoolean("Command Ready to score", manipulatorSM.readyToScore());
     dashboard.putBoolean("Score Request", manipulatorSM.scoreNow());
     // This method will be called once per scheduler run
