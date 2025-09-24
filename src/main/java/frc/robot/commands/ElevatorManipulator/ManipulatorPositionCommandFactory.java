@@ -18,6 +18,7 @@ package frc.robot.commands.ElevatorManipulator;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.ElevatorManipulatorPositions.ManipulatorPosition;
 import frc.robot.subsystems.DifferentialSubsystem;
@@ -105,103 +106,104 @@ public final class ManipulatorPositionCommandFactory {
     return command;
   }
 
-  // private static Command createPositionCommand(
-  //     ManipulatorStateMachine manipulatorState,
-  //     DifferentialSubsystem diffArm,
-  //     ElevatorSubsystem elevator,
-  //     ManipulatorPosition position,
-  //     boolean markReadyOnFinish) {
-  //   SequentialCommandGroup command =
-  //       new SequentialCommandGroup(
-  //           Commands.runOnce(
-  //               () -> {
-  //                 // Reset state machine flags so the new goal can be evaluated cleanly.
-  //                 manipulatorState.atGoalState(false);
-  //                 manipulatorState.failedToReachGoal(false);
-  //               }),
-  //           new ParallelCommandGroup(
-  //               diffArm.setRotAndExtSetpointCommand(position.extensionMillimeters(),
-  // position.rotationDegrees()),
-  //               elevator.setElevatorSetpointCommand(position.elevatorMeters())));
-
-  //   if (markReadyOnFinish) {
-  //     command.addCommands(Commands.runOnce(() -> manipulatorState.atGoalState(true)));
-  //   }
-
-  //   command.addRequirements(diffArm, elevator);
-  //   return command;
-  // }
-
   private static Command createPositionCommand(
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
       ManipulatorPosition position,
       boolean markReadyOnFinish) {
+    SequentialCommandGroup command =
+        new SequentialCommandGroup(
+            Commands.runOnce(
+                () -> {
+                  // Reset state machine flags so the new goal can be evaluated cleanly.
+                  manipulatorState.atGoalState(false);
+                  manipulatorState.failedToReachGoal(false);
+                }),
+            new ParallelCommandGroup(
+                diffArm.setRotAndExtSetpointCommand(
+                    position.extensionMillimeters(), position.rotationDegrees()),
+                elevator.setElevatorSetpointCommand(position.elevatorMeters())));
 
     if (markReadyOnFinish) {
-      return Commands.sequence(
-          // initialize (requirements passed here)
-          Commands.runOnce(
-              () -> {
-                manipulatorState.atGoalState(false);
-                manipulatorState.failedToReachGoal(false);
-                System.out.println("L3Prep Initializing");
-                diffArm.setExtensionSetpoint(position.extensionMillimeters());
-                diffArm.setRotationSetpoint(position.rotationDegrees());
-                elevator.setElevatorSetpoint(position.elevatorMeters());
-              },
-              diffArm,
-              elevator),
-
-          // wait until at setpoints (runs every scheduler cycle and finishes when condition true)
-          Commands.run(
-                  () -> {
-                    // optional: things to do each loop (logging, telemetry, etc.)
-                    if (diffArm.atRotationSetpoint()
-                        && elevator.atPosition()
-                        && diffArm.atExtenstionSetpoint()) {
-                      System.out.println("L3Prep Done");
-                    }
-                  },
-                  diffArm,
-                  elevator)
-              .until(
-                  () ->
-                      diffArm.atRotationSetpoint()
-                          && elevator.atPosition()
-                          && diffArm.atExtenstionSetpoint()),
-
-          // mark ready at the end
-          Commands.runOnce(() -> manipulatorState.atGoalState(true), diffArm, elevator));
-    } else {
-      return Commands.sequence(
-          Commands.runOnce(
-              () -> {
-                manipulatorState.atGoalState(false);
-                manipulatorState.failedToReachGoal(false);
-                System.out.println("L3Prep Initializing");
-                diffArm.setExtensionSetpoint(position.extensionMillimeters());
-                diffArm.setRotationSetpoint(position.rotationDegrees());
-                elevator.setElevatorSetpoint(position.elevatorMeters());
-              },
-              diffArm,
-              elevator),
-          Commands.run(
-                  () -> {
-                    if (diffArm.atRotationSetpoint()
-                        && elevator.atPosition()
-                        && diffArm.atExtenstionSetpoint()) {
-                      System.out.println("L3Prep Done");
-                    }
-                  },
-                  diffArm,
-                  elevator)
-              .until(
-                  () ->
-                      diffArm.atRotationSetpoint()
-                          && elevator.atPosition()
-                          && diffArm.atExtenstionSetpoint()));
+      command.addCommands(Commands.runOnce(() -> manipulatorState.atGoalState(true)));
     }
+
+    command.addRequirements(diffArm, elevator);
+    return command;
   }
+
+  // private static Command createPositionCommand(
+  //     ManipulatorStateMachine manipulatorState,
+  //     DifferentialSubsystem diffArm,
+  //     ElevatorSubsystem elevator,
+  //     ManipulatorPosition position,
+  //     boolean markReadyOnFinish) {
+
+  //   if (markReadyOnFinish) {
+  //     return Commands.sequence(
+  //         // initialize (requirements passed here)
+  //         Commands.runOnce(
+  //             () -> {
+  //               manipulatorState.atGoalState(false);
+  //               manipulatorState.failedToReachGoal(false);
+  //               System.out.println("L3Prep Initializing");
+  //               diffArm.setExtensionSetpoint(position.extensionMillimeters());
+  //               diffArm.setRotationSetpoint(position.rotationDegrees());
+  //               elevator.setElevatorSetpoint(position.elevatorMeters());
+  //             },
+  //             diffArm,
+  //             elevator),
+
+  //         // wait until at setpoints (runs every scheduler cycle and finishes when condition
+  // true)
+  //         Commands.run(
+  //                 () -> {
+  //                   // optional: things to do each loop (logging, telemetry, etc.)
+  //                   if (diffArm.atRotationSetpoint()
+  //                       && elevator.atPosition()
+  //                       && diffArm.atExtenstionSetpoint()) {
+  //                     System.out.println("L3Prep Done");
+  //                   }
+  //                 },
+  //                 diffArm,
+  //                 elevator)
+  //             .until(
+  //                 () ->
+  //                     diffArm.atRotationSetpoint()
+  //                         && elevator.atPosition()
+  //                         && diffArm.atExtenstionSetpoint()),
+
+  //         // mark ready at the end
+  //         Commands.runOnce(() -> manipulatorState.atGoalState(true), diffArm, elevator));
+  //   } else {
+  //     return Commands.sequence(
+  //         Commands.runOnce(
+  //             () -> {
+  //               manipulatorState.atGoalState(false);
+  //               manipulatorState.failedToReachGoal(false);
+  //               System.out.println("L3Prep Initializing");
+  //               diffArm.setExtensionSetpoint(position.extensionMillimeters());
+  //               diffArm.setRotationSetpoint(position.rotationDegrees());
+  //               elevator.setElevatorSetpoint(position.elevatorMeters());
+  //             },
+  //             diffArm,
+  //             elevator),
+  //         Commands.run(
+  //                 () -> {
+  //                   if (diffArm.atRotationSetpoint()
+  //                       && elevator.atPosition()
+  //                       && diffArm.atExtenstionSetpoint()) {
+  //                     System.out.println("L3Prep Done");
+  //                   }
+  //                 },
+  //                 diffArm,
+  //                 elevator)
+  //             .until(
+  //                 () ->
+  //                     diffArm.atRotationSetpoint()
+  //                         && elevator.atPosition()
+  //                         && diffArm.atExtenstionSetpoint()));
+  //   }
+  // }
 }
