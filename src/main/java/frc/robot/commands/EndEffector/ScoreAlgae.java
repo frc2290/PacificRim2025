@@ -24,7 +24,7 @@ import frc.robot.subsystems.ManipulatorSubsystem;
 /** Spins the manipulator roller to dump algae into a processor or barge. */
 public class ScoreAlgae extends Command {
 
-  private static final double kEjectDurationSeconds = 0.5;
+  private static final double kEjectDurationSeconds = 1;
 
   private final ManipulatorStateMachine manipulatorSM;
   private final ManipulatorSubsystem manipulator;
@@ -66,7 +66,8 @@ public class ScoreAlgae extends Command {
 
   @Override
   public void execute() {
-    boolean readyToSpin = manipulatorSM.atGoalState() && manipulatorSM.scoreNow();
+    boolean readyToSpin =
+        manipulatorSM.atGoalState() && manipulatorSM.scoreNow();
 
     if (readyToSpin && !spinning) {
       spinning = true;
