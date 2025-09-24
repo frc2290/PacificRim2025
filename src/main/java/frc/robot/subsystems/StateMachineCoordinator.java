@@ -110,6 +110,7 @@ public class StateMachineCoordinator extends SubsystemBase {
     reefAligned = align;
   }
 
+  
   /*
    * Getters
    */
