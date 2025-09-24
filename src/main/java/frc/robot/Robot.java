@@ -30,8 +30,8 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 import org.littletonrobotics.urcl.URCL;
@@ -83,8 +83,8 @@ public class Robot extends TimedRobot {
       new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
 
   /** Central coordinator that keeps drive and manipulator state machines in sync. */
-  private final StateMachineCoardinator m_coardinator =
-      new StateMachineCoardinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
+  private final StateMachineCoordinator m_coordinator =
+      new StateMachineCoordinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
 
   public Robot() {
     // Ensure the CANivore bridge is connected before any CAN devices are created.
@@ -110,7 +110,7 @@ public class Robot extends TimedRobot {
             m_climber,
             m_driveStateMachine,
             m_manipulatorStateMachine,
-            m_coardinator,
+            m_coordinator,
             m_driver);
     DataLogManager.start();
 
@@ -148,7 +148,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     // Notify subsystems that the robot is disabled so they can stop any motion and update LEDs.
-    m_coardinator.robotDisabled(true);
+    m_coordinator.robotDisabled(true);
   }
 
   @Override
@@ -158,8 +158,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // Mark that the robot is in autonomous so the state machines can choose the correct defaults.
-    m_coardinator.robotAuto(true);
-    m_coardinator.robotDisabled(false);
+    m_coordinator.robotAuto(true);
+    m_coordinator.robotDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -182,10 +182,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_coardinator.robotAuto(false);
-    m_coardinator.robotDisabled(false);
+    m_coordinator.robotAuto(false);
+    m_coordinator.robotDisabled(false);
     // Reset both state machines back to their safe starting configuration for teleop.
-    m_coardinator.setRobotGoal(RobotState.START_POSITION);
+    m_coordinator.setRobotGoal(RobotState.START_POSITION);
     // Reset hook for post-autonomous tweaks if we ever need to retune teleop initialization.
     // m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel);
 

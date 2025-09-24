@@ -27,7 +27,7 @@ import frc.utils.LEDEffects.LEDEffect;
 import frc.utils.LEDUtility;
 
 /** Bridges the drive and manipulator state machines while updating LEDs for feedback. */
-public class StateMachineCoardinator extends SubsystemBase {
+public class StateMachineCoordinator extends SubsystemBase {
 
   // attributes
   /** Mirrors the robot enable state so LEDs can be updated appropriately. */
@@ -42,7 +42,7 @@ public class StateMachineCoardinator extends SubsystemBase {
   /** Active controller profile that dictates button bindings. */
   private ControllerProfile currentProfile = ControllerProfile.DEFAULT_CORAL;
 
-  /** Latest global goal state requested by the driver or auto routine. */
+  /** Latest global goalState requested by the driver or auto routine. */
   private RobotState goalState = RobotState.START_POSITION;
 
   /** Active algae intake goal to revisit when algae is not secured. */
@@ -50,7 +50,7 @@ public class StateMachineCoardinator extends SubsystemBase {
 
   private DriveStateMachine driveSM;
   private ManipulatorStateMachine manipulatorSM;
-  private FlytDashboardV2 dashboard = new FlytDashboardV2("Coardinator");
+  private FlytDashboardV2 dashboard = new FlytDashboardV2("Coordinator");
 
   /** Helper for setting global LED patterns based on robot state. */
   private LEDUtility ledUtility;
@@ -79,7 +79,7 @@ public class StateMachineCoardinator extends SubsystemBase {
     MANUAL;
   }
 
-  public StateMachineCoardinator(
+  public StateMachineCoordinator(
       ManipulatorStateMachine m_manipulatorStateMachine,
       DriveStateMachine m_driveStateMachine,
       LEDUtility m_ledUtility) {
@@ -118,7 +118,7 @@ public class StateMachineCoardinator extends SubsystemBase {
   }
 
   /**
-   * Check which reef to align to
+   * Checks which reef to align to.
    *
    * @return
    */
@@ -127,7 +127,7 @@ public class StateMachineCoardinator extends SubsystemBase {
   }
 
   /**
-   * Find current Controller profile
+   * Returns the current controller profile.
    *
    * @return
    */
@@ -138,11 +138,11 @@ public class StateMachineCoardinator extends SubsystemBase {
   public void setControllerProfile(ControllerProfile profile) {
     // Drivers can swap profiles to expose different button mappings and LED themes.
     currentProfile = profile;
-    // also runs a command do robot does not weirdly go into werid previouse state if got stuck
+    // Prevent stale transitions from leaving the robot in a weird previous state if it gets stuck.
   }
 
   /**
-   * Check if we have coral inside the robot
+   * Checks if the robot currently holds coral.
    *
    * @return
    */
@@ -158,18 +158,18 @@ public class StateMachineCoardinator extends SubsystemBase {
     return manipulatorSM.atGoalState();
   }
 
-  // set elevator goal
+  // Set elevator goal.
   private void setElevatorManipulatorGoal(ElevatorManipulatorState m_elevmanistate) {
     manipulatorSM.setElevatorManipulatorCommand(m_elevmanistate);
   }
 
-  // set drive goal
+  // Set drive goal.
   private void setDriveGoal(DriveState m_drivestate) {
     driveSM.setDriveCommand(m_drivestate);
   }
 
   /**
-   * Set Global state goal
+   * Sets the global state goal.
    *
    * @param state
    */
@@ -242,21 +242,22 @@ public class StateMachineCoardinator extends SubsystemBase {
     manipulatorSM.score(score);
   }
 
-  /** Handle automatic state transitions based on current states and state conditions */
+  /** Handles automatic state transitions based on current subsystem states. */
   private void handleAutomaticTransitions() {
 
-    // robot is not disabled, and driver station is enabled
+    // Only process automatic transitions while the robot is enabled and not in manual mode.
     if (!isDisabled
         && DriverStation.isEnabled()
         && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
 
-      // this should only run once and at the beggining to automaticaly take robot out of the start
-      // position
+      // Automatically leave the start position on the first iteration so the robot exits the start
+      // pose immediately.
+      // This prevents lingering in the pre-match configuration.
       if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.START_POSITION) {
         setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
       }
 
-      // Manages Reef_ALIGN
+      // Manage Reef_ALIGN transitions based on the alignment trigger.
       if (driveSM.getCurrentState() == DriveState.REEF_RELATIVE && getReefAlign()) {
         driveSM.setDriveCommand(DriveState.REEF_ALIGN);
       } else if (driveSM.getCurrentState() == DriveState.REEF_ALIGN && !getReefAlign()) {
@@ -301,17 +302,18 @@ public class StateMachineCoardinator extends SubsystemBase {
         }
       }
 
-      // Sets elevator state machine ready to score when drivestatemachine is at position (add state
-      // check later)
+      // Mark the manipulator ready to score once the drive state machine reaches the target pose
+      // (add state
+      // check later).
       if (driveSM.atPosition()) {
         manipulatorSM.setreadyToScore(true);
       } else {
         manipulatorSM.setreadyToScore(false);
       }
 
-      // when command is succesful it will set goalstate for manipulator state machine
-      // as true as being reached, when driver call new goal, graph command changes tearget
-      // node and goes into transition thus not at goal state
+      // Successful commands mark the manipulator goal as reached.
+      // When the driver calls a new goal, the graph command moves toward the next target
+      // node and clears the goal flag while it transitions.
       if (manipulatorSM.isTransitioning()) {
         manipulatorSM.setatGoalState(false);
       }

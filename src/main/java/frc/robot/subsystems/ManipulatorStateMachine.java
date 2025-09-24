@@ -118,7 +118,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
   private boolean atGoalState = false; // checks if it reached the final state
 
   /** True when the state machine has armed the manipulator to score. */
-  private boolean canScore = false; // checks final state is reached and command aproves the score
+  private boolean canScore = false; // checks final state is reached and command approves the score
 
   /** Driver request that tells the state machine to begin the scoring routine. */
   private boolean score = false; // drive sends command to score
@@ -482,7 +482,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     climbAbortNode.AddNode(safeCoralTravelNode, 1.0); // climb abort to safe coral travel
   }
 
-  // need for scoring, make sure drive subsystem is at pose before scoring
+  // Needed for scoring; make sure the drive subsystem is at pose before scoring.
   /** Called by the drive state machine to indicate whether the chassis is aligned to score. */
   public void setDriveAtPose(boolean atPose) {
     driveAtPose = atPose;
@@ -493,7 +493,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
   }
 
   /**
-   * Tell state machine that command finished succesfully (Shuold only be set by commands)
+   * Tell state machine that command finished successfully (Should only be set by commands).
    *
    * @param state
    */
@@ -506,21 +506,21 @@ public class ManipulatorStateMachine extends SubsystemBase {
     setatGoalState(state);
   }
 
-  // should only be used by commands, lets scoring command know that systems are
-  // ready to score
+  // Should only be used by commands; lets the scoring command know that systems are
+  // ready to score.
   public void setreadyToScore(boolean canscore) {
     canScore = canscore;
   }
 
   /**
-   * Can only be used by commands, tell statemachine that command too to long to complete, needs
-   * reset, or revert to prep node
+   * Can only be used by commands; tells the state machine that a command took too long to complete
+   * and needs a reset or should revert to the prep node.
    */
   public void failedToReachGoal(boolean isFailed) {
     reachGoalStateFailed = isFailed;
   }
 
-  // used by a coardinator to tell statemachine that it needs to score if it can
+  // Used by a coordinator to tell the state machine that it needs to score if it can.
   public void score(boolean m_score) {
     score = m_score;
   }
@@ -541,13 +541,13 @@ public class ManipulatorStateMachine extends SubsystemBase {
     return canScore;
   }
 
-  // driver made a call to score now
+  // Driver made a call to score now.
   public boolean scoreNow() {
     return score;
   }
 
   /**
-   * GraphCommand is still reaching setgoalnode
+   * GraphCommand is still reaching the target node.
    *
    * @return
    */
@@ -560,7 +560,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
   }
 
   /**
-   * Check if all all subsystem are at position, atGoalState is updated by a last command
+   * Check if all subsystems are at position; atGoalState is updated by the last command.
    *
    * @return
    */

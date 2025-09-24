@@ -24,8 +24,8 @@ import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /**
@@ -34,14 +34,14 @@ import frc.utils.PoseEstimatorSubsystem;
 public class AutoRoutineFactory {
 
   private final PoseEstimatorSubsystem pose;
-  private final StateMachineCoardinator coordinator;
+  private final StateMachineCoordinator coordinator;
   private final ManipulatorStateMachine manipulatorState;
   private final ManipulatorSubsystem manipulator;
 
   /** Creates a helper that can be reused by each autonomous routine to share core steps. */
   public AutoRoutineFactory(
       PoseEstimatorSubsystem pose,
-      StateMachineCoardinator coordinator,
+      StateMachineCoordinator coordinator,
       ManipulatorStateMachine manipulatorState,
       ManipulatorSubsystem manipulator) {
     this.pose = pose;

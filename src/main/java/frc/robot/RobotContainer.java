@@ -39,9 +39,9 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.ControllerProfile;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.robot.subsystems.StateMachineCoordinator.ControllerProfile;
+import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
 
@@ -61,7 +61,7 @@ public class RobotContainer {
   private final ClimbSubsystem m_climber;
   private final DriveStateMachine m_drive_state;
   private final ManipulatorStateMachine m_ManipulatorStateMachine;
-  private final StateMachineCoardinator m_coardinator;
+  private final StateMachineCoordinator m_coordinator;
 
   // The driver's controller
   /** Driver joystick used for all manual control. */
@@ -81,7 +81,7 @@ public class RobotContainer {
       ClimbSubsystem _climb,
       DriveStateMachine _drive_state,
       ManipulatorStateMachine _ManipulatorStateMachine,
-      StateMachineCoardinator _coardinator,
+      StateMachineCoordinator _coordinator,
       XboxController _driverController) {
 
     m_driverController = _driverController;
@@ -94,7 +94,7 @@ public class RobotContainer {
     m_climber = _climb;
     m_drive_state = _drive_state;
     m_ManipulatorStateMachine = _ManipulatorStateMachine;
-    m_coardinator = _coardinator;
+    m_coordinator = _coordinator;
 
     // Configure the button bindings.
     configureButtonBindings();
@@ -114,7 +114,7 @@ public class RobotContainer {
         new Right1Coral(
             m_poseEstimator,
             m_drive_state,
-            m_coardinator,
+            m_coordinator,
             m_ManipulatorStateMachine,
             m_manipulator));
     auto_chooser.addOption(
@@ -122,7 +122,7 @@ public class RobotContainer {
         new Right2Coral(
             m_poseEstimator,
             m_drive_state,
-            m_coardinator,
+            m_coordinator,
             m_ManipulatorStateMachine,
             m_manipulator));
     auto_chooser.addOption(
@@ -130,7 +130,7 @@ public class RobotContainer {
         new Right3Coral(
             m_poseEstimator,
             m_drive_state,
-            m_coardinator,
+            m_coordinator,
             m_ManipulatorStateMachine,
             m_manipulator));
     auto_chooser.addOption(
@@ -138,7 +138,7 @@ public class RobotContainer {
         new Left3Coral(
             m_poseEstimator,
             m_drive_state,
-            m_coardinator,
+            m_coordinator,
             m_ManipulatorStateMachine,
             m_manipulator));
     auto_chooser.addOption(
@@ -146,7 +146,7 @@ public class RobotContainer {
         new Middle1Coral(
             m_poseEstimator,
             m_drive_state,
-            m_coardinator,
+            m_coordinator,
             m_ManipulatorStateMachine,
             m_manipulator));
     // Expose the options to the dashboard so the drive team can select before each match.
@@ -188,48 +188,48 @@ public class RobotContainer {
     Trigger not_right_stick =
         right_stick.negate(); // Trigger to check if right stick is not pressed in.
     // Profile triggers make it easy to reuse button bindings while the controller changes modes.
-    Trigger coral_profilTrigger =
+    Trigger coral_profileTrigger =
         new Trigger(
             () ->
-                m_coardinator.getCurrentControllerProfile()
-                    == StateMachineCoardinator.ControllerProfile.DEFAULT_CORAL);
-    Trigger algae_profilTrigger =
+                m_coordinator.getCurrentControllerProfile()
+                    == StateMachineCoordinator.ControllerProfile.DEFAULT_CORAL);
+    Trigger algae_profileTrigger =
         new Trigger(
             () ->
-                m_coardinator.getCurrentControllerProfile()
-                    == StateMachineCoardinator.ControllerProfile.ALGAE);
+                m_coordinator.getCurrentControllerProfile()
+                    == StateMachineCoordinator.ControllerProfile.ALGAE);
     Trigger manual_profileTrigger =
         new Trigger(
             () ->
-                m_coardinator.getCurrentControllerProfile()
-                    == StateMachineCoardinator.ControllerProfile.MANUAL);
+                m_coordinator.getCurrentControllerProfile()
+                    == StateMachineCoordinator.ControllerProfile.MANUAL);
 
     // Controller buttons.
     (a_button)
-        .and(coral_profilTrigger)
+        .and(coral_profileTrigger)
         .onTrue(
             new InstantCommand(
                 () ->
-                    m_coardinator.setRobotGoal(
+                    m_coordinator.setRobotGoal(
                         RobotState.INTAKE_CORAL))); // Request the intake coral routine.
     (b_button)
-        .and(coral_profilTrigger)
+        .and(coral_profileTrigger)
         .onTrue(
             new InstantCommand(
                 () ->
-                    m_coardinator.setRobotGoal(RobotState.L2))); // Request the L2 scoring routine.
+                    m_coordinator.setRobotGoal(RobotState.L2))); // Request the L2 scoring routine.
     (y_button)
-        .and(coral_profilTrigger)
+        .and(coral_profileTrigger)
         .onTrue(
             new InstantCommand(
                 () ->
-                    m_coardinator.setRobotGoal(RobotState.L3))); // Request the L3 scoring routine.
+                    m_coordinator.setRobotGoal(RobotState.L3))); // Request the L3 scoring routine.
     (x_button)
-        .and(coral_profilTrigger)
+        .and(coral_profileTrigger)
         .onTrue(
             new InstantCommand(
                 () ->
-                    m_coardinator.setRobotGoal(RobotState.L4))); // Request the L4 scoring routine.
+                    m_coordinator.setRobotGoal(RobotState.L4))); // Request the L4 scoring routine.
     // back_button.onTrue(m_state.cancelCommand()); // Cancel current state. Revisit if we restore
     // the legacy state machine.
     // start_button.onTrue(m_state.toggleRotationLock()); // Toggle rotation lock for driver
@@ -240,12 +240,12 @@ public class RobotContainer {
         .and(not_left_stick)
         .onTrue(
             new InstantCommand(
-                () -> m_coardinator.setRightScore(false))); // Select the left reef branch.
+                () -> m_coordinator.setRightScore(false))); // Select the left reef branch.
     (right_bumper)
         .and(not_left_stick)
         .onTrue(
             new InstantCommand(
-                () -> m_coardinator.setRightScore(true))); // Select the right reef branch.
+                () -> m_coordinator.setRightScore(true))); // Select the right reef branch.
 
     // Controller D-Pad.
     // dpad_up.and(not_right_stick).onTrue(m_state.setGoalElevManiCommand(ElevatorManipulatorState.AlgaeL3)); // Algae L3.
@@ -254,15 +254,15 @@ public class RobotContainer {
 
     // Controller triggers.
     left_trigger
-        .onTrue(new InstantCommand(() -> m_coardinator.setReefAlign(true)))
+        .onTrue(new InstantCommand(() -> m_coordinator.setReefAlign(true)))
         .onFalse(
             new InstantCommand(
                 () ->
-                    m_coardinator.setReefAlign(
+                    m_coordinator.setReefAlign(
                         false))); // While held the robot tries to align with the reef.
     right_trigger
-        .onTrue(new InstantCommand(() -> m_coardinator.requestToScore(true)))
-        .onFalse(new InstantCommand(() -> m_coardinator.requestToScore(false)));
+        .onTrue(new InstantCommand(() -> m_coordinator.requestToScore(true)))
+        .onFalse(new InstantCommand(() -> m_coordinator.requestToScore(false)));
 
     // Legacy logic for automatically switching modes lives in the state machine now.
     // hasCoral.or(hasAlgae).and(notAuto).onFalse(m_state.setGoalDriveCommand(DriveState.CoralStation)).onTrue(m_state.setGoalDriveCommand(DriveState.Teleop));
@@ -273,10 +273,10 @@ public class RobotContainer {
         .toggleOnTrue(
             new ParallelCommandGroup(
                 new InstantCommand(
-                    () -> m_coardinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)),
+                    () -> m_coordinator.setControllerProfile(ControllerProfile.DEFAULT_CORAL)),
                 new InstantCommand(
                     () ->
-                        m_coardinator.setRobotGoal(
+                        m_coordinator.setRobotGoal(
                             RobotState
                                 .SAFE_CORAL_TRANSPORT)))); // Coral profile with safe travel goal.
 
@@ -285,10 +285,10 @@ public class RobotContainer {
         .toggleOnTrue(
             new ParallelCommandGroup(
                 new InstantCommand(
-                    () -> m_coardinator.setControllerProfile(ControllerProfile.ALGAE)),
+                    () -> m_coordinator.setControllerProfile(ControllerProfile.ALGAE)),
                 new InstantCommand(
                     () ->
-                        m_coardinator.setRobotGoal(
+                        m_coordinator.setRobotGoal(
                             RobotState
                                 .SAFE_ALGAE_TRANSPORT)))); // Algae profile with safe travel goal.
     dpad_left
@@ -296,11 +296,11 @@ public class RobotContainer {
         .toggleOnTrue(
             new ParallelCommandGroup(
                 new InstantCommand(
-                    () -> m_coardinator.setControllerProfile(ControllerProfile.MANUAL)),
+                    () -> m_coordinator.setControllerProfile(ControllerProfile.MANUAL)),
                 new InstantCommand(
-                    () -> m_coardinator.setRobotGoal(RobotState.MANUAL)))); // Manual profile.
+                    () -> m_coordinator.setRobotGoal(RobotState.MANUAL)))); // Manual profile.
     // dpad_right.and(not_right_stick).toggleOnTrue(new InstantCommand(() ->
-    // m_coardinator.setControllerProfile(ControllerProfile.MANUAL)));
+    // m_coordinator.setControllerProfile(ControllerProfile.MANUAL)));
 
     manual_profileTrigger
         .and(y_button)

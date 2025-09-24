@@ -304,7 +304,7 @@ public class GraphCommand extends Command {
         return null;
       }
 
-      // alredy at the node
+      // already at the node
       if (link.m_wayPointNode == null) {
         return null;
       }
@@ -338,7 +338,7 @@ public class GraphCommand extends Command {
 
     /**
      * For each attached node add their child nodes and add the cost of the attached node to the
-     * child node costs. Parent cost is assume zero so stop seach if parent is reached.
+     * child node costs. Parent cost is assumed zero so stop searching if the parent is reached.
      */
     public void optimizeGraph(
         GraphCommandNode rootNode,

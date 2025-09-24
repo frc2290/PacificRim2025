@@ -24,8 +24,8 @@ import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** One piece autonomous that drives to the right branch and scores a single coral. */
@@ -34,7 +34,7 @@ public class Right1Coral extends SequentialCommandGroup {
   public Right1Coral(
       PoseEstimatorSubsystem pose,
       DriveStateMachine driveState,
-      StateMachineCoardinator coordinator,
+      StateMachineCoordinator coordinator,
       ManipulatorStateMachine manipulatorState,
       ManipulatorSubsystem manipulator) {
     try {

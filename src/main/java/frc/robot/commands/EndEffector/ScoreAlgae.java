@@ -66,8 +66,7 @@ public class ScoreAlgae extends Command {
 
   @Override
   public void execute() {
-    boolean readyToSpin =
-        manipulatorSM.atGoalState() && manipulatorSM.scoreNow();
+    boolean readyToSpin = manipulatorSM.atGoalState() && manipulatorSM.scoreNow();
 
     if (readyToSpin && !spinning) {
       spinning = true;
