@@ -102,7 +102,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     traPidController.reset(elevatorSetpoint);
     traPidController.setTolerance(Elevator.kPositionToleranceMeters);
 
-    elevatorDash.addDoublePublisher("Elevator POS", false, () -> getPosition());
+    elevatorDash.addDoublePublisher("Elevator Position", false, () -> getPosition());
     elevatorDash.addDoublePublisher("Elevator Setpoint", false, () -> getElevatorSetpoint());
     elevatorDash.addBoolPublisher("At Position", false, () -> atPosition());
     elevatorDash.addDoublePublisher("Duty Cycle", true, () -> leftMotor.getAppliedOutput());

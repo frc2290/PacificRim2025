@@ -113,8 +113,8 @@ public class DifferentialSubsystem extends SubsystemBase {
 
   double extensionVelocity;
   double rotationVelocity;
-  double leftCommand;
-  double rightCommand;
+  double leftVelocityCommand;
+  double rightVelocityCommand;
 
   public DifferentialSubsystem() {
     leftMotor = new SparkMax(DifferentialArm.kLeftMotorId, MotorType.kBrushless);
@@ -173,27 +173,28 @@ public class DifferentialSubsystem extends SubsystemBase {
       System.out.println("LaserCan Configuration failed! " + e);
     }
 
-    differentialDash.addDoublePublisher("Left POS", true, () -> getLeftPos());
-    differentialDash.addDoublePublisher("Right POS", true, () -> getRightPos());
-    differentialDash.addDoublePublisher("Extension POS", false, () -> getExtensionPosition());
-    differentialDash.addDoublePublisher("Rotation POS", false, () -> getRotationPosition());
+    differentialDash.addDoublePublisher("Extension Position", false, () -> getExtensionPosition());
+    differentialDash.addDoublePublisher("Rotation Position", false, () -> getRotationPosition());
     differentialDash.addBoolPublisher("At Extension", false, () -> atExtenstionSetpoint());
     differentialDash.addBoolPublisher("At Rotation", false, () -> atRotationSetpoint());
-    differentialDash.addDoublePublisher("Ext Setpoint", false, () -> getExtensionSetpoint());
-    differentialDash.addDoublePublisher("Rot Setpoint", false, () -> getRotationSetpoint());
+    differentialDash.addDoublePublisher("Extension Setpoint", false, () -> getExtensionSetpoint());
+    differentialDash.addDoublePublisher("Rotation Setpoint", false, () -> getRotationSetpoint());
     differentialDash.addDoublePublisher("Left Output", true, () -> leftMotor.getAppliedOutput());
     differentialDash.addDoublePublisher("Left Current", true, () -> leftMotor.getOutputCurrent());
     differentialDash.addDoublePublisher("Right Output", true, () -> rightMotor.getAppliedOutput());
     differentialDash.addDoublePublisher("Right Current", true, () -> rightMotor.getOutputCurrent());
     differentialDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
-    differentialDash.addDoublePublisher("Ext Command Vel", true, () -> extensionVelocity);
     differentialDash.addDoublePublisher(
-        "Ext Vel", true, () -> (leftEnc.getVelocity() + rightEnc.getVelocity()) / 2);
-    differentialDash.addDoublePublisher("Rot Command Vel", true, () -> rotationVelocity);
+        "Extension Command Velocity", true, () -> extensionVelocity);
     differentialDash.addDoublePublisher(
-        "Rot Vel", true, () -> (leftEnc.getVelocity() - rightEnc.getVelocity()) / 2);
-    differentialDash.addDoublePublisher("Left Command", true, () -> leftCommand);
-    differentialDash.addDoublePublisher("Right Command", true, () -> rightCommand);
+        "Extension Velocity", true, () -> (leftEnc.getVelocity() + rightEnc.getVelocity()) / 2);
+    differentialDash.addDoublePublisher("Rotation Command Velocity", true, () -> rotationVelocity);
+    differentialDash.addDoublePublisher(
+        "Rotation Velocity", true, () -> (leftEnc.getVelocity() - rightEnc.getVelocity()) / 2);
+    differentialDash.addDoublePublisher(
+        "Left Velocity Error", true, () -> leftVelocityCommand - leftEnc.getVelocity());
+    differentialDash.addDoublePublisher(
+        "Right Velocity Error", true, () -> rightVelocityCommand - rightEnc.getVelocity());
     differentialDash.addIntegerPublisher("LaserCan Distance", true, () -> laserCanDistance);
   }
 
@@ -344,10 +345,10 @@ public class DifferentialSubsystem extends SubsystemBase {
     // double rotFeed =
     // rotFeedforward.calculate((degreesToRadians(getRotationPosition()) - 0.139),
     // rotationVelocity);
-    leftCommand = extensionVelocity - degreesToMM(rotationVelocity);
-    rightCommand = extensionVelocity + degreesToMM(rotationVelocity);
-    leftArm.setReference(extensionVelocity - degreesToMM(rotationVelocity), ControlType.kVelocity);
-    rightArm.setReference(extensionVelocity + degreesToMM(rotationVelocity), ControlType.kVelocity);
+    leftVelocityCommand = extensionVelocity - degreesToMM(rotationVelocity);
+    rightVelocityCommand = extensionVelocity + degreesToMM(rotationVelocity);
+    leftArm.setReference(leftVelocityCommand, ControlType.kVelocity);
+    rightArm.setReference(rightVelocityCommand, ControlType.kVelocity);
     // leftArm.setReference(extendSlew.calculate(extensionSetpoint) -
     // degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
     // rightArm.setReference(extendSlew.calculate(extensionSetpoint) +
