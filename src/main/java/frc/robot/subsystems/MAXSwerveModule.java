@@ -81,15 +81,17 @@ public class MAXSwerveModule {
     m_drivingEncoder.setPosition(0);
 
     test.addDoublePublisher(
-        "Drive Velocity " + drivingCANId, false, () -> m_drivingEncoder.getVelocity());
-    test.addDoublePublisher(
-        "Turn Position " + turningCANId, false, () -> m_turningEncoder.getPosition());
-    test.addDoublePublisher(
-        "Drive Command " + m_drivingSpark.getDeviceId(),
+        "Drive Velocity Error " + drivingCANId,
         false,
-        () -> getState().speedMetersPerSecond);
-    test.addStringPublisher(
-        "Turn Command " + m_turningSpark.getDeviceId(), false, () -> getState().angle.toString());
+        () -> m_desiredState.speedMetersPerSecond - m_drivingEncoder.getVelocity());
+    test.addDoublePublisher(
+        "Steer Angle Error " + turningCANId,
+        false,
+        () ->
+            m_desiredState
+                .angle
+                .minus(new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset))
+                .getRadians());
   }
 
   /**

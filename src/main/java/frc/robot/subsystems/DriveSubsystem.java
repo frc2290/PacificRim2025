@@ -30,6 +30,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -81,6 +84,21 @@ public class DriveSubsystem extends SubsystemBase {
   /** PID used to correct Y position errors during auto-alignment routines. */
   private PIDController yPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
+  private final StructArrayPublisher<SwerveModuleState> swerveStatePublisher =
+      NetworkTableInstance.getDefault()
+          .getStructArrayTopic("Swerve/States", SwerveModuleState.struct)
+          .publish();
+
+  private final StructPublisher<ChassisSpeeds> chassisSpeedsPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Swerve/ChassisSpeeds", ChassisSpeeds.struct)
+          .publish();
+
+  private final StructPublisher<Rotation2d> rotationPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Swerve/RobotRotation", Rotation2d.struct)
+          .publish();
+
   // Create the SysId routine
   /** Characterization routine for the drive motors. */
   private SysIdRoutine sysIdRoutine =
@@ -118,7 +136,11 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Nothing periodic to do; odometry updates happen in the pose estimator subsystem.
+    var measuredStates = getModuleStates();
+
+    swerveStatePublisher.set(measuredStates);
+    chassisSpeedsPublisher.set(DriveConstants.kDriveKinematics.toChassisSpeeds(measuredStates));
+    rotationPublisher.set(m_gyro.getRotation2d());
   }
 
   public void setSlowSpeed() {
