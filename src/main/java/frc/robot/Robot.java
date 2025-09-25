@@ -18,6 +18,7 @@ package frc.robot;
 
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -113,7 +114,7 @@ public class Robot extends TimedRobot {
             m_coordinator,
             m_driver);
     DataLogManager.start();
-
+DriverStation.startDataLog(DataLogManager.getLog());
     // Start the logging framework so we can view graphs after a match or practice run.
     URCL.start();
 
@@ -128,7 +129,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData(m_DiffArm);
     SmartDashboard.putData(m_manipulator);
     SmartDashboard.putData(m_robotDrive);
-    SmartDashboard.putData(m_manipulatorStateMachine);
   }
 
   /**
