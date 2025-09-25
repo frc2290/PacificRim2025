@@ -186,14 +186,14 @@
                 }
               },
               {
-                "title": "Elevator POS",
+                "title": "Elevator Position",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/Elevator/Elevator POS",
+                  "topic": "/Elevator/Elevator Position",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
@@ -261,56 +261,56 @@
                 }
               },
               {
-                "title": "Ext Setpoint",
+                "title": "Extension Setpoint",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/Differential/Ext Setpoint",
+                  "topic": "/Differential/Extension Setpoint",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
                 }
               },
               {
-                "title": "Extension POS",
+                "title": "Extension Position",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/Differential/Extension POS",
+                  "topic": "/Differential/Extension Position",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
                 }
               },
               {
-                "title": "Rot Setpoint",
+                "title": "Rotation Setpoint",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/Differential/Rot Setpoint",
+                  "topic": "/Differential/Rotation Setpoint",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
                 }
               },
               {
-                "title": "Rotation POS",
+                "title": "Rotation Position",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/Differential/Rotation POS",
+                  "topic": "/Differential/Rotation Position",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
@@ -634,14 +634,14 @@
         "layouts": [],
         "containers": [
           {
-            "title": "Ext Command Vel",
+            "title": "Extension Command Velocity",
             "x": 0.0,
             "y": 0.0,
             "width": 640.0,
             "height": 256.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Ext Command Vel",
+              "topic": "/Differential/Extension Command Velocity",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -650,14 +650,14 @@
             }
           },
           {
-            "title": "Ext Vel",
+            "title": "Extension Velocity",
             "x": 0.0,
             "y": 256.0,
             "width": 640.0,
             "height": 256.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Ext Vel",
+              "topic": "/Differential/Extension Velocity",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -666,14 +666,14 @@
             }
           },
           {
-            "title": "Ext Setpoint",
+            "title": "Extension Setpoint",
             "x": 640.0,
             "y": 0.0,
             "width": 384.0,
             "height": 256.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Ext Setpoint",
+              "topic": "/Differential/Extension Setpoint",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -682,14 +682,14 @@
             }
           },
           {
-            "title": "Extension POS",
+            "title": "Extension Position",
             "x": 640.0,
             "y": 256.0,
             "width": 384.0,
             "height": 256.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Extension POS",
+              "topic": "/Differential/Extension Position",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -722,14 +722,14 @@
         "layouts": [],
         "containers": [
           {
-            "title": "Rot Command Vel",
+            "title": "Rotation Command Velocity",
             "x": 0.0,
             "y": 0.0,
             "width": 512.0,
             "height": 384.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Rot Command Vel",
+              "topic": "/Differential/Rotation Command Velocity",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -738,14 +738,14 @@
             }
           },
           {
-            "title": "Rot Vel",
+            "title": "Rotation Velocity",
             "x": 0.0,
             "y": 384.0,
             "width": 512.0,
             "height": 384.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Rot Vel",
+              "topic": "/Differential/Rotation Velocity",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -754,14 +754,14 @@
             }
           },
           {
-            "title": "Rot Setpoint",
+            "title": "Rotation Setpoint",
             "x": 512.0,
             "y": 0.0,
             "width": 512.0,
             "height": 384.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Rot Setpoint",
+              "topic": "/Differential/Rotation Setpoint",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -770,14 +770,14 @@
             }
           },
           {
-            "title": "Rotation POS",
+            "title": "Rotation Position",
             "x": 512.0,
             "y": 384.0,
             "width": 512.0,
             "height": 384.0,
             "type": "Graph",
             "properties": {
-              "topic": "/Differential/Rotation POS",
+              "topic": "/Differential/Rotation Position",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
@@ -842,14 +842,14 @@
             }
           },
           {
-            "title": "Rotation POS",
+            "title": "Rotation Position",
             "x": 1280.0,
             "y": 128.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Rotation POS",
+              "topic": "/Differential/Rotation Position",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -870,42 +870,42 @@
             }
           },
           {
-            "title": "Rot Setpoint",
+            "title": "Rotation Setpoint",
             "x": 1280.0,
             "y": 0.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Rot Setpoint",
+              "topic": "/Differential/Rotation Setpoint",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "Ext Setpoint",
+            "title": "Extension Setpoint",
             "x": 1280.0,
             "y": 512.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Ext Setpoint",
+              "topic": "/Differential/Extension Setpoint",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "Extension POS",
+            "title": "Extension Position",
             "x": 1408.0,
             "y": 512.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Extension POS",
+              "topic": "/Differential/Extension Position",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -929,70 +929,70 @@
             }
           },
           {
-            "title": "Ext Command Vel",
+            "title": "Extension Command Velocity",
             "x": 1024.0,
             "y": 384.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Ext Command Vel",
+              "topic": "/Differential/Extension Command Velocity",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "Ext Vel",
+            "title": "Extension Velocity",
             "x": 1024.0,
             "y": 512.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Ext Vel",
+              "topic": "/Differential/Extension Velocity",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "Rot Command Vel",
+            "title": "Rotation Command Velocity",
             "x": 1280.0,
             "y": 384.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Rot Command Vel",
+              "topic": "/Differential/Rotation Command Velocity",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "Left Command",
+            "title": "Left Velocity Error",
             "x": 1024.0,
             "y": 640.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Left Command",
+              "topic": "/Differential/Left Velocity Error",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "Right Command",
+            "title": "Right Velocity Error",
             "x": 1152.0,
             "y": 640.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Differential/Right Command",
+              "topic": "/Differential/Right Velocity Error",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
