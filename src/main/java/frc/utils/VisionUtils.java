@@ -17,16 +17,17 @@
 package frc.utils;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.List;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Thin wrapper around a PhotonCamera that refreshes its latest result each loop. */
 public class VisionUtils extends SubsystemBase {
   /** Underlying PhotonVision camera. */
-  PhotonCamera camera;
+  private final PhotonCamera camera;
 
   /** Cached copy of the most recent pipeline result. */
-  PhotonPipelineResult detections;
+  private PhotonPipelineResult detections = new PhotonPipelineResult();
 
   /** Creates a new VisionUtils. */
   public VisionUtils(String cameraName) {
@@ -34,7 +35,12 @@ public class VisionUtils extends SubsystemBase {
   }
 
   public PhotonPipelineResult getLatestResult() {
-    return camera.getLatestResult();
+    List<PhotonPipelineResult> unreadResults = camera.getAllUnreadResults();
+    if (!unreadResults.isEmpty()) {
+      detections = unreadResults.get(unreadResults.size() - 1);
+    }
+
+    return detections;
   }
 
   @Override
