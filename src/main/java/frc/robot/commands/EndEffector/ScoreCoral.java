@@ -60,12 +60,13 @@ public class ScoreCoral extends Command {
     ejectTimer.stop();
     ejectTimer.reset();
     spinning = false;
+    System.out.println("Scoring Coral Initializing");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    boolean readyToSpin = manipulatorSM.atGoalState() && manipulatorSM.atDrivePose() && manipulatorSM.scoreNow();
+    boolean readyToSpin = manipulatorSM.atDrivePose() && manipulatorSM.scoreNow();
 
     if (readyToSpin && !spinning) {
       spinning = true;

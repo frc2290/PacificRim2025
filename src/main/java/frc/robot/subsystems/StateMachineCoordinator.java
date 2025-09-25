@@ -308,14 +308,6 @@ public class StateMachineCoordinator extends SubsystemBase {
         }
       }
 
-      // Mark the manipulator ready to score once the drive state machine reaches the target pose
-      // (add state
-      // check later).
-      if (driveSM.atPosition()) {
-        manipulatorSM.setreadyToScore(true);
-      } else {
-        manipulatorSM.setreadyToScore(false);
-      }
 
       // Successful commands mark the manipulator goal as reached.
       // When the driver calls a new goal, the graph command moves toward the next target
@@ -361,7 +353,7 @@ public class StateMachineCoordinator extends SubsystemBase {
       } else if (driveSM.getCurrentState() == DriveState.REEF_ALIGN) {
           ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
           ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-      } else if (driveSM.atPosition() && manipulatorSM.readyToScore()) {
+      } else if (driveSM.atPosition() && manipulatorSM.atGoalState()) {
           ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
           ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
       }
@@ -377,8 +369,6 @@ public class StateMachineCoordinator extends SubsystemBase {
     dashboard.putString("Controller Profile", getCurrentControllerProfile().toString());
     dashboard.putBoolean("Has Coral", gethasCoral());
     dashboard.putBoolean("Has Algae", gethasAlgae());
-    dashboard.putBoolean("Command Ready to score", manipulatorSM.readyToScore());
-    dashboard.putBoolean("Score Request", manipulatorSM.scoreNow());
     // This method will be called once per scheduler run
     handleAutomaticTransitions();
   }

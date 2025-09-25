@@ -189,8 +189,8 @@ public final class Constants {
     // ============================ Setpoints ============================
     // Elevator setpoints
     public static final double kElevatorStart = 0.0;
-    public static final double kElevatorTransport = 0.25;
-    public static final double kElevatorIntake = 0.25;
+    public static final double kElevatorTransport = 0.025;
+    public static final double kElevatorIntake = kElevatorTransport;
     public static final double kElevatorL1 = 0.125;
     public static final double kElevatorL2 = 0.5;
     public static final double kElevatorL3 = kElevatorL2 + 0.4;
@@ -204,7 +204,7 @@ public final class Constants {
     // Extension setpoints
     public static final double kExtensionStart = 0;
     public static final double kExtensionTransport = 80;
-    public static final double kExtensionIntake = 35;
+    public static final double kExtensionIntake = 20;
     public static final double kExtensionPrep = 80;
     public static final double kExtensionL1 = 80;
     public static final double kExtensionL2 = 140;

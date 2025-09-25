@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.ElevatorManipulator.ManipulatorPositionCommandFactory;
 import frc.robot.commands.EndEffector.IntakeAlgae;
@@ -154,6 +155,11 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
     initializeGraphCommand();
 
+    //new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow()).onTrue(new ScoreCoral(this, manipulator)); 
+    //new Trigger(() -> getHasAlgae() && atDrivePose() && scoreNow()).onTrue(new ScoreAlgae(this, manipulator));
+    //new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && getCurrentState() == ElevatorManipulatorState.L4)
+        //.onTrue(new ScoreCoralL4(this, manipulator));
+
     // Set the root/current BEFORE scheduling it as default
     m_graphCommand.setGraphRootNode(startPositionNode);
     m_graphCommand.setCurrentNode(startPositionNode);
@@ -185,7 +191,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "IntakeCoral",
-            ManipulatorPositionCommandFactory.createPrepCommand(
+            ManipulatorPositionCommandFactory.createSafeReturnCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.INTAKE_CORAL),
             null,
             new ManipulatorIntakeCoral(m_manipulator));
@@ -482,16 +488,21 @@ public class ManipulatorStateMachine extends SubsystemBase {
     climbAbortNode.AddNode(safeCoralTravelNode, 1.0); // climb abort to safe coral travel
   }
 
+
   // Needed for scoring; make sure the drive subsystem is at pose before scoring.
-  /** Called by the drive state machine to indicate whether the chassis is aligned to score. */
+  /** Called by the drive state machine to indicate whether the chassis is aligned to score. 
+   * Only set by command
+  */
   public void setDriveAtPose(boolean atPose) {
     driveAtPose = atPose;
   }
 
+  //Should only read by command, remove next update
   public boolean atDrivePose(){
     return driveAtPose;
   }
 
+   
   public void setInterpolation(boolean m_interpolate) {
     interpolate = m_interpolate;
   }
@@ -691,7 +702,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
     // Update dashboard
     dashboard.putString("Goal State", getCurrentState().toString());
     dashboard.putBoolean("Transitioning", isTransitioning());
-    dashboard.putBoolean("DriveTrainLocked", atGoalState());
+    dashboard.putBoolean("DriveTrainLocked", atDrivePose());
+    dashboard.putBoolean("Elevator At Goal State", atGoalState());
+    dashboard.putBoolean("REquested Score", scoreNow());
     dashboard.putString("Current GraphState State", getGraphState().toString());
     dashboard.putBoolean("At state graphcommand", !isTransitioning());
   }
