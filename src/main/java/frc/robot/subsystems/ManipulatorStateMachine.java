@@ -431,57 +431,43 @@ public class ManipulatorStateMachine extends SubsystemBase {
     cancelledNode = m_graphCommand.new GraphCommandNode("Cancelled", null, null, null);
 
     // Safe travel connections
-    startPositionNode.AddNode(safeCoralTravelNode, 1.0); // start position to safe travel
-    safeCoralTravelNode.AddNode(intakeCoralNode, 1.0); // safe travel to coral intake
-    safeCoralTravelNode.AddNode(l1PrepNode, 1.0); // safe travel to l1 prep
-    safeCoralTravelNode.AddNode(l2PrepNode, 1.0); // safe travel to l2 prep
-    safeCoralTravelNode.AddNode(l3PrepNode, 1.0); // safe travel to l3 prep
-    safeCoralTravelNode.AddNode(l4PrepNode, 1.0); // safe travel to l4 prep
-    intakeCoralNode.AddNode(safeCoralTravelNode, 1.0); // coral intake to safe travel
-    l1PrepNode.AddNode(l2PrepNode, 1.0); // l1 prep to l2 prep
-    l1PrepNode.AddNode(l3PrepNode, 1.0); // l1 prep to l3 prep
-    l1PrepNode.AddNode(l4PrepNode, 1.0); // l1 prep to l4 prep
-    l2PrepNode.AddNode(l1PrepNode, 1.0); // l2 prep to l1 prep
-    l2PrepNode.AddNode(l3PrepNode, 1.0); // l2 prep to l3 prep
-    l2PrepNode.AddNode(l4PrepNode, 1.0); // l2 prep to l4 prep
-    l3PrepNode.AddNode(l1PrepNode, 1.0); // l3 prep to l1 prep
-    l3PrepNode.AddNode(l2PrepNode, 1.0); // l3 prep to l2 prep
-    l3PrepNode.AddNode(l4PrepNode, 1.0); // l3 prep to l4 prep
-    l4PrepNode.AddNode(l1PrepNode, 1.0); // l4 prep to l1 prep
-    l4PrepNode.AddNode(l2PrepNode, 1.0); // l4 prep to l2 prep
-    l4PrepNode.AddNode(l3PrepNode, 1.0); // l4 prep to l3 prep
-    l1PrepNode.AddNode(scoreL1Node, 1.0); // l1 prep to score l1
-    l2PrepNode.AddNode(scoreL2Node, 1.0); // l2 prep to score l2
-    l3PrepNode.AddNode(scoreL3Node, 1.0); // l3 prep to score l3
-    l4PrepNode.AddNode(scoreL4Node, 1.0); // l4 prep to score l4
-    scoreL1Node.AddNode(l1PrepNode, 1.0); // score l1 to l1 prep
-    scoreL2Node.AddNode(l2PrepNode, 1.0); // score l2 to l2 prep
-    scoreL3Node.AddNode(l3PrepNode, 1.0); // score l3 to l3 prep
-    scoreL4Node.AddNode(l4PrepNode, 1.0); // score l4 to l4 prep
-    scoreL1Node.AddNode(l1PostScoreNode, 1.0); // score l1 to l1 post score
-    scoreL2Node.AddNode(l2PostScoreNode, 1.0); // score l2 to l2 post score
-    scoreL3Node.AddNode(l3PostScoreNode, 1.0); // score l3 to l3 post score
-    scoreL4Node.AddNode(l4PostScoreNode, 1.0); // score l4 to l4 post score
-    l1PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l1 post score to safe travel
-    l2PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l2 post score to safe travel
-    l3PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l3 post score to safe travel
-    l4PostScoreNode.AddNode(safeCoralTravelNode, 1.0); // l4 post score to safe travel
-    safeCoralTravelNode.AddNode(prepAlgaeLowNode, 1.0); // safe travel to prep algae low
-    safeCoralTravelNode.AddNode(prepAlgaeHighNode, 1.0); // safe travel to prep algae high
-    prepAlgaeLowNode.AddNode(prepAlgaeHighNode, 1.0); // prep algae low to prep algae high
-    prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0); // prep algae high to prep algae low
-    prepAlgaeLowNode.AddNode(algaeLowIntakeNode, 1.0); // prep algae low to algae low intake
-    algaeLowIntakeNode.AddNode(prepAlgaeLowNode, 1.0); // algae low intake to prep algae low
-    algaeLowIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae low intake to safe algae travel
-    prepAlgaeHighNode.AddNode(algaeHighIntakeNode, 1.0); // prep algae high to algae high intake
-    algaeHighIntakeNode.AddNode(prepAlgaeHighNode, 1.0); // algae high intake to prep algae high
-    algaeHighIntakeNode.AddNode(safeAlgaeTravelNode, 1.0); // algae high intake to safe algae travel
-    safeAlgaeTravelNode.AddNode(scoreProcessorNode, 1.0); // safe algae travel to score processor
-    safeAlgaeTravelNode.AddNode(prepScoreBargeNode, 1.0); // safe algae travel to prep score barge
-    prepScoreBargeNode.AddNode(scoreBargeNode, 1.0); // prep score barge to score barge
-    scoreBargeNode.AddNode(bargePostScoreNode, 1.0); // score barge to barge post score
-    scoreProcessorNode.AddNode(safeCoralTravelNode, 1.0); // score processor to safe coral travel
-    bargePostScoreNode.AddNode(safeCoralTravelNode, 1.0); // barge post score to safe coral travel
+    startPositionNode.AddNode(safeCoralTravelNode, 1.0, true); // start position to safe travel
+    safeCoralTravelNode.AddNode(intakeCoralNode, 1.0,false); // safe travel to coral intake
+    safeCoralTravelNode.AddNode(l1PrepNode, 1.0,true); // safe travel to l1 prep
+    safeCoralTravelNode.AddNode(l2PrepNode, 1.0,true); // safe travel to l2 prep
+    safeCoralTravelNode.AddNode(l3PrepNode, 1.0,true); // safe travel to l3 prep
+    safeCoralTravelNode.AddNode(l4PrepNode, 1.0,true); // safe travel to l4 prep
+    l1PrepNode.AddNode(l2PrepNode, 1.0,false); // l1 prep to l2 prep
+    l1PrepNode.AddNode(l3PrepNode, 1.0,false); // l1 prep to l3 prep
+    l1PrepNode.AddNode(l4PrepNode, 1.0,false); // l1 prep to l4 prep
+    l2PrepNode.AddNode(l3PrepNode, 1.0,false); // l2 prep to l3 prep
+    l2PrepNode.AddNode(l4PrepNode, 1.0,false); // l2 prep to l4 prep
+    l3PrepNode.AddNode(l4PrepNode, 1.0,false); // l4 prep to l3 prep
+    scoreL1Node.AddNode(l1PrepNode, 1.0,false); // score l1 to l1 prep
+    scoreL2Node.AddNode(l2PrepNode, 1.0,false); // score l2 to l2 prep
+    scoreL3Node.AddNode(l3PrepNode, 1.0,false); // score l3 to l3 prep
+    scoreL4Node.AddNode(l4PrepNode, 1.0,false); // score l4 to l4 prep
+    scoreL1Node.AddNode(l1PostScoreNode, 1.0,true); // score l1 to l1 post score
+    scoreL2Node.AddNode(l2PostScoreNode, 1.0,true); // score l2 to l2 post score
+    scoreL3Node.AddNode(l3PostScoreNode, 1.0,true); // score l3 to l3 post score
+    scoreL4Node.AddNode(l4PostScoreNode, 1.0,true); // score l4 to l4 post score
+    l1PostScoreNode.AddNode(safeCoralTravelNode, 1.0,true); // l1 post score to safe travel
+    l2PostScoreNode.AddNode(safeCoralTravelNode, 1.0,true); // l2 post score to safe travel
+    l3PostScoreNode.AddNode(safeCoralTravelNode, 1.0,true); // l3 post score to safe travel
+    l4PostScoreNode.AddNode(safeCoralTravelNode, 1.0,true); // l4 post score to safe travel
+    safeCoralTravelNode.AddNode(safeAlgaeTravelNode, 1.0,false); // safe travel to safe algae travel
+    safeAlgaeTravelNode.AddNode(prepAlgaeLowNode, 1.0,false); // safe travel to prep algae low
+    safeAlgaeTravelNode.AddNode(prepAlgaeHighNode, 1.0,false); // safe travel to prep algae high
+    prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0,false); // prep algae high to prep algae low
+    prepAlgaeHighNode.AddNode(algaeHighIntakeNode, 1.0,false); // prep algae high to algae high intake
+
+    safeAlgaeTravelNode.AddNode(scoreProcessorNode, 1.0,false); // safe algae travel to score processor
+    safeAlgaeTravelNode.AddNode(prepScoreBargeNode, 1.0,false); // safe algae travel to prep score barge
+    prepScoreBargeNode.AddNode(scoreBargeNode, 1.0,false); // prep score barge to score barge
+    scoreBargeNode.AddNode(bargePostScoreNode, 1.0,true); // score barge to barge post score
+    scoreProcessorNode.AddNode(safeCoralTravelNode, 1.0,true); // score processor to safe coral travel
+    bargePostScoreNode.AddNode(safeCoralTravelNode, 1.0,true); // barge post score to safe coral travel
+    
     safeCoralTravelNode.AddNode(climbReadyNode, 1.0); // safe coral travel to climb ready
     climbReadyNode.AddNode(climbedNode, 1.0); // climb ready to climbed
     climbReadyNode.AddNode(climbAbortNode, 1.0); // climb ready to climb abort
