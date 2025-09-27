@@ -196,7 +196,7 @@ public class RobotContainer {
     (y_button).and(coral_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.L3))); // Request the L3 scoring routine.
     (x_button).and(coral_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.L4))); // Request the L4 scoring routine.
 
-    (a_button).and(coral_profileTrigger).onTrue(new InstantCommand(() -> m_coordinator.setRobotGoal(RobotState.PROCESSOR))); // Request Score Algage Processor
+    (a_button).and(algae_profileTrigger).onTrue(new InstantCommand(() -> m_coordinator.setRobotGoal(RobotState.PROCESSOR))); // Request Score Algage Processor
     (b_button).and(algae_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.ALGAE_L2))); // Request Intake Algae L2
     (y_button).and(algae_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.ALGAE_L3))); // Request Intake Algae L3
     (x_button).and(algae_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.BARGE))); // Request Barge
