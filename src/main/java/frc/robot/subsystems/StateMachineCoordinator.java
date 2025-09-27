@@ -188,7 +188,7 @@ public class StateMachineCoordinator extends SubsystemBase {
         break;
       case SAFE_CORAL_TRANSPORT:
         setElevatorManipulatorGoal(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
-        setDriveGoal(DriveState.REEF_RELATIVE);
+        setDriveGoal(DriveState.PROCESSOR_RELATIVE);
         break;
       case SAFE_ALGAE_TRANSPORT:
         setElevatorManipulatorGoal(ElevatorManipulatorState.SAFE_ALGAE_TRAVEL);
