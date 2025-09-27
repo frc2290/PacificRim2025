@@ -136,8 +136,8 @@ public final class Constants {
     public static final double kExtensionSlewRateMillimetersPerSecond = 700.0;
     public static final double kRotationSlewRateDegreesPerSecond = 120.0;
 
-    public static final double kExtensionPositionToleranceMillimeters = 5.0;
-    public static final double kRotationToleranceDegrees = 5.0;
+    public static final double kExtensionPositionToleranceMillimeters = 10;
+    public static final double kRotationToleranceDegrees = 15;
 
     public static final double kMillimetersPerRotation = 200.0;
     public static final double kDegreesPerRotation = 360.0;
@@ -192,7 +192,7 @@ public final class Constants {
     public static final double kElevatorTransport = 0.025;
     public static final double kElevatorIntake = kElevatorTransport;
     public static final double kElevatorL1 = 0.2;
-    public static final double kElevatorL2 = 0.5;
+    public static final double kElevatorL2 = 0.51;
     public static final double kElevatorL3 = kElevatorL2 + 0.4;
     public static final double kElevatorL4 = 1.5;
     public static final double kElevatorAlgaeLow = 0.525;
@@ -205,7 +205,7 @@ public final class Constants {
     public static final double kExtensionStart = 0;
     public static final double kExtensionTransport = 80;
     public static final double kExtensionIntake = 20;
-    public static final double kExtensionPrep = 100;
+    public static final double kExtensionPrep = 110;
     public static final double kExtensionL1 = 80;
     public static final double kExtensionL2 = 140;
     public static final double kExtensionL3 = kExtensionL2;

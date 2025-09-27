@@ -20,6 +20,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
@@ -51,13 +52,13 @@ public class AutoRoutineFactory {
   }
 
   /** Builds the repeated scoring sequence used by the one-, two-, and three-piece routines. */
-  public Command scoreCoral(PathPlannerPath path, RobotState targetState) {
+  public Command scoreCoral(PathPlannerPath path, ElevatorManipulatorState targetState) {
     return new SequentialCommandGroup(
         Commands.runOnce(
             () -> {
               // Tell the manipulator state machine which goal we are chasing.
-              manipulatorState.atGoalState(false);
-              coordinator.setRobotGoal(targetState);
+              //manipulatorState.atGoalState(false);
+              manipulatorState.setElevatorManipulatorCommand(targetState);
             }),
         // Drive to the reef while the manipulator moves in parallel.
         Commands.parallel(new SwerveAutoStep(path, pose), manipulatorState.waitUntilReady()),
@@ -69,7 +70,7 @@ public class AutoRoutineFactory {
             () -> {
               // Reset to a safe travel configuration after scoring completes.
               coordinator.requestToScore(false);
-              coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
+              manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
             }),
         manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL));
   }
@@ -80,16 +81,16 @@ public class AutoRoutineFactory {
         Commands.runOnce(
             () -> {
               // Leave scoring mode and configure for intake.
-              manipulatorState.atGoalState(false);
+              //manipulatorState.atGoalState(false);
               coordinator.requestToScore(false);
-              coordinator.setRobotGoal(RobotState.INTAKE_CORAL);
+              manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.INTAKE_CORAL);
             }),
         // Path to the station while waiting for the beam break to trip.
         Commands.parallel(
             new SwerveAutoStep(path, pose), Commands.waitUntil(() -> manipulator.hasCoral())),
         manipulatorState.waitForState(ElevatorManipulatorState.INTAKE_CORAL),
         // Once a coral is detected, command the manipulator to stow safely again.
-        Commands.runOnce(() -> coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT)),
+        Commands.runOnce(() -> manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL)),
         manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL));
   }
 }

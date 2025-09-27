@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
@@ -54,14 +55,14 @@ public class Left3Coral extends SequentialCommandGroup {
                 // Enable path following and stage the manipulator in the safe configuration.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
+                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Perform three score-intake cycles on the left side of the field.
-          routineFactory.scoreCoral(startToReef, RobotState.L4),
+          routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),
           routineFactory.intakeCoral(reefToFeeder),
-          routineFactory.scoreCoral(feederToReefTwo, RobotState.L4),
+          routineFactory.scoreCoral(feederToReefTwo, ElevatorManipulatorState.L4),
           routineFactory.intakeCoral(reefTwoToFeeder),
-          routineFactory.scoreCoral(feederToReefThree, RobotState.L4),
+          routineFactory.scoreCoral(feederToReefThree, ElevatorManipulatorState.L4),
           // Return to the cancelled drive state so teleop can begin cleanly.
           Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED)));
     } catch (Exception ex) {

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
 import frc.robot.subsystems.StateMachineCoordinator.RobotState;
@@ -50,10 +51,10 @@ public class Middle1Coral extends SequentialCommandGroup {
                 // Start path following with the manipulator stowed for travel.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
+                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Drive up to the reef and perform the scoring sequence.
-          routineFactory.scoreCoral(startToReef, RobotState.L4),
+          routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),
           // Hand manual control back to the driver afterward.
           Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED)));
     } catch (Exception ex) {

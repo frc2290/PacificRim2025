@@ -233,11 +233,11 @@ public class StateMachineCoordinator extends SubsystemBase {
         break;
       case CLIMB_READY:
         setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMB_READY);
-        setDriveGoal(DriveState.CLIMB_RELATIVE);
+        setDriveGoal(DriveState.MANUAL);
         break;
       case CLIMB:
         setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMBED);
-        setDriveGoal(DriveState.CLIMB_RELATIVE);
+        setDriveGoal(DriveState.MANUAL);
         break;
       case CLIMB_ABORT:
         setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMB_ABORT);
@@ -263,10 +263,12 @@ public class StateMachineCoordinator extends SubsystemBase {
 
     //tell manipulator when drive is at position
     manipulatorSM.setDriveAtPose(driveSM.atPosition());
+
+    manipulatorSM.isAuto(isAuto);
    
 
     // Only process automatic transitions while the robot is enabled and not in manual mode.
-    if (!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL) && getCurrentControllerProfile() != ControllerProfile.ALGAE) {
+    if (!isAuto &&!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL) && getCurrentControllerProfile() != ControllerProfile.ALGAE) {
 
       // Automatically leave the start position on the first iteration so the robot exits the start
       // pose immediately.
@@ -297,7 +299,6 @@ public class StateMachineCoordinator extends SubsystemBase {
       }
 
       if (!manipulatorSM.isTransitioning() && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
-        manipulatorSM.setAlgaeMode(true);
 
         boolean hasAlgaeNow = manipulatorSM.getHasAlgae();
         ElevatorManipulatorState currentManipulatorState = manipulatorSM.getCurrentState();
@@ -309,7 +310,9 @@ public class StateMachineCoordinator extends SubsystemBase {
           }
 
         }else{
-          manipulatorSM.setAlgaeMode(false);
+          if (goalState == RobotState.BARGE || goalState == RobotState.PROCESSOR) {
+            setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
+   }
         }
 
       //   if (hasAlgaeNow) {

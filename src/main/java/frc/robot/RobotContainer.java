@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.Autos.DoNone;
 import frc.robot.commands.Autos.Left3Coral;
 import frc.robot.commands.Autos.Middle1Coral;
 import frc.robot.commands.Autos.Right1Coral;
@@ -108,7 +109,7 @@ public class RobotContainer {
     m_ledUtility.setDefault();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    auto_chooser.setDefaultOption("None", Commands.none());
+    auto_chooser.setDefaultOption("None", new DoNone(_drive));
     auto_chooser.addOption(
         "Right1Coral",
         new Right1Coral(
