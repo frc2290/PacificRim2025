@@ -199,21 +199,22 @@ public final class Constants {
     public static final double kElevatorAlgaeHigh = kElevatorAlgaeLow + 0.4;
     public static final double kElevatorProcessor = 0.125;
     public static final double kElevatorClimb = 0.525;
-    public static final double kElevatorBarge = 1.59;
+    public static final double kElevatorBarge = 1.625;
 
     // Extension setpoints
     public static final double kExtensionStart = 0;
     public static final double kExtensionTransport = 80;
     public static final double kExtensionIntake = 20;
-    public static final double kExtensionPrep = 80;
+    public static final double kExtensionPrep = 100;
     public static final double kExtensionL1 = 80;
     public static final double kExtensionL2 = 140;
     public static final double kExtensionL3 = kExtensionL2;
     public static final double kExtensionL4 = 215;
     public static final double kExtensionAlgaeIntake = 185;
+    public static final double kExtensionAlgaeTransport = 80;
     public static final double kExtensionProcessor = 80;
     public static final double kExtensionClimb = 80;
-    public static final double kExtensionBarge = 140;
+    public static final double kExtensionBarge = 260;
 
     // Rotation setpoints
     public static final double kRotationStart = 0;
@@ -225,9 +226,10 @@ public final class Constants {
     public static final double kRotationL3 = kRotationL2;
     public static final double kRotationL4 = 80;
     public static final double kRotationAlgaeIntake = 225;
+    public static final double kRotationAlgaeTransport = 200;
     public static final double kRotationProcessor = 195;
     public static final double kRotationClimb = 80;
-    public static final double kRotationBarge = 80;
+    public static final double kRotationBarge = 215;
 
     // ======================= Travel / Start =======================
     public static final ManipulatorPosition CORAL_TRANSPORT =
@@ -274,8 +276,8 @@ public final class Constants {
         new ManipulatorPosition(kElevatorAlgaeHigh, kExtensionPrep, kRotationPrep);
     public static final ManipulatorPosition ALGAE_HIGH =
         new ManipulatorPosition(kElevatorAlgaeHigh, kExtensionAlgaeIntake, kRotationAlgaeIntake);
-
-    public static final ManipulatorPosition ALGAE_TRANSPORT = CORAL_TRANSPORT;
+    public static final ManipulatorPosition ALGAE_TRANSPORT = 
+        new ManipulatorPosition(kElevatorTransport, kExtensionAlgaeTransport, kRotationAlgaeTransport);
 
     // ========================= Processor / Barge =========================
     public static final ManipulatorPosition SCORE_PROCESSOR =

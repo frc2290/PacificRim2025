@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ElevatorManipulatorPositions;
@@ -30,6 +32,7 @@ import frc.robot.commands.EndEffector.ScoreAlgae;
 import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.commands.EndEffector.ScoreCoralL4;
 import frc.robot.commands.GraphCommand;
+import frc.robot.commands.ManipulatorInterpolation;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.utils.FlytDashboardV2;
 import frc.utils.PoseEstimatorSubsystem;
@@ -155,10 +158,11 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
     initializeGraphCommand();
 
-    //new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow()).onTrue(new ScoreCoral(this, manipulator)); 
-    //new Trigger(() -> getHasAlgae() && atDrivePose() && scoreNow()).onTrue(new ScoreAlgae(this, manipulator));
-    //new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && getCurrentState() == ElevatorManipulatorState.L4)
-        //.onTrue(new ScoreCoralL4(this, manipulator));
+    new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && !(getCurrentState() == ElevatorManipulatorState.L4)).onTrue(new ScoreCoral(this, manipulator)); 
+    new Trigger(() -> getHasAlgae() && scoreNow() && (getCurrentState() == ElevatorManipulatorState.L4 || getCurrentState() == ElevatorManipulatorState.L4)).onTrue(new ScoreAlgae(this, manipulator));
+    new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && getCurrentState() == ElevatorManipulatorState.L4).onTrue(new ScoreCoralL4(this, manipulator));
+    new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL).onTrue(new ScoreCoral(this, manipulator));
+    new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL && (elevator.getPosition() > 1)).onTrue(new ScoreCoral(this, manipulator));
 
     // Set the root/current BEFORE scheduling it as default
     m_graphCommand.setGraphRootNode(startPositionNode);
@@ -254,10 +258,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreL2",
-            new ParallelCommandGroup(
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L2),
-                new ScoreCoral(this, m_manipulator)),
             null,
             null);
 
@@ -265,10 +267,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreL3",
-            new ParallelCommandGroup(
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L3),
-                new ScoreCoral(this, m_manipulator)),
             null,
             null);
 
@@ -276,10 +276,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreL4",
-            new ParallelCommandGroup(
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_L4),
-                new ScoreCoralL4(this, m_manipulator)),
             null,
             null);
 
@@ -335,7 +333,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_LOW),
             null,
-            Commands.runOnce(() -> new IntakeAlgae(this, m_manipulator).schedule()));
+           null);
 
     prepAlgaeHighNode =
         m_graphCommand
@@ -353,7 +351,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_HIGH),
             null,
-            Commands.runOnce(() -> new IntakeAlgae(this, m_manipulator).schedule()));
+            null);
 
     safeAlgaeTravelNode =
         m_graphCommand
@@ -368,10 +366,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreProcessor",
-            new ParallelCommandGroup(
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_PROCESSOR),
-                new ScoreAlgae(this, m_manipulator)),
             null,
             null);
 
@@ -388,10 +384,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "ScoreBarge",
-            new ParallelCommandGroup(
                 ManipulatorPositionCommandFactory.createScoreCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.SCORE_BARGE),
-                new ScoreAlgae(this, m_manipulator, -1.0)),
             null,
             null);
 
@@ -433,10 +427,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
     // Safe travel connections
     startPositionNode.AddNode(safeCoralTravelNode, 1.0, true); // start position to safe travel
     safeCoralTravelNode.AddNode(intakeCoralNode, 1.0,false); // safe travel to coral intake
-    safeCoralTravelNode.AddNode(l1PrepNode, 1.0,true); // safe travel to l1 prep
-    safeCoralTravelNode.AddNode(l2PrepNode, 1.0,true); // safe travel to l2 prep
-    safeCoralTravelNode.AddNode(l3PrepNode, 1.0,true); // safe travel to l3 prep
-    safeCoralTravelNode.AddNode(l4PrepNode, 1.0,true); // safe travel to l4 prep
+    safeCoralTravelNode.AddNode(l1PrepNode, 1.0,false); // safe travel to l1 prep
+    safeCoralTravelNode.AddNode(l2PrepNode, 1.0,false); // safe travel to l2 prep
+    safeCoralTravelNode.AddNode(l3PrepNode, 1.0,false); // safe travel to l3 prep
+    safeCoralTravelNode.AddNode(l4PrepNode, 1.0,false); // safe travel to l4 prep
     l1PrepNode.AddNode(l2PrepNode, 1.0,false); // l1 prep to l2 prep
     l1PrepNode.AddNode(l3PrepNode, 1.0,false); // l1 prep to l3 prep
     l1PrepNode.AddNode(l4PrepNode, 1.0,false); // l1 prep to l4 prep
@@ -689,7 +683,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     dashboard.putString("Goal State", getCurrentState().toString());
     dashboard.putBoolean("Transitioning", isTransitioning());
     dashboard.putBoolean("DriveTrainLocked", atDrivePose());
-    dashboard.putBoolean("Elevator At Goal State", atGoalState());
+    dashboard.putBoolean("Ready to Score", readyToScore());
     dashboard.putBoolean("REquested Score", scoreNow());
     dashboard.putString("Current GraphState State", getGraphState().toString());
     dashboard.putBoolean("At state graphcommand", !isTransitioning());

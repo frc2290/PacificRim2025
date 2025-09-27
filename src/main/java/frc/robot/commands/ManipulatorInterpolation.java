@@ -2,16 +2,20 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.ManipulatorStateMachine;
 
 
 public class ManipulatorInterpolation extends Command {
 
     private DifferentialSubsystem diffArm;
+    private ManipulatorStateMachine manipulatorSM;
 
     //does not have any requirmennts, use carfuly inside other commands
-    public ManipulatorInterpolation(DifferentialSubsystem diffArm) {
+    public ManipulatorInterpolation(DifferentialSubsystem diffArm, ManipulatorStateMachine manipulatorSM) {
         this.diffArm = diffArm;
-
+        this.manipulatorSM = manipulatorSM;
+    
+        addRequirements(diffArm);
     }
 
 
@@ -34,6 +38,14 @@ public class ManipulatorInterpolation extends Command {
                 diffArm.setExtensionSetpoint(diffArm.l4ExtensionInterpolate());
                 diffArm.setRotationSetpoint(diffArm.l4RotationInterpolate());
         }
+
+        
+        if(diffArm.atExtenstionSetpoint()  && diffArm.atRotationSetpoint()){
+            manipulatorSM.setreadyToScore(true);
+        } else {
+            manipulatorSM.setreadyToScore(false);
+        }
+
     }
 
 

@@ -252,9 +252,7 @@ public class StateMachineCoordinator extends SubsystemBase {
    
 
     // Only process automatic transitions while the robot is enabled and not in manual mode.
-    if (!isDisabled
-        && DriverStation.isEnabled()
-        && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
+    if (!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
 
       // Automatically leave the start position on the first iteration so the robot exits the start
       // pose immediately.
@@ -292,18 +290,15 @@ public class StateMachineCoordinator extends SubsystemBase {
         ElevatorManipulatorState currentManipulatorState = manipulatorSM.getCurrentState();
 
         if (hasAlgaeNow) {
-          if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2
-                  || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3)
-              && goalState != RobotState.SAFE_ALGAE_TRANSPORT) {
+
+          if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2 || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3) && goalState != RobotState.SAFE_ALGAE_TRANSPORT && goalState != RobotState.BARGE && goalState != RobotState.PROCESSOR) {
             setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
           }
-        } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT
-                || currentManipulatorState == ElevatorManipulatorState.SAFE_ALGAE_TRAVEL)
-            && goalState != algaeIntakeGoal) {
+
+        } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT || currentManipulatorState == ElevatorManipulatorState.SAFE_ALGAE_TRAVEL) && goalState != algaeIntakeGoal) {
           setRobotGoal(algaeIntakeGoal);
-        } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2
-            && currentManipulatorState != ElevatorManipulatorState.ALGAE_L3
-            && goalState != algaeIntakeGoal) {
+
+        } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2 && currentManipulatorState != ElevatorManipulatorState.ALGAE_L3 && goalState != algaeIntakeGoal) {
           setRobotGoal(algaeIntakeGoal);
         }
       }
