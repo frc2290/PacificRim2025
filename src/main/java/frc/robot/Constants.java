@@ -226,7 +226,7 @@ public final class Constants {
     public static final double kRotationL3 = kRotationL2;
     public static final double kRotationL4 = 80;
     public static final double kRotationAlgaeIntake = 225;
-    public static final double kRotationAlgaeTransport = 200;
+    public static final double kRotationAlgaeTransport = 225;
     public static final double kRotationProcessor = 225;
     public static final double kRotationClimb = 80;
     public static final double kRotationBarge = 125;
