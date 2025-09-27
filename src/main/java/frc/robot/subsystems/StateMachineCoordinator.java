@@ -68,7 +68,9 @@ public class StateMachineCoordinator extends SubsystemBase {
     ALGAE_L3,
     PROCESSOR,
     BARGE,
+    CLIMB_READY,
     CLIMB,
+    CLIMB_ABORT,
     MANUAL,
     RESET;
   }
@@ -229,9 +231,17 @@ public class StateMachineCoordinator extends SubsystemBase {
         setElevatorManipulatorGoal(ElevatorManipulatorState.BARGE);
         setDriveGoal(DriveState.BARGE_RELATIVE);
         break;
-      case CLIMB:
+      case CLIMB_READY:
         setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMB_READY);
         setDriveGoal(DriveState.CLIMB_RELATIVE);
+        break;
+      case CLIMB:
+        setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMBED);
+        setDriveGoal(DriveState.CLIMB_RELATIVE);
+        break;
+      case CLIMB_ABORT:
+        setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMB_ABORT);
+        setDriveGoal(DriveState.MANUAL);
         break;
       case MANUAL:
         setElevatorManipulatorGoal(ElevatorManipulatorState.MANUAL);

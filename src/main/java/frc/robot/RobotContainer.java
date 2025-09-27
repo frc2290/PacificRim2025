@@ -189,9 +189,10 @@ public class RobotContainer {
     Trigger coral_profileTrigger = new Trigger(() -> m_coordinator.getCurrentControllerProfile() == StateMachineCoordinator.ControllerProfile.DEFAULT_CORAL);
     Trigger algae_profileTrigger = new Trigger(() -> m_coordinator.getCurrentControllerProfile() == StateMachineCoordinator.ControllerProfile.ALGAE);
     Trigger manual_profileTrigger = new Trigger(() -> m_coordinator.getCurrentControllerProfile() == StateMachineCoordinator.ControllerProfile.MANUAL);
+    Trigger climbe_profileTrigger = new Trigger(() -> m_coordinator.getCurrentControllerProfile() == StateMachineCoordinator.ControllerProfile.Climb);
 
     // Controller buttons.
-    //(a_button).and(coral_profileTrigger).onTrue(new InstantCommand(() -> m_coordinator.setRobotGoal(RobotState.L1))); // Request the intake coral routine.
+    (a_button).and(coral_profileTrigger).onTrue(new InstantCommand(() -> m_coordinator.setRobotGoal(RobotState.L1))); // Request the intake coral routine.
     (b_button).and(coral_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.L2))); // Request the L2 scoring routine.
     (y_button).and(coral_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.L3))); // Request the L3 scoring routine.
     (x_button).and(coral_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.L4))); // Request the L4 scoring routine.
@@ -201,6 +202,10 @@ public class RobotContainer {
     (y_button).and(algae_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.ALGAE_L3))); // Request Intake Algae L3
     (x_button).and(algae_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.BARGE))); // Request Barge
 
+    (b_button).and(start_button).and(climbe_profileTrigger).onTrue(new InstantCommand(() -> m_coordinator.setRobotGoal(RobotState.CLIMB_ABORT))); // Request Score Algage Processor
+    //(b_button).and(climbe_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.ALGAE_L2))); // Request Intake Algae L2
+    (y_button).and(climbe_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.CLIMB_READY))); // Request Intake Algae L3
+    (a_button).and(climbe_profileTrigger).onTrue(new InstantCommand(() ->m_coordinator.setRobotGoal(RobotState.CLIMB))); // Request Barge
     // Controller bumpers.
     (left_bumper).onTrue(new InstantCommand(() -> m_coordinator.setRightScore(false))); // Select the left reef branch.
     (right_bumper).onTrue(new InstantCommand(() -> m_coordinator.setRightScore(true))); // Select the right reef branch.
