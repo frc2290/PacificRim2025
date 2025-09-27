@@ -210,7 +210,7 @@ public final class Constants {
     public static final double kExtensionL2 = 140;
     public static final double kExtensionL3 = kExtensionL2;
     public static final double kExtensionL4 = 215;
-    public static final double kExtensionAlgaeIntake = 185;
+    public static final double kExtensionAlgaeIntake = 195;
     public static final double kExtensionAlgaeTransport = 80;
     public static final double kExtensionProcessor = 80;
     public static final double kExtensionClimb = 80;
