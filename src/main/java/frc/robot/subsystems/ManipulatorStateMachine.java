@@ -31,6 +31,7 @@ import frc.robot.commands.EndEffector.ManipulatorIntakeCoral;
 import frc.robot.commands.EndEffector.ScoreAlgae;
 import frc.robot.commands.EndEffector.ScoreCoral;
 import frc.robot.commands.EndEffector.ScoreCoralL4;
+import frc.robot.commands.ClimberAbort;
 import frc.robot.commands.ClimberIn;
 import frc.robot.commands.ClimberOut;
 import frc.robot.commands.GraphCommand;
@@ -414,13 +415,13 @@ public class ManipulatorStateMachine extends SubsystemBase {
               ManipulatorPositionCommandFactory.createPrepCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.CLIMB),
                 Commands.runOnce(() -> m_climb.setServoOpen(), m_climb),
-                new ClimberIn(m_climb)),
+                new ClimberOut(m_climb)),
             null,
             null);
 
     climbedNode = m_graphCommand.new GraphCommandNode(
       "Climbed", 
-      new ClimberOut(m_climb), 
+      new ClimberIn(m_climb), 
       null, 
       null);
 
@@ -429,7 +430,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
         .new GraphCommandNode(
             "ClimbAbort",
             new SequentialCommandGroup(
-                new ClimberOut(m_climb),
+                new ClimberAbort(m_climb),
                 Commands.runOnce(() -> m_climb.setServoClose(), m_climb),
                 ManipulatorPositionCommandFactory.createSafeReturnCommand(
                     this, m_diff, m_elevator, ElevatorManipulatorPositions.CORAL_TRANSPORT)),
