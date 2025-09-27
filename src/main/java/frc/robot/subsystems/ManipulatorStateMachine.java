@@ -430,7 +430,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     safeCoralTravelNode.AddNode(l1PrepNode, 1.0,false); // safe travel to l1 prep
     safeCoralTravelNode.AddNode(l2PrepNode, 1.0,false); // safe travel to l2 prep
     safeCoralTravelNode.AddNode(l3PrepNode, 1.0,false); // safe travel to l3 prep
-    safeCoralTravelNode.AddNode(l4PrepNode, 1.0,false); // safe travel to l4 prep
+    safeCoralTravelNode.AddNode(l4PrepNode, 1.0,true); // safe travel to l4 prep
     l1PrepNode.AddNode(l2PrepNode, 1.0,false); // l1 prep to l2 prep
     l1PrepNode.AddNode(l3PrepNode, 1.0,false); // l1 prep to l3 prep
     l1PrepNode.AddNode(l4PrepNode, 1.0,false); // l1 prep to l4 prep
