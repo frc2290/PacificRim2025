@@ -229,7 +229,7 @@ public class StateMachineCoordinator extends SubsystemBase {
         break;
       case BARGE:
         setElevatorManipulatorGoal(ElevatorManipulatorState.BARGE);
-        setDriveGoal(DriveState.MANUAL);
+        setDriveGoal(DriveState.BARGE_RELATIVE);
         break;
       case CLIMB_READY:
         setElevatorManipulatorGoal(ElevatorManipulatorState.CLIMB_READY);
