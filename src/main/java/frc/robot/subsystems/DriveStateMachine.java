@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
@@ -102,11 +103,11 @@ public class DriveStateMachine extends SubsystemBase {
              new PrintCommand(""),
              driveCommandFactory.createHeadingLockCommand(() -> bargeHeadingDegrees));
 
-        // climbRelativeNode = m_graphCommand.new GraphCommandNode(
-        //     "ClimbRelative",
-        //     Commands.runOnce(() -> climbHeadingDegrees = pose.getDegrees(), // Placeholder command
-        //     new InstantCommand(() -> drive.stop()),
-        //     driveCommandFactory.createHeadingLockCommand(() -> climbHeadingDegrees));
+         climbRelativeNode = m_graphCommand.new GraphCommandNode(
+             "ClimbRelative",
+             Commands.runOnce(() -> climbHeadingDegrees = pose.getDegrees()), // Placeholder command
+             new PrintCommand(""),
+             driveCommandFactory.createHeadingLockCommand(() -> climbHeadingDegrees));
 
         processorRelativeNode = m_graphCommand.new GraphCommandNode(
             "ProcessorRelative",
