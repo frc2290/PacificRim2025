@@ -256,7 +256,7 @@ public class StateMachineCoordinator extends SubsystemBase {
    
 
     // Only process automatic transitions while the robot is enabled and not in manual mode.
-    if (!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL)) {
+    if (!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL) && getCurrentControllerProfile() != ControllerProfile.ALGAE) {
 
       // Automatically leave the start position on the first iteration so the robot exits the start
       // pose immediately.
