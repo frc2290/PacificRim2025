@@ -53,6 +53,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
   private DifferentialSubsystem m_diff;
   private ManipulatorSubsystem m_manipulator;
   private ClimbSubsystem m_climb;
+  private boolean manualOverride = false;
 
   /** Manipulator and Elevator states - Manipulator State Machine */
   public enum ElevatorManipulatorState {
@@ -121,6 +122,8 @@ public class ManipulatorStateMachine extends SubsystemBase {
   /** Tracks whether the current state has reached its goal pose. */
   private boolean atGoalState = false; // checks if it reached the final state
 
+  private boolean algaeMode = false;
+
   /** True when the state machine has armed the manipulator to score. */
   private boolean canScore = false; // checks final state is reached and command approves the score
 
@@ -163,7 +166,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && getCurrentState() == ElevatorManipulatorState.L4).onTrue(new ScoreCoralL4(this, manipulator));
     new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL).onTrue(new ScoreCoral(this, manipulator));
     new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL && (elevator.getPosition() > 1)).onTrue(new ScoreCoral(this, manipulator));
-
+    new Trigger(() -> !getHasAlgae() && !getHasCoral() && algaeMode).onTrue(new IntakeAlgae(this, manipulator));
     // Set the root/current BEFORE scheduling it as default
     m_graphCommand.setGraphRootNode(startPositionNode);
     m_graphCommand.setCurrentNode(startPositionNode);
@@ -487,6 +490,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
     interpolate = m_interpolate;
   }
 
+  public void setAlgaeMode(boolean m_algaeMode) {
+    algaeMode = m_algaeMode;
+  }
+
   /**
    * Tell state machine that command finished successfully (Should only be set by commands).
    *
@@ -586,47 +593,62 @@ public class ManipulatorStateMachine extends SubsystemBase {
     switch (m_state) {
       case SAFE_CORAL_TRAVEL:
         m_graphCommand.setTargetNode(safeCoralTravelNode);
+        manualOverride = false;
         break;
       case SAFE_ALGAE_TRAVEL:
         m_graphCommand.setTargetNode(safeAlgaeTravelNode);
+        manualOverride = false;
         break;
       case INTAKE_CORAL:
         m_graphCommand.setTargetNode(intakeCoralNode);
+        manualOverride = false;
         break;
       case L1:
         m_graphCommand.setTargetNode(scoreL1Node);
+        manualOverride = false;
         break;
       case L2:
         m_graphCommand.setTargetNode(scoreL2Node);
+        manualOverride = false;
         break;
       case L3:
         m_graphCommand.setTargetNode(scoreL3Node);
+        manualOverride = false;
         break;
       case L4:
         m_graphCommand.setTargetNode(scoreL4Node);
+        manualOverride = false;
         break;
       case ALGAE_L2:
         m_graphCommand.setTargetNode(algaeLowIntakeNode);
+        manualOverride = false;
         break;
       case ALGAE_L3:
         m_graphCommand.setTargetNode(algaeHighIntakeNode);
+        manualOverride = false;
         break;
       case PROCESSOR:
         m_graphCommand.setTargetNode(scoreProcessorNode);
+        manualOverride = false;
         break;
       case BARGE:
         m_graphCommand.setTargetNode(scoreBargeNode);
+        manualOverride = false;
         break;
       case CLIMB_READY:
         m_graphCommand.setTargetNode(climbReadyNode);
+        manualOverride = false;
         break;
       case CLIMBED:
         m_graphCommand.setTargetNode(climbedNode);
+        manualOverride = false;
         break;
       case CLIMB_ABORT:
         m_graphCommand.setTargetNode(climbAbortNode);
+        manualOverride = false;
         break;
       case MANUAL:
+      manualOverride = true;
         break;
       default:
         break;
@@ -645,6 +667,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
    */
   public ElevatorManipulatorState getCurrentState() {
     GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
+    if(manualOverride) return ElevatorManipulatorState.MANUAL;
     if (currentNode == startPositionNode) return ElevatorManipulatorState.START_POSITION;
     if (currentNode == safeCoralTravelNode) return ElevatorManipulatorState.SAFE_CORAL_TRAVEL;
     if (currentNode == safeAlgaeTravelNode) return ElevatorManipulatorState.SAFE_ALGAE_TRAVEL;

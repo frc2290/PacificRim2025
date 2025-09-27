@@ -268,9 +268,8 @@ public class StateMachineCoordinator extends SubsystemBase {
         driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
       }
 
-      if (!manipulatorSM.isTransitioning()
-          && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
-
+      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
+ 
         if (gethasCoral()) {
           if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL) {
             setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
@@ -283,24 +282,34 @@ public class StateMachineCoordinator extends SubsystemBase {
         }
       }
 
-      if (!manipulatorSM.isTransitioning()
-          && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
+      if (!manipulatorSM.isTransitioning() && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
+        manipulatorSM.setAlgaeMode(true);
 
         boolean hasAlgaeNow = manipulatorSM.getHasAlgae();
         ElevatorManipulatorState currentManipulatorState = manipulatorSM.getCurrentState();
 
-        if (hasAlgaeNow) {
+        if (hasAlgaeNow){
 
           if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2 || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3) && goalState != RobotState.SAFE_ALGAE_TRANSPORT && goalState != RobotState.BARGE && goalState != RobotState.PROCESSOR) {
-            setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
+                   setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
           }
 
-        } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT || currentManipulatorState == ElevatorManipulatorState.SAFE_ALGAE_TRAVEL) && goalState != algaeIntakeGoal) {
-          setRobotGoal(algaeIntakeGoal);
-
-        } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2 && currentManipulatorState != ElevatorManipulatorState.ALGAE_L3 && goalState != algaeIntakeGoal) {
-          setRobotGoal(algaeIntakeGoal);
+        }else{
+          manipulatorSM.setAlgaeMode(false);
         }
+
+      //   if (hasAlgaeNow) {
+
+      //     if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2 || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3) && goalState != RobotState.SAFE_ALGAE_TRANSPORT && goalState != RobotState.BARGE && goalState != RobotState.PROCESSOR) {
+      //       setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
+      //     }
+
+      //   } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT || currentManipulatorState == ElevatorManipulatorState.SAFE_ALGAE_TRAVEL) && goalState != algaeIntakeGoal) {
+      //     setRobotGoal(algaeIntakeGoal);
+
+      //   } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2 && currentManipulatorState != ElevatorManipulatorState.ALGAE_L3 && goalState != algaeIntakeGoal) {
+      //     setRobotGoal(algaeIntakeGoal);
+      //   }
       }
 
 
