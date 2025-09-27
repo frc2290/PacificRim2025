@@ -62,8 +62,8 @@ public class DriveStateMachine extends SubsystemBase {
       drive = m_drive;
       pose = m_pose;
       driverController = m_driverController;
-      bargeHeadingDegrees = pose.getDegrees();
-      climbHeadingDegrees = pose.getDegrees();
+      bargeHeadingDegrees = 0;
+      climbHeadingDegrees = Math.PI;
       driveCommandFactory = new DriveCommandFactory(drive, pose, driverController); 
         drive = m_drive;
         pose = m_pose;
