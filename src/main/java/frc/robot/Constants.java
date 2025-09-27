@@ -191,7 +191,7 @@ public final class Constants {
     public static final double kElevatorStart = 0.0;
     public static final double kElevatorTransport = 0.025;
     public static final double kElevatorIntake = kElevatorTransport;
-    public static final double kElevatorL1 = 0.15;
+    public static final double kElevatorL1 = 0.2;
     public static final double kElevatorL2 = 0.5;
     public static final double kElevatorL3 = kElevatorL2 + 0.4;
     public static final double kElevatorL4 = 1.5;
