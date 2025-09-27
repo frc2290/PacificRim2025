@@ -272,7 +272,7 @@ public class StateMachineCoordinator extends SubsystemBase {
         driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
       }
 
-      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
+      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile() && goalState != RobotState.PROCESSOR) {
  
         if (gethasCoral()) {
           if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL) {
@@ -381,3 +381,4 @@ public class StateMachineCoordinator extends SubsystemBase {
     handleAutomaticTransitions();
   }
 }
+
