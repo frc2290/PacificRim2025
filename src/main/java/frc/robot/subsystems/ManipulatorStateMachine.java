@@ -166,7 +166,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
     new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && getCurrentState() == ElevatorManipulatorState.L4).onTrue(new ScoreCoralL4(this, manipulator));
     new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL).onTrue(new ScoreCoral(this, manipulator));
     new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL && (elevator.getPosition() > 1)).onTrue(new ScoreCoral(this, manipulator));
-    new Trigger(() -> !getHasAlgae() && !getHasCoral() && algaeMode).onTrue(new IntakeAlgae(this, manipulator));
     // Set the root/current BEFORE scheduling it as default
     m_graphCommand.setGraphRootNode(startPositionNode);
     m_graphCommand.setCurrentNode(startPositionNode);
@@ -333,8 +332,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "AlgaeLowIntake",
+            new ParallelCommandGroup(
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_LOW),
+            new IntakeAlgae(this,m_manipulator)),
             null,
            null);
 
@@ -351,8 +352,10 @@ public class ManipulatorStateMachine extends SubsystemBase {
         m_graphCommand
         .new GraphCommandNode(
             "AlgaeHighIntake",
+            new ParallelCommandGroup(
             ManipulatorPositionCommandFactory.createScoreCommand(
                 this, m_diff, m_elevator, ElevatorManipulatorPositions.ALGAE_HIGH),
+            new IntakeAlgae(this,m_manipulator)),
             null,
             null);
 
