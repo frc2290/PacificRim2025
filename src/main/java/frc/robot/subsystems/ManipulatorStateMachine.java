@@ -162,7 +162,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     initializeGraphCommand();
 
     new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && !(getCurrentState() == ElevatorManipulatorState.L4)).onTrue(new ScoreCoral(this, manipulator)); 
-    new Trigger(() -> getHasAlgae() && scoreNow() && (getCurrentState() == ElevatorManipulatorState.L4 || getCurrentState() == ElevatorManipulatorState.L4)).onTrue(new ScoreAlgae(this, manipulator));
+    new Trigger(() -> getHasAlgae() && scoreNow() && (getCurrentState() == ElevatorManipulatorState.PROCESSOR || getCurrentState() == ElevatorManipulatorState.BARGE)).onTrue(new ScoreAlgae(this, manipulator));
     new Trigger(() -> getHasCoral() && atDrivePose() && scoreNow() && getCurrentState() == ElevatorManipulatorState.L4).onTrue(new ScoreCoralL4(this, manipulator));
     new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL).onTrue(new ScoreCoral(this, manipulator));
     new Trigger(() -> scoreNow() && getCurrentState() == ElevatorManipulatorState.MANUAL && (elevator.getPosition() > 1)).onTrue(new ScoreCoral(this, manipulator));

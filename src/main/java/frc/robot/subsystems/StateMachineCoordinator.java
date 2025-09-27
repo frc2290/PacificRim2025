@@ -272,19 +272,19 @@ public class StateMachineCoordinator extends SubsystemBase {
         driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
       }
 
-      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()) {
- 
-        if (gethasCoral()) {
-          if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL) {
-            setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
-          }
-
-        } else {
-          if (getCurrentControllerProfile() == ControllerProfile.DEFAULT_CORAL) {
-            setRobotGoal(RobotState.INTAKE_CORAL);
-          }
-        }
+      if (!manipulatorSM.isTransitioning() 
+      && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()
+      && goalState != RobotState.PROCESSOR
+      && goalState != RobotState.BARGE) {
+    if (gethasCoral()) {
+      if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL) {
+        setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
       }
+    } else {
+      setRobotGoal(RobotState.INTAKE_CORAL);
+    }
+  }
+  
 
       if (!manipulatorSM.isTransitioning() && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
         manipulatorSM.setAlgaeMode(true);
