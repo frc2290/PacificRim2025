@@ -457,6 +457,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
     l4PostScoreNode.AddNode(safeCoralTravelNode, 1.0,true); // l4 post score to safe travel
     safeCoralTravelNode.AddNode(safeAlgaeTravelNode, 1.0,false); // safe travel to safe algae travel
     safeAlgaeTravelNode.AddNode(prepAlgaeLowNode, 1.0,false); // safe travel to prep algae low
+    prepAlgaeLowNode.AddNode(algaeLowIntakeNode, 1.0,false); // prep algae low to algae low intake
     safeAlgaeTravelNode.AddNode(prepAlgaeHighNode, 1.0,false); // safe travel to prep algae high
     prepAlgaeHighNode.AddNode(prepAlgaeLowNode, 1.0,false); // prep algae high to prep algae low
     prepAlgaeHighNode.AddNode(algaeHighIntakeNode, 1.0,false); // prep algae high to algae high intake
