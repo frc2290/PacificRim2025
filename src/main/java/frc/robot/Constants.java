@@ -191,7 +191,7 @@ public final class Constants {
     public static final double kElevatorStart = 0.0;
     public static final double kElevatorTransport = 0.025;
     public static final double kElevatorIntake = kElevatorTransport;
-    public static final double kElevatorL1 = 0.125;
+    public static final double kElevatorL1 = 0.15;
     public static final double kElevatorL2 = 0.5;
     public static final double kElevatorL3 = kElevatorL2 + 0.4;
     public static final double kElevatorL4 = 1.5;
@@ -221,7 +221,7 @@ public final class Constants {
     public static final double kRotationTransport = 235;
     public static final double kRotationIntake = 235;
     public static final double kRotationPrep = 235;
-    public static final double kRotationL1 = 195;
+    public static final double kRotationL1 = 200;
     public static final double kRotationL2 = 230;
     public static final double kRotationL3 = kRotationL2;
     public static final double kRotationL4 = 80;
