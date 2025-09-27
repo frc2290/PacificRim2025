@@ -171,6 +171,12 @@ public class DriveStateMachine extends SubsystemBase {
         processorRelativeNode.AddNode(bargeRelativeNode, 1.0);
         //processorRelativeNode.AddNode(climbRelativeNode, 1.0);
         processorRelativeNode.AddNode(reefAlignNode, 1.0);
+        bargeRelativeNode.AddNode(manualNode, 1.0);
+        bargeRelativeNode.AddNode(cancelledNode, 1.0);
+        bargeRelativeNode.AddNode(processorRelativeNode, 1.0);
+        bargeRelativeNode.AddNode(coralStationNode, 1.0);
+        bargeRelativeNode.AddNode(reefRelativeNode, 1.0);
+        bargeRelativeNode.AddNode(reefAlignNode, 1.0);
         coralStationNode.AddNode(manualNode, 1.0);
         coralStationNode.AddNode(cancelledNode, 1.0);
         coralStationNode.AddNode(processorRelativeNode, 1.0);
@@ -293,3 +299,5 @@ public class DriveStateMachine extends SubsystemBase {
         
     }
 }
+
+
