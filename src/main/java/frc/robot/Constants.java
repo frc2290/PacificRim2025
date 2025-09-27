@@ -229,7 +229,7 @@ public final class Constants {
     public static final double kRotationAlgaeTransport = 200;
     public static final double kRotationProcessor = 195;
     public static final double kRotationClimb = 80;
-    public static final double kRotationBarge = 215;
+    public static final double kRotationBarge = 125;
 
     // ======================= Travel / Start =======================
     public static final ManipulatorPosition CORAL_TRANSPORT =
