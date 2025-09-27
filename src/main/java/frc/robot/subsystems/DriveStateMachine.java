@@ -106,7 +106,7 @@ public class DriveStateMachine extends SubsystemBase {
 
          climbRelativeNode = m_graphCommand.new GraphCommandNode(
              "ClimbRelative",
-             Commands.runOnce(() -> climbHeadingDegrees = pose.getDegrees()), // Placeholder command
+             new PrintCommand(""),
              new PrintCommand(""),
              driveCommandFactory.createHeadingLockCommand(() -> climbHeadingDegrees));
 
