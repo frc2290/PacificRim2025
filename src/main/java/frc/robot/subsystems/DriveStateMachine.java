@@ -68,22 +68,24 @@ public class DriveStateMachine extends SubsystemBase {
   // State variables
   private boolean rightScore = false;
 
-    /**
-     * Constructor for the DriveStateMachine
-     * @param m_drive
-     * @param m_pose
-     * @param m_driverController
-     */
-    public DriveStateMachine(DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
-      drive = m_drive;
-      pose = m_pose;
-      driverController = m_driverController;
-      bargeHeadingDegrees = 0;
-      climbHeadingDegrees = 180.0;
-      driveCommandFactory = new DriveCommandFactory(drive, pose, driverController); 
-        drive = m_drive;
-        pose = m_pose;
-        driverController = m_driverController;
+  /**
+   * Constructor for the DriveStateMachine
+   *
+   * @param m_drive
+   * @param m_pose
+   * @param m_driverController
+   */
+  public DriveStateMachine(
+      DriveSubsystem m_drive, PoseEstimatorSubsystem m_pose, XboxController m_driverController) {
+    drive = m_drive;
+    pose = m_pose;
+    driverController = m_driverController;
+    bargeHeadingDegrees = 0;
+    climbHeadingDegrees = 180.0;
+    driveCommandFactory = new DriveCommandFactory(drive, pose, driverController);
+    drive = m_drive;
+    pose = m_pose;
+    driverController = m_driverController;
 
     // Initialize graph command
     initializeGraphCommand();
