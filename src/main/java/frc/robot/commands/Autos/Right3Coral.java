@@ -22,17 +22,21 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
-import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
-import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** Three piece right-side autonomous. Paths assume a feeder pickup in between each score. */
 public class Right3Coral extends SequentialCommandGroup {
 
-  public Right3Coral( PoseEstimatorSubsystem pose, DriveStateMachine driveState, StateMachineCoordinator coordinator, ManipulatorStateMachine manipulatorState, ManipulatorSubsystem manipulator) {
+  public Right3Coral(
+      PoseEstimatorSubsystem pose,
+      DriveStateMachine driveState,
+      StateMachineCoordinator coordinator,
+      ManipulatorStateMachine manipulatorState,
+      ManipulatorSubsystem manipulator) {
     try {
       PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
       PathPlannerPath reefToFeeder = PathPlannerPath.fromPathFile("RightCoral1ToFeeder");
@@ -50,7 +54,8 @@ public class Right3Coral extends SequentialCommandGroup {
                 // Start path following and make sure the manipulator begins in the safe pose.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Score, reload, and score two additional corals.
           routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),

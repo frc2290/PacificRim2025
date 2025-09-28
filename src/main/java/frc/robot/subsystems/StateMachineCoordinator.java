@@ -93,10 +93,11 @@ public class StateMachineCoordinator extends SubsystemBase {
 
   // Triggers
 
-/**
- * Sets which side of the reef to score on.
- * @param isRight
- */
+  /**
+   * Sets which side of the reef to score on.
+   *
+   * @param isRight
+   */
   public void setRightScore(boolean isRight) {
     driveSM.setRightScore(isRight);
   }
@@ -186,7 +187,7 @@ public class StateMachineCoordinator extends SubsystemBase {
         setElevatorManipulatorGoal(ElevatorManipulatorState.START_POSITION);
         setDriveGoal(DriveState.CANCELLED);
         break;
-        case SAFE_CORAL_TRANSPORT:
+      case SAFE_CORAL_TRANSPORT:
         setElevatorManipulatorGoal(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
         setDriveGoal(DriveState.REEF_RELATIVE);
         break;
@@ -261,14 +262,17 @@ public class StateMachineCoordinator extends SubsystemBase {
   /** Handles automatic state transitions based on current subsystem states. */
   private void handleAutomaticTransitions() {
 
-    //tell manipulator when drive is at position
+    // tell manipulator when drive is at position
     manipulatorSM.setDriveAtPose(driveSM.atPosition());
 
     manipulatorSM.isAuto(isAuto);
-   
 
     // Only process automatic transitions while the robot is enabled and not in manual mode.
-    if (!isAuto &&!isDisabled && DriverStation.isEnabled() && (getCurrentControllerProfile() != ControllerProfile.MANUAL) && getCurrentControllerProfile() != ControllerProfile.ALGAE) {
+    if (!isAuto
+        && !isDisabled
+        && DriverStation.isEnabled()
+        && (getCurrentControllerProfile() != ControllerProfile.MANUAL)
+        && getCurrentControllerProfile() != ControllerProfile.ALGAE) {
 
       // Automatically leave the start position on the first iteration so the robot exits the start
       // pose immediately.
@@ -284,8 +288,10 @@ public class StateMachineCoordinator extends SubsystemBase {
         driveSM.setDriveCommand(DriveState.REEF_RELATIVE);
       }
 
-      if (!manipulatorSM.isTransitioning() && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile() && goalState != RobotState.PROCESSOR) {
- 
+      if (!manipulatorSM.isTransitioning()
+          && ControllerProfile.DEFAULT_CORAL == getCurrentControllerProfile()
+          && goalState != RobotState.PROCESSOR) {
+
         if (gethasCoral()) {
           if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL) {
             setRobotGoal(RobotState.SAFE_CORAL_TRANSPORT);
@@ -298,37 +304,47 @@ public class StateMachineCoordinator extends SubsystemBase {
         }
       }
 
-      if (!manipulatorSM.isTransitioning() && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
+      if (!manipulatorSM.isTransitioning()
+          && ControllerProfile.ALGAE == getCurrentControllerProfile()) {
 
         boolean hasAlgaeNow = manipulatorSM.getHasAlgae();
         ElevatorManipulatorState currentManipulatorState = manipulatorSM.getCurrentState();
 
-        if (hasAlgaeNow){
+        if (hasAlgaeNow) {
 
-          if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2 || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3) && goalState != RobotState.SAFE_ALGAE_TRANSPORT && goalState != RobotState.BARGE && goalState != RobotState.PROCESSOR) {
-                   setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
+          if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2
+                  || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3)
+              && goalState != RobotState.SAFE_ALGAE_TRANSPORT
+              && goalState != RobotState.BARGE
+              && goalState != RobotState.PROCESSOR) {
+            setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
           }
 
-        }else{
+        } else {
           if (goalState == RobotState.BARGE || goalState == RobotState.PROCESSOR) {
             setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
-   }
+          }
         }
 
-      //   if (hasAlgaeNow) {
+        //   if (hasAlgaeNow) {
 
-      //     if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2 || currentManipulatorState == ElevatorManipulatorState.ALGAE_L3) && goalState != RobotState.SAFE_ALGAE_TRANSPORT && goalState != RobotState.BARGE && goalState != RobotState.PROCESSOR) {
-      //       setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
-      //     }
+        //     if ((currentManipulatorState == ElevatorManipulatorState.ALGAE_L2 ||
+        // currentManipulatorState == ElevatorManipulatorState.ALGAE_L3) && goalState !=
+        // RobotState.SAFE_ALGAE_TRANSPORT && goalState != RobotState.BARGE && goalState !=
+        // RobotState.PROCESSOR) {
+        //       setRobotGoal(RobotState.SAFE_ALGAE_TRANSPORT);
+        //     }
 
-      //   } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT || currentManipulatorState == ElevatorManipulatorState.SAFE_ALGAE_TRAVEL) && goalState != algaeIntakeGoal) {
-      //     setRobotGoal(algaeIntakeGoal);
+        //   } else if ((goalState == RobotState.SAFE_ALGAE_TRANSPORT || currentManipulatorState ==
+        // ElevatorManipulatorState.SAFE_ALGAE_TRAVEL) && goalState != algaeIntakeGoal) {
+        //     setRobotGoal(algaeIntakeGoal);
 
-      //   } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2 && currentManipulatorState != ElevatorManipulatorState.ALGAE_L3 && goalState != algaeIntakeGoal) {
-      //     setRobotGoal(algaeIntakeGoal);
-      //   }
+        //   } else if (currentManipulatorState != ElevatorManipulatorState.ALGAE_L2 &&
+        // currentManipulatorState != ElevatorManipulatorState.ALGAE_L3 && goalState !=
+        // algaeIntakeGoal) {
+        //     setRobotGoal(algaeIntakeGoal);
+        //   }
       }
-
 
       // Successful commands mark the manipulator goal as reached.
       // When the driver calls a new goal, the graph command moves toward the next target
@@ -352,34 +368,35 @@ public class StateMachineCoordinator extends SubsystemBase {
         ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, Color.kGreen);
         ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, Color.kGreen);
       }
-      } else if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL && manipulatorSM.getHasCoral() &&
-       driveSM.getCurrentState() == DriveState.CORAL_STATION) {
-           ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
-           ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
-       } else if (getCurrentControllerProfile() == ControllerProfile.MANUAL) {
-          ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
-          ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
-          ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-          ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-      } else if (driveSM.getCurrentState() == DriveState.REEF_RELATIVE) {
-          if (getRightScore()) {
-             ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
-             ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
-         } else {
-             ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
-             ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
-          }
-          ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-          ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
-      } else if (driveSM.getCurrentState() == DriveState.REEF_ALIGN) {
-          ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-          ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
-      } else if (driveSM.atPosition() && manipulatorSM.atGoalState()) {
-          ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
-          ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+    } else if (manipulatorSM.getCurrentState() == ElevatorManipulatorState.INTAKE_CORAL
+        && manipulatorSM.getHasCoral()
+        && driveSM.getCurrentState() == DriveState.CORAL_STATION) {
+      ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+      ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
+    } else if (getCurrentControllerProfile() == ControllerProfile.MANUAL) {
+      ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kRed);
+      ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kRed);
+      ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+      ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+    } else if (driveSM.getCurrentState() == DriveState.REEF_RELATIVE) {
+      if (getRightScore()) {
+        ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kPurple);
+        ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kPurple);
+      } else {
+        ledUtility.getStrip("TopLeft").setEffect(LEDEffect.SOLID, Color.kYellow);
+        ledUtility.getStrip("TopRight").setEffect(LEDEffect.SOLID, Color.kYellow);
       }
+      ledUtility.getStrip("Left").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+      ledUtility.getStrip("Right").setEffect(LEDEffect.PULSE, LEDEffects.flytBlue);
+    } else if (driveSM.getCurrentState() == DriveState.REEF_ALIGN) {
+      ledUtility.getStrip("Left").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+      ledUtility.getStrip("Right").setEffect(LEDEffect.FLASH, LEDEffects.flytBlue);
+    } else if (driveSM.atPosition() && manipulatorSM.atGoalState()) {
+      ledUtility.getStrip("Left").setEffect(LEDEffect.SOLID, Color.kGreen);
+      ledUtility.getStrip("Right").setEffect(LEDEffect.SOLID, Color.kGreen);
     }
-  
+  }
+
   @Override
   public void periodic() {
 
@@ -394,4 +411,3 @@ public class StateMachineCoordinator extends SubsystemBase {
     handleAutomaticTransitions();
   }
 }
-

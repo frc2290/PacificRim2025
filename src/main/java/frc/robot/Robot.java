@@ -114,7 +114,7 @@ public class Robot extends TimedRobot {
             m_coordinator,
             m_driver);
     DataLogManager.start();
-DriverStation.startDataLog(DataLogManager.getLog());
+    DriverStation.startDataLog(DataLogManager.getLog());
     // Start the logging framework so we can view graphs after a match or practice run.
     URCL.start();
 

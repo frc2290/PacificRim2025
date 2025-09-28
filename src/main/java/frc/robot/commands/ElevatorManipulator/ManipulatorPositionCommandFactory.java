@@ -34,7 +34,7 @@ public final class ManipulatorPositionCommandFactory {
    * Creates a command that drives the elevator and differential arm to the supplied setpoints
    * without marking the manipulator state machine as ready at the end of the sequence.
    */
-  public static Command createPrepCommand( //Intermediate pos command
+  public static Command createPrepCommand( // Intermediate pos command
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
@@ -46,7 +46,7 @@ public final class ManipulatorPositionCommandFactory {
    * Creates a command that drives the elevator and differential arm to the supplied setpoints and
    * marks the manipulator state machine as ready once the position is reached.
    */
-  public static Command createScoreCommand( //final pre score pos command
+  public static Command createScoreCommand( // final pre score pos command
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
@@ -59,7 +59,7 @@ public final class ManipulatorPositionCommandFactory {
    * deploy order (extension, rotation, then elevator) without marking the manipulator as ready when
    * finished.
    */
-  public static Command createSafeDeployCommand( //sequential pos command
+  public static Command createSafeDeployCommand( // sequential pos command
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
@@ -121,7 +121,8 @@ public final class ManipulatorPositionCommandFactory {
                   manipulatorState.failedToReachGoal(false);
                 }),
             new ParallelCommandGroup(
-                diffArm.setRotAndExtSetpointCommand(position.extensionMillimeters(), position.rotationDegrees()),
+                diffArm.setRotAndExtSetpointCommand(
+                    position.extensionMillimeters(), position.rotationDegrees()),
                 elevator.setElevatorSetpointCommand(position.elevatorMeters())));
 
     if (markReadyOnFinish) {

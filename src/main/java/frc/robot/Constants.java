@@ -276,8 +276,9 @@ public final class Constants {
         new ManipulatorPosition(kElevatorAlgaeHigh, kExtensionPrep, kRotationPrep);
     public static final ManipulatorPosition ALGAE_HIGH =
         new ManipulatorPosition(kElevatorAlgaeHigh, kExtensionAlgaeIntake, kRotationAlgaeIntake);
-    public static final ManipulatorPosition ALGAE_TRANSPORT = 
-        new ManipulatorPosition(kElevatorTransport, kExtensionAlgaeTransport, kRotationAlgaeTransport);
+    public static final ManipulatorPosition ALGAE_TRANSPORT =
+        new ManipulatorPosition(
+            kElevatorTransport, kExtensionAlgaeTransport, kRotationAlgaeTransport);
 
     // ========================= Processor / Barge =========================
     public static final ManipulatorPosition SCORE_PROCESSOR =
@@ -599,7 +600,6 @@ public final class Constants {
     // X value of the translation is irrelevant
     public static final Translation2d netScore = new Translation2d(295 * inToM, 295 * inToM);
 
-
     public static final int ATPipelineIndex = 0;
 
     public static final double xTolerance = Units.inchesToMeters(1);
@@ -609,5 +609,3 @@ public final class Constants {
     public static final double thetaTolerance = 2;
   }
 }
-
-

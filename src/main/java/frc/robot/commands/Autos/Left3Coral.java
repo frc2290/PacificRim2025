@@ -22,11 +22,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
-import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
-import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** Three piece left-side autonomous. Mirrors the right-side routine with corresponding paths. */
@@ -55,7 +54,8 @@ public class Left3Coral extends SequentialCommandGroup {
                 // Enable path following and stage the manipulator in the safe configuration.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Perform three score-intake cycles on the left side of the field.
           routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),

@@ -154,7 +154,8 @@ public class ClimbSubsystem extends SubsystemBase {
   }
 
   public boolean climberOut() {
-    return (Climber.climberOutSetpoint - 5) < getClimberPos() && getClimberPos() < (Climber.climberInSetpoint + 5);
+    return (Climber.climberOutSetpoint - 5) < getClimberPos()
+        && getClimberPos() < (Climber.climberInSetpoint + 5);
   }
 
   public double getServoPos() {

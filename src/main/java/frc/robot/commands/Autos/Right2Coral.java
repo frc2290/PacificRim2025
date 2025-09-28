@@ -26,7 +26,6 @@ import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
-import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /**
@@ -55,7 +54,8 @@ public class Right2Coral extends SequentialCommandGroup {
                 // Enable path following and tell the manipulator that we intend to score first.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Score the preloaded coral, grab another from the feeder, then score again.
           routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),

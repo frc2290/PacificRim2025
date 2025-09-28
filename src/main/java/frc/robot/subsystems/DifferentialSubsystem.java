@@ -232,8 +232,9 @@ public class DifferentialSubsystem extends SubsystemBase {
             () -> {
               setExtensionSetpoint(ext);
               setRotationSetpoint(rot);
-            },this)
-            .until(() -> atRotationSetpoint() && atExtenstionSetpoint());
+            },
+            this)
+        .until(() -> atRotationSetpoint() && atExtenstionSetpoint());
   }
 
   public double getExtensionSetpoint() {

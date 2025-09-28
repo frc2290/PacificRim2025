@@ -20,13 +20,11 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants.ElevatorManipulatorPositions;
 import frc.robot.commands.SwerveAutoStep;
 import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
-import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /**
@@ -57,7 +55,7 @@ public class AutoRoutineFactory {
         Commands.runOnce(
             () -> {
               // Tell the manipulator state machine which goal we are chasing.
-              //manipulatorState.atGoalState(false);
+              // manipulatorState.atGoalState(false);
               manipulatorState.setElevatorManipulatorCommand(targetState);
             }),
         // Drive to the reef while the manipulator moves in parallel.
@@ -70,7 +68,8 @@ public class AutoRoutineFactory {
             () -> {
               // Reset to a safe travel configuration after scoring completes.
               coordinator.requestToScore(false);
-              manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+              manipulatorState.setElevatorManipulatorCommand(
+                  ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
             }),
         manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL));
   }
@@ -81,7 +80,7 @@ public class AutoRoutineFactory {
         Commands.runOnce(
             () -> {
               // Leave scoring mode and configure for intake.
-              //manipulatorState.atGoalState(false);
+              // manipulatorState.atGoalState(false);
               coordinator.requestToScore(false);
               manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.INTAKE_CORAL);
             }),
@@ -90,7 +89,10 @@ public class AutoRoutineFactory {
             new SwerveAutoStep(path, pose), Commands.waitUntil(() -> manipulator.hasCoral())),
         manipulatorState.waitForState(ElevatorManipulatorState.INTAKE_CORAL),
         // Once a coral is detected, command the manipulator to stow safely again.
-        Commands.runOnce(() -> manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL)),
+        Commands.runOnce(
+            () ->
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL)),
         manipulatorState.waitForState(ElevatorManipulatorState.SAFE_CORAL_TRAVEL));
   }
 }

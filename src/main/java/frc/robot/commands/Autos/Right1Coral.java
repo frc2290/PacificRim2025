@@ -26,7 +26,6 @@ import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
-import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** One piece autonomous that drives to the right branch and scores a single coral. */
@@ -51,7 +50,8 @@ public class Right1Coral extends SequentialCommandGroup {
                 // Enable path following and prep the manipulator for scoring.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Drive out and score the preloaded coral, then stop path following.
           routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),

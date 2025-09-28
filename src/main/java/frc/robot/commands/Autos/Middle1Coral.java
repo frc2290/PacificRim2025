@@ -26,7 +26,6 @@ import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.StateMachineCoordinator;
-import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** Simple middle auto that scores a single coral. */
@@ -51,7 +50,8 @@ public class Middle1Coral extends SequentialCommandGroup {
                 // Start path following with the manipulator stowed for travel.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                manipulatorState.setElevatorManipulatorCommand(ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Drive up to the reef and perform the scoring sequence.
           routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),
