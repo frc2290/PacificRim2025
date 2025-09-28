@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -441,12 +440,9 @@ public class ManipulatorStateMachine extends SubsystemBase {
               null,
               null);
   
-      cancelledNode = m_graphCommand.new GraphCommandNode("Cancelled", new PrintCommand(""), null, null);
+      cancelledNode = m_graphCommand.new GraphCommandNode("Cancelled", null, null, null);
   
       // Safe travel connections
-      cancelledNode.AddNode(safeCoralTravelNode, 1.0, true);
-      
-
       startPositionNode.AddNode(safeCoralTravelNode, 1.0, true); // start position to safe travel
       safeCoralTravelNode.AddNode(intakeCoralNode, 1.0,false); // safe travel to coral intake
       safeCoralTravelNode.AddNode(l1PrepNode, 1.0,false); // safe travel to l1 prep
@@ -677,7 +673,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
         manualOverride = false;
         break;
       case MANUAL:
-      m_graphCommand.setTargetNode(cancelledNode);
       manualOverride = true;
         break;
       default:
@@ -697,7 +692,7 @@ public class ManipulatorStateMachine extends SubsystemBase {
    */
   public ElevatorManipulatorState getCurrentState() {
     GraphCommandNode currentNode = m_graphCommand.getCurrentNode();
-    if(currentNode == cancelledNode) return ElevatorManipulatorState.MANUAL;
+    if(manualOverride) return ElevatorManipulatorState.MANUAL;
     if (currentNode == startPositionNode) return ElevatorManipulatorState.START_POSITION;
     if (currentNode == safeCoralTravelNode) return ElevatorManipulatorState.SAFE_CORAL_TRAVEL;
     if (currentNode == safeAlgaeTravelNode) return ElevatorManipulatorState.SAFE_ALGAE_TRAVEL;
