@@ -172,9 +172,7 @@ public class RobotContainer {
     JoystickButton x_button = new JoystickButton(m_driverController, Button.kX.value);
     JoystickButton left_bumper = new JoystickButton(m_driverController, Button.kLeftBumper.value);
     JoystickButton right_bumper = new JoystickButton(m_driverController, Button.kRightBumper.value);
-    JoystickButton back_button = new JoystickButton(m_driverController, Button.kBack.value);
     JoystickButton start_button = new JoystickButton(m_driverController, Button.kStart.value);
-    JoystickButton left_stick = new JoystickButton(m_driverController, Button.kLeftStick.value);
     JoystickButton right_stick = new JoystickButton(m_driverController, Button.kRightStick.value);
     Trigger right_trigger = new Trigger(() -> m_driverController.getRightTriggerAxis() > 0.5);
     Trigger left_trigger = new Trigger(() -> m_driverController.getLeftTriggerAxis() > 0.5);
@@ -183,10 +181,6 @@ public class RobotContainer {
     POVButton dpad_left = new POVButton(m_driverController, 270);
     POVButton dpad_right = new POVButton(m_driverController, 90);
 
-    Trigger not_left_stick =
-        left_stick.negate(); // Trigger to check if left stick is not pressed in.
-    Trigger not_right_stick =
-        right_stick.negate(); // Trigger to check if right stick is not pressed in.
     // Profile triggers make it easy to reuse button bindings while the controller changes modes.
     Trigger coral_profileTrigger =
         new Trigger(

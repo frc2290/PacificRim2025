@@ -36,7 +36,7 @@ public class RobotSystem extends SubsystemBase {
   private PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev); // set it up
 
   /** Dashboard view that publishes PDH telemetry over NetworkTables. */
-  private PDHDashboard PDHDash = new PDHDashboard(PDH); // initialize the dashboard
+  private final PDHDashboard pdhDashboard = new PDHDashboard(PDH); // initialize the dashboard
 
   // Network tables for the controller configuration
   NetworkTable table;
@@ -81,5 +81,7 @@ public class RobotSystem extends SubsystemBase {
       table.getEntry("GyroYaw").setDouble(gyro.getYaw());
       table.getEntry("GyroYawOffset").setDouble(gyro_yawOffset);
     }
+
+    pdhDashboard.periodic();
   }
 }

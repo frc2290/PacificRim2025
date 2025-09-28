@@ -31,7 +31,7 @@ public class MotorDashboard extends SuperDashboard {
   /** Motor controller being tuned by this dashboard view. */
   FlytMotorController controller;
 
-  private NetworkTableEntry kP, kI, kD, kFF, set, cType;
+  private NetworkTableEntry kP, kI, kD, kFF, set;
 
   // constructor, just needs motor controller object
   public MotorDashboard(FlytMotorController m_controller) {
@@ -43,7 +43,6 @@ public class MotorDashboard extends SuperDashboard {
     kD = table.getEntry("kD");
     kFF = table.getEntry("kFF");
     set = table.getEntry("SetPoint");
-    cType = table.getEntry("ControlType");
     kP.setDouble(0);
     kI.setDouble(0);
     kD.setDouble(0);

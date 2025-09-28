@@ -224,8 +224,11 @@ public class GraphCommand extends Command {
         m_command.cancel();
         m_targetNode = node;
       } else {
-        // figure out this situation!
-        assert (true) : "Should never get here.";
+        DataLogManager.log(
+            "GraphCommand setTargetNode: unable to reroute from "
+                + m_currentNode.getNodeName()
+                + " to "
+                + node.getNodeName());
         return;
       }
     }
@@ -476,13 +479,6 @@ public class GraphCommand extends Command {
       public Double m_cost = null;
 
       public GraphCommandNodeLink() {}
-
-      public GraphCommandNodeLink(GraphCommandNodeLink link) {
-        m_nodeName = link.m_nodeName;
-        m_node = link.m_node;
-        m_wayPointNode = link.m_wayPointNode;
-        m_cost = link.m_cost;
-      }
     }
 
     public String getNodeName() {

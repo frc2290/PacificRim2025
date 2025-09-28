@@ -45,9 +45,6 @@ public class StateMachineCoordinator extends SubsystemBase {
   /** Latest global goalState requested by the driver or auto routine. */
   private RobotState goalState = RobotState.START_POSITION;
 
-  /** Active algae intake goal to revisit when algae is not secured. */
-  private RobotState algaeIntakeGoal = RobotState.ALGAE_L2;
-
   private DriveStateMachine driveSM;
   private ManipulatorStateMachine manipulatorSM;
   private FlytDashboardV2 dashboard = new FlytDashboardV2("Coordinator");

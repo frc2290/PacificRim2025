@@ -57,7 +57,6 @@ public class SparkMaxController extends FlytMotorController {
   // private vars for internal calculation and specifications
   private boolean e_encoderAvailable = false; // check if enxternal encoder connected
   private boolean e_absalute = false; // check if specified encoder is absalute
-  private boolean pidREADY = false; // checks and sees if pid setup was successfully used
   private ControlType controlType; // control type
 
   /** CAN device ID associated with this controller. */
@@ -274,7 +273,6 @@ public class SparkMaxController extends FlytMotorController {
     closedLoopCfg.feedbackSensor(
         primaryEnc ? FeedbackSensor.kPrimaryEncoder : FeedbackSensor.kAlternateOrExternalEncoder);
     config.apply(closedLoopCfg);
-    pidREADY = true;
 
     switch (controlType) {
       case 0:

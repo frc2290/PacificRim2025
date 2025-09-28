@@ -16,7 +16,6 @@
 //
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -36,7 +35,6 @@ import frc.robot.commands.EndEffector.ScoreCoralL4;
 import frc.robot.commands.GraphCommand;
 import frc.robot.commands.GraphCommand.GraphCommandNode;
 import frc.utils.FlytDashboardV2;
-import frc.utils.PoseEstimatorSubsystem;
 
 /** Coordinates the manipulator, elevator, and climb states via a graph of commands. */
 public class ManipulatorStateMachine extends SubsystemBase {
@@ -47,9 +45,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
   /** Dashboard binding used to monitor manipulator state transitions. */
   private FlytDashboardV2 dashboard = new FlytDashboardV2("ManipulatorStateMachine");
 
-  private DriveSubsystem drive;
-  private PoseEstimatorSubsystem pose;
-  private XboxController driverController;
   private ElevatorSubsystem m_elevator;
   private DifferentialSubsystem m_diff;
   private ManipulatorSubsystem m_manipulator;
@@ -123,8 +118,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
   /** Tracks whether the current state has reached its goal pose. */
   private boolean atGoalState = false; // checks if it reached the final state
 
-  private boolean algaeMode = false;
-
   /** True when the state machine has armed the manipulator to score. */
   private boolean canScore = false; // checks final state is reached and command approves the score
 
@@ -140,8 +133,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
   private boolean reachGoalStateFailed = false;
 
   /** Timestamp used to time-out states that take too long. */
-  private double stateEntryTime = 0.0;
-
   private boolean isAuto;
 
   /**
@@ -529,10 +520,6 @@ public class ManipulatorStateMachine extends SubsystemBase {
 
   public void setInterpolation(boolean m_interpolate) {
     interpolate = m_interpolate;
-  }
-
-  public void setAlgaeMode(boolean m_algaeMode) {
-    algaeMode = m_algaeMode;
   }
 
   public void isAuto(boolean isauto) {
