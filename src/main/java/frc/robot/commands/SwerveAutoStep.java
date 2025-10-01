@@ -1,59 +1,79 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.commands;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.utils.PoseEstimatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+/** Generates a trajectory on the fly and feeds it to the pose estimator one sample at a time. */
 public class SwerveAutoStep extends Command {
-    PathPlannerPath path;
-    PathPlannerTrajectory trajectory;
+  PathPlannerPath path;
+  PathPlannerTrajectory trajectory;
 
-    PoseEstimatorSubsystem pose;
+  PoseEstimatorSubsystem pose;
 
-    Timer timer;
+  Timer timer;
 
-    /** Creates a new SwerveAutoCommand. */
-    public SwerveAutoStep(PathPlannerPath _path, PoseEstimatorSubsystem _pose) {
-        path = _path;
-        pose = _pose;
-        timer = new Timer();
-        // Use addRequirements() here to declare subsystem dependencies.
-    }
+  /**
+   * Creates a command that streams trajectory samples to the drive subsystem using the current
+   * robot velocity as the starting condition.
+   */
+  public SwerveAutoStep(PathPlannerPath _path, PoseEstimatorSubsystem _pose) {
+    path = _path;
+    pose = _pose;
+    timer = new Timer();
+    // Use addRequirements() here to declare subsystem dependencies.
+  }
 
-    // Called when the command is initially scheduled.
-    @Override
-    public void initialize() {
-        trajectory = path.generateTrajectory(pose.getChassisSpeeds(), pose.getCurrentRotation(), pose.getRobotConfig());
-        timer.restart();
-    }
+  // Called when the command is initially scheduled.
+  @Override
+  public void initialize() {
+    // Build a trajectory using the current robot state as the starting conditions.
+    trajectory =
+        path.generateTrajectory(
+            pose.getChassisSpeeds(), pose.getCurrentRotation(), pose.getRobotConfig());
+    timer.restart();
+  }
 
-    // Called every time the scheduler runs while the command is scheduled.
-    @Override
-    public void execute() {
-        Pose2d target = trajectory.sample(timer.get()).pose;
-        pose.setTargetPose(target);
-    }
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+    Pose2d target = trajectory.sample(timer.get()).pose;
+    // Provide the desired pose to the drive state machine so it can follow the path.
+    pose.setTargetPose(target);
+  }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {
-        timer.stop();
-        System.out.println("Time for " + path.name + ": " + timer.get());
-        pose.setTargetPose(trajectory.getEndState().pose);
-    }
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    timer.stop();
+    System.out.println("Time for " + path.name + ": " + timer.get());
+    // Snap to the final pose to avoid drift if the drive command was interrupted early.
+    pose.setTargetPose(trajectory.getEndState().pose);
+  }
 
-    // Returns true when the command should end.
-    @Override
-    public boolean isFinished() {
-        return (timer.get() >= trajectory.getTotalTimeSeconds());
-    }
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return (timer.get() >= trajectory.getTotalTimeSeconds());
+  }
 }

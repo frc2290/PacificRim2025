@@ -1,49 +1,94 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot;
-
-import org.littletonrobotics.urcl.URCL;
 
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ManipulatorStateMachine;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.StateMachineCoordinator;
+import frc.robot.subsystems.StateMachineCoordinator.RobotState;
 import frc.utils.LEDUtility;
 import frc.utils.PoseEstimatorSubsystem;
+import org.littletonrobotics.urcl.URCL;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
+ * Primary program entry point for Excelsior. {@link TimedRobot} periodically calls each lifecycle
+ * hook so we can schedule commands, monitor subsystems, and react to driver inputs. The goal of
+ * this class is to orchestrate subsystem construction and defer logic to the command-based
+ * framework.
  */
 public class Robot extends TimedRobot {
+  /** Cached handle to the active autonomous routine so we can cancel or reschedule if needed. */
   private Command m_autonomousCommand;
 
+  /** Container that wires up all subsystems, commands, and driver controls. */
   private RobotContainer m_robotContainer;
-  
+
+  /** Dedicated LED helper that allows the state machine to communicate robot status. */
   private final LEDUtility m_ledUtility = new LEDUtility(0);
-  // The robot's subsystems
+
+  /** Cached reference to the primary driver controller so subsystems can read axes. */
+  private XboxController m_driver = new XboxController(0);
+
+  // The robot's subsystems.
+  /** Owns all hardware for swerve driving and exposes the drive commands. */
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+
+  /** Combines vision and gyro data to maintain the best guess at the robot's pose. */
   private final PoseEstimatorSubsystem m_poseEstimator = new PoseEstimatorSubsystem(m_robotDrive);
+
+  /** Elevator carriage that moves the manipulator up and down the reef. */
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+
+  /** Roller intake and sensors that interact directly with game pieces. */
   private final ManipulatorSubsystem m_manipulator = new ManipulatorSubsystem();
+
+  /** Differential arm that provides extension and rotation for the manipulator. */
   private final DifferentialSubsystem m_DiffArm = new DifferentialSubsystem();
+
+  /** Hooking subsystem used during endgame climbs. */
   private final ClimbSubsystem m_climber = new ClimbSubsystem();
-  private final StateSubsystem m_state = new StateSubsystem(m_DiffArm, m_elevator, m_robotDrive, m_manipulator, m_poseEstimator, m_ledUtility);
+
+  /** Coordinates all autonomous and teleop driving modes. */
+  private final DriveStateMachine m_driveStateMachine =
+      new DriveStateMachine(m_robotDrive, m_poseEstimator, m_driver);
+
+  /** Tracks and sequences manipulator states to guarantee safe transitions. */
+  private final ManipulatorStateMachine m_manipulatorStateMachine =
+      new ManipulatorStateMachine(m_DiffArm, m_elevator, m_manipulator, m_climber);
+
+  /** Central coordinator that keeps drive and manipulator state machines in sync. */
+  private final StateMachineCoordinator m_coordinator =
+      new StateMachineCoordinator(m_manipulatorStateMachine, m_driveStateMachine, m_ledUtility);
 
   public Robot() {
+    // Ensure the CANivore bridge is connected before any CAN devices are created.
     CanBridge.runTCP();
   }
 
@@ -53,15 +98,37 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer(m_ledUtility, m_robotDrive, m_poseEstimator, m_elevator, m_manipulator, m_DiffArm, m_climber, m_state);
+    // Instantiate the container so bindings, chooser registration, and default commands run once.
+    // All command bindings and default commands live in the container; create it once here.
+    m_robotContainer =
+        new RobotContainer(
+            m_ledUtility,
+            m_robotDrive,
+            m_poseEstimator,
+            m_elevator,
+            m_manipulator,
+            m_DiffArm,
+            m_climber,
+            m_driveStateMachine,
+            m_manipulatorStateMachine,
+            m_coordinator,
+            m_driver);
     DataLogManager.start();
-
+    DriverStation.startDataLog(DataLogManager.getLog());
+    // Start the logging framework so we can view graphs after a match or practice run.
     URCL.start();
 
-    // If logging only to DataLog
+    // If logging only to DataLog.
     URCL.start(DataLogManager.getLog());
+
+    // Display the Command Scheduler Status
+    SmartDashboard.putData(CommandScheduler.getInstance());
+
+    // Display Subsystem Status
+    SmartDashboard.putData(m_elevator);
+    SmartDashboard.putData(m_DiffArm);
+    SmartDashboard.putData(m_manipulator);
+    SmartDashboard.putData(m_robotDrive);
   }
 
   /**
@@ -73,17 +140,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
+    // Run the scheduler to poll buttons, execute commands, and invoke subsystem periodic methods.
     CommandScheduler.getInstance().run();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    m_state.setDisabled(true);
+    // Notify subsystems that the robot is disabled so they can stop any motion and update LEDs.
+    m_coordinator.robotDisabled(true);
   }
 
   @Override
@@ -92,8 +157,9 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_state.setAuto(true);
-    m_state.setDisabled(false);
+    // Mark that the robot is in autonomous so the state machines can choose the correct defaults.
+    m_coordinator.robotAuto(true);
+    m_coordinator.robotDisabled(false);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -103,8 +169,9 @@ public class Robot extends TimedRobot {
      * autonomousCommand = new ExampleCommand(); break; }
      */
 
-    // schedule the autonomous command (example)
+    // Schedule the autonomous command if one was selected.
     if (m_autonomousCommand != null) {
+      // Defer command execution to the scheduler so it can manage interruptions properly.
       m_autonomousCommand.schedule();
     }
   }
@@ -115,16 +182,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_state.setAuto(false);
-    m_state.setDisabled(false);
-    m_state.setDriveState(DriveState.Teleop);
-    if (!m_manipulator.hasCoral()) {
-      m_state.setGoal(PositionState.IntakePosition);
-    }
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
+    m_coordinator.robotAuto(false);
+    m_coordinator.robotDisabled(false);
+    // Reset both state machines back to their safe starting configuration for teleop.
+    m_coordinator.setRobotGoal(RobotState.START_POSITION);
+    // Reset hook for post-autonomous tweaks if we ever need to retune teleop initialization.
+    // m_state.setCurrentElevManiStateCommand(ElevatorManipulatorState.SafeCoralTravel);
+
+    // Uncomment if we ever need to forcefully cancel the autonomous command during teleop init.
     // if (m_autonomousCommand != null) {
     //   m_autonomousCommand.cancel();
     // }

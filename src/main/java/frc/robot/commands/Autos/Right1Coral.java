@@ -1,60 +1,66 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.commands.Autos;
-import com.pathplanner.lib.path.PathPlannerPath;
 
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.ScoreCoral;
-import frc.robot.commands.SwerveAutoStep;
-import frc.robot.subsystems.DifferentialSubsystem;
+import frc.robot.subsystems.DriveStateMachine;
+import frc.robot.subsystems.DriveStateMachine.DriveState;
+import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateSubsystem;
-import frc.robot.subsystems.StateSubsystem.DriveState;
-import frc.robot.subsystems.StateSubsystem.PositionState;
+import frc.robot.subsystems.StateMachineCoordinator;
 import frc.utils.PoseEstimatorSubsystem;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
+/** One piece autonomous that drives to the right branch and scores a single coral. */
 public class Right1Coral extends SequentialCommandGroup {
-    /** Creates a new Right1Coral. */
-    public Right1Coral(DifferentialSubsystem diff, PoseEstimatorSubsystem poseEst, StateSubsystem stateSubsystem, ManipulatorSubsystem manipulator) {
-        try {
-            //stateSubsystem.setRotationLock(false);
-            // Pull in path from start location to reef
-            PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
-            
-            // Create a reset pose command to set starting location (may remove in future)
-            Command resetPose = new InstantCommand(() -> poseEst.setCurrentPose(startToReef.getStartingHolonomicPose().get()));
-            
-            // Set drive to auto (have to do this for every auto)
-            Command driveSetAuto = stateSubsystem.setDriveStateCommand(DriveState.Auto);
-            
-            // Create a command to go to level 4 score position
-            Command goToL4 = stateSubsystem.setGoalCommand(PositionState.L4Position, true);
-            
-            // Create a parallel group to move to the reef and get in scoring position at the same time
-            Command followPath1 = new SwerveAutoStep(startToReef, poseEst);
-            Command moveToReef = new ParallelCommandGroup(followPath1, goToL4);
-            
-            // Set drive to teleop (have to do this for every auto)
-            Command driveSetTeleop = stateSubsystem.setDriveStateCommand(DriveState.Teleop);
 
-            // Add your commands in the addCommands() call, e.g.
-            // addCommands(new FooCommand(), new BarCommand());
-            // First reset position, move to reef and get in score position, lastly score the coral
-            addCommands(resetPose, driveSetAuto, moveToReef, new ScoreCoral(manipulator, diff, stateSubsystem, poseEst), driveSetTeleop);
-        } catch (Exception e) {
-            System.out.println("BROKENNNNNNNNNNNNNNNNN");
-            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-            Commands.none();
-        }
+  public Right1Coral(
+      PoseEstimatorSubsystem pose,
+      DriveStateMachine driveState,
+      StateMachineCoordinator coordinator,
+      ManipulatorStateMachine manipulatorState,
+      ManipulatorSubsystem manipulator) {
+    try {
+      PathPlannerPath startToReef = PathPlannerPath.fromPathFile("RightCoral1");
+      AutoRoutineFactory routineFactory =
+          new AutoRoutineFactory(pose, coordinator, manipulatorState, manipulator);
+
+      addCommands(
+          // Snap the pose estimator to the first point of the autonomous path.
+          Commands.runOnce(() -> pose.setCurrentPose(startToReef.getStartingHolonomicPose().get())),
+          Commands.runOnce(
+              () -> {
+                // Enable path following and prep the manipulator for scoring.
+                driveState.setDriveCommand(DriveState.FOLLOW_PATH);
+                coordinator.requestToScore(false);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
+              }),
+          // Drive out and score the preloaded coral, then stop path following.
+          routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),
+          // Ensure the drivetrain defaults back to manual control.
+          Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED)));
+    } catch (Exception ex) {
+      DriverStation.reportError(
+          "Failed to build Right1Coral auto: " + ex.getMessage(), ex.getStackTrace());
+      addCommands(Commands.none());
     }
+  }
 }

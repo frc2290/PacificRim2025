@@ -1,11 +1,24 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils;
 
 import static edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition.kBlueAllianceWallRightSide;
 import static edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition.kRedAllianceWallRightSide;
 
-import java.util.function.Supplier;
-
-import org.photonvision.targeting.PhotonPipelineResult;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.math.VecBuilder;
@@ -33,327 +46,356 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.PoseUtils.Heading;
+import java.util.function.Supplier;
+import org.photonvision.targeting.PhotonPipelineResult;
 
-/**
- * Pose estimator that uses odometry and AprilTags with PhotonVision.
- */
+/** Pose estimator that uses odometry and AprilTags with PhotonVision. */
 public class PoseEstimatorSubsystem extends SubsystemBase {
 
-    // Kalman Filter Configuration. These can be "tuned-to-taste" based on how much
-    // you trust your various sensors. Smaller numbers will cause the filter to
-    // "trust" the estimate from that particular component more than the others.
-    // This in turn means the particualr component will have a stronger influence
-    // on the final pose estimate.
+  // Kalman Filter configuration. These can be "tuned-to-taste" based on how much
+  // you trust your various sensors. Smaller numbers will cause the filter to
+  // "trust" the estimate from that particular component more than the others.
+  // This in turn means the particular component will have a stronger influence
+  // on the final pose estimate.
 
-    /**
-     * Standard deviations of model states. Increase these numbers to trust your
-     * model's state estimates less. This
-     * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then
-     * meters.
-     */
-    private static final Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.01); //VecBuilder.fill(0.1, 0.1, 0.1);
+  /**
+   * Standard deviations of model states. Increase these numbers to trust your model's state
+   * estimates less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians,
+   * then meters.
+   */
+  private static final Vector<N3> stateStdDevs =
+      VecBuilder.fill(0.1, 0.1, 0.01); // VecBuilder.fill(0.1, 0.1, 0.1).
 
-    /**
-     * Standard deviations of the vision measurements. Increase these numbers to
-     * trust global measurements from vision
-     * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
-     * radians.
-     */
-    private static final Vector<N3> visionMeasurementStdDevs = VecBuilder.fill(0.25, 0.25, 0.1); //VecBuilder.fill(1.0, 1.0, 1.0);
+  /**
+   * Standard deviations of the vision measurements. Increase these numbers to trust global
+   * measurements from vision less. This matrix is in the form [x, y, theta]ᵀ, with units in meters
+   * and radians.
+   */
+  private static final Vector<N3> visionMeasurementStdDevs =
+      VecBuilder.fill(0.25, 0.25, 0.1); // VecBuilder.fill(1.0, 1.0, 1.0).
 
-    private final Supplier<Rotation2d> rotationSupplier;
-    private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
-    private final Supplier<SwerveModuleState[]> moduleStateSupplier;
-    private final SwerveDrivePoseEstimator poseEstimator;
-    private final Field2d field2d = new Field2d();
-    private final FieldObject2d target2d = field2d.getObject("Target");
-    private final PhotonRunnable photonEstimator;
-    private final PhotonRunnable photonEstimator2;
-    private final Notifier photonNotifier;
-    private final Notifier photonNotifier2;
+  /** Supplier for the current gyro heading. */
+  private final Supplier<Rotation2d> rotationSupplier;
 
-    private OriginPosition originPosition = kBlueAllianceWallRightSide;
-    private boolean sawTag = false;
+  /** Supplier for the swerve module positions used in odometry updates. */
+  private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
 
-    private RobotConfig config;
+  /** Supplier for module states so commands can query current wheel speeds. */
+  private final Supplier<SwerveModuleState[]> moduleStateSupplier;
 
-    private Pose2d targetPose = new Pose2d();
+  private final SwerveDrivePoseEstimator poseEstimator;
 
-    private FlytLogger poseDash = new FlytLogger("Pose");
+  /** Field visualization that displays the robot pose in AdvantageScope. */
+  private final Field2d field2d = new Field2d();
 
-    public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
-        photonEstimator = new PhotonRunnable("FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
-        photonEstimator2 = new PhotonRunnable("RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT, () -> getHeading());
+  private final FieldObject2d target2d = field2d.getObject("Target");
 
-        photonNotifier = new Notifier(photonEstimator);
-        photonNotifier2 = new Notifier(photonEstimator2);
+  /** PhotonVision pipeline for the front camera. */
+  private final PhotonRunnable photonEstimator;
 
-        this.rotationSupplier = m_drive::newHeading;
-        this.modulePositionSupplier = m_drive::getModulePositions;
-        this.moduleStateSupplier = m_drive::getModuleStates;
+  /** PhotonVision pipeline for the rear camera. */
+  private final PhotonRunnable photonEstimator2;
 
-        poseEstimator = new SwerveDrivePoseEstimator(
-                DriveConstants.kDriveKinematics,
-                rotationSupplier.get(),
-                modulePositionSupplier.get(),
-                new Pose2d(),
-                stateStdDevs,
-                visionMeasurementStdDevs);
+  private final Notifier photonNotifier;
+  private final Notifier photonNotifier2;
 
-        // Start PhotonVision thread
-        photonNotifier.setName("PhotonRunnable");
-        photonNotifier.startPeriodic(0.01);
-        photonNotifier2.setName("PhotonRunnable2");
-        photonNotifier2.startPeriodic(0.01);
+  private OriginPosition originPosition = kBlueAllianceWallRightSide;
+  private boolean sawTag = false;
 
-        try {
-            config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            // Handle exception as needed
-            e.printStackTrace();
-        }
+  private RobotConfig config;
 
-        poseDash.addStringPublisher("Pose", false, () -> getCurrentPose().toString());
-        poseDash.addBoolPublisher("At Target Pose", false, () -> atTargetPose());
-        poseDash.addDoublePublisher("Relative To X", true, () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getX());
-        poseDash.addDoublePublisher("Relative To Y", true, () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getY());
-        poseDash.addDoublePublisher("Relative To T", true, () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getRotation().getDegrees());
+  /** Pose that the drivetrain should aim toward (used by auto alignment commands). */
+  private Pose2d targetPose = new Pose2d();
+
+  /** Logger that streams pose data for tuning and match review. */
+  private FlytLogger poseDash = new FlytLogger("Pose");
+
+  public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
+    photonEstimator =
+        new PhotonRunnable(
+            "FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
+    photonEstimator2 =
+        new PhotonRunnable(
+            "RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT, () -> getHeading());
+
+    photonNotifier = new Notifier(photonEstimator);
+    photonNotifier2 = new Notifier(photonEstimator2);
+
+    this.rotationSupplier = m_drive::newHeading;
+    this.modulePositionSupplier = m_drive::getModulePositions;
+    this.moduleStateSupplier = m_drive::getModuleStates;
+
+    poseEstimator =
+        new SwerveDrivePoseEstimator(
+            DriveConstants.kDriveKinematics,
+            rotationSupplier.get(),
+            modulePositionSupplier.get(),
+            new Pose2d(),
+            stateStdDevs,
+            visionMeasurementStdDevs);
+
+    // Start PhotonVision thread.
+    photonNotifier.setName("PhotonRunnable");
+    photonNotifier.startPeriodic(0.01);
+    photonNotifier2.setName("PhotonRunnable2");
+    photonNotifier2.startPeriodic(0.01);
+
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
     }
 
-    /**
-     * Sets the alliance. This is used to configure the origin of the AprilTag map
-     * 
-     * @param alliance alliance
-     */
-    public void setAlliance(Alliance alliance) {
-        boolean allianceChanged = false;
-        switch (alliance) {
-            case Blue:
-                allianceChanged = (originPosition == kRedAllianceWallRightSide);
-                originPosition = kBlueAllianceWallRightSide;
-                break;
-            case Red:
-                allianceChanged = (originPosition == kBlueAllianceWallRightSide);
-                originPosition = kRedAllianceWallRightSide;
-                break;
-            default:
-                // No valid alliance data. Nothing we can do about it
-        }
+    poseDash.addStringPublisher("Pose", false, () -> getCurrentPose().toString());
+    poseDash.addBoolPublisher("At Target Pose", false, () -> atTargetPose());
+    poseDash.addDoublePublisher(
+        "Relative To X",
+        true,
+        () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getX());
+    poseDash.addDoublePublisher(
+        "Relative To Y",
+        true,
+        () -> poseEstimator.getEstimatedPosition().relativeTo(targetPose).getY());
+    poseDash.addDoublePublisher(
+        "Relative To T",
+        true,
+        () ->
+            poseEstimator.getEstimatedPosition().relativeTo(targetPose).getRotation().getDegrees());
+  }
 
-        if (allianceChanged && sawTag) {
-            // The alliance changed, which changes the coordinate system.
-            // Since a tag was seen, and the tags are all relative to the coordinate system,
-            // the estimated pose
-            // needs to be transformed to the new coordinate system.
-            var newPose = flipAlliance(getCurrentPose());
-            poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
-        }
+  /** Updates the AprilTag origin based on the current alliance color. */
+  public void setAlliance(Alliance alliance) {
+    boolean allianceChanged = false;
+    switch (alliance) {
+      case Blue:
+        allianceChanged = (originPosition == kRedAllianceWallRightSide);
+        originPosition = kBlueAllianceWallRightSide;
+        break;
+      case Red:
+        allianceChanged = (originPosition == kBlueAllianceWallRightSide);
+        originPosition = kRedAllianceWallRightSide;
+        break;
+      default:
+        // No valid alliance data. Nothing we can do about it.
     }
 
-    @Override
-    public void periodic() {
-        // Update pose estimator with drivetrain sensors
-        poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
+    if (allianceChanged && sawTag) {
+      // The alliance changed, which changes the coordinate system.
+      // Since a tag was seen, and the tags are all relative to the coordinate system,
+      // the estimated pose needs to be transformed to the new coordinate system.
+      var newPose = flipAlliance(getCurrentPose());
+      poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
+    }
+  }
 
-        var visionPose = photonEstimator.grabLatestEstimatedPose();
-        if (visionPose != null) {
-            // New pose from vision
-            sawTag = true;
-            var pose2d = visionPose.estimatedPose.toPose2d();
-            if (originPosition != kBlueAllianceWallRightSide) {
-                pose2d = flipAlliance(pose2d);
-            }
-            //if (!DriverStation.isAutonomous() || (poseEstimator.getEstimatedPosition().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
-                poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
-            //}
-        }
+  @Override
+  public void periodic() {
+    // Update pose estimator with drivetrain sensors.
+    poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
 
-        var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
-        if (visionPose2 != null) {
-            // New pose from vision
-            sawTag = true;
-            var pose2d2 = visionPose2.estimatedPose.toPose2d();
-            if (originPosition != kBlueAllianceWallRightSide) {
-                pose2d2 = flipAlliance(pose2d2);
-            }
-            //if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) < 3) {
-                poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
-            //}
-        }
-
-        // Set the pose on the dashboard
-        var dashboardPose = poseEstimator.getEstimatedPosition();
-        if (originPosition == kRedAllianceWallRightSide) {
-            // Flip the pose when red, since the dashboard field photo cannot be rotated
-            dashboardPose = flipAlliance(dashboardPose);
-        }
-        field2d.setRobotPose(dashboardPose);
-        target2d.setPose(targetPose);
-        SmartDashboard.putData("Field", field2d);
-        poseDash.update(Constants.debugMode);
+    var visionPose = photonEstimator.grabLatestEstimatedPose();
+    if (visionPose != null) {
+      // New pose from vision.
+      sawTag = true;
+      var pose2d = visionPose.estimatedPose.toPose2d();
+      if (originPosition != kBlueAllianceWallRightSide) {
+        pose2d = flipAlliance(pose2d);
+      }
+      // if (!DriverStation.isAutonomous() ||
+      // (poseEstimator.getEstimatedPosition().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
+      poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+      // }
     }
 
-    public boolean isClosestStationRight() {
-        if (poseEstimator.getEstimatedPosition().getY() > VisionConstants.halfwayAcrossFieldY) {
-            return false;
-        } else {
-            return true;
-        }
+    var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
+    if (visionPose2 != null) {
+      // New pose from vision.
+      sawTag = true;
+      var pose2d2 = visionPose2.estimatedPose.toPose2d();
+      if (originPosition != kBlueAllianceWallRightSide) {
+        pose2d2 = flipAlliance(pose2d2);
+      }
+      // if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) <
+      // 3) {
+      poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+      // }
     }
 
-    public Pose2d getClosestBranch(boolean right) {
-        if (right) {
-            return poseEstimator.getEstimatedPosition().nearest(VisionConstants.rightBranches);
-        } else {
-            return poseEstimator.getEstimatedPosition().nearest(VisionConstants.leftBranches);
-        }
+    // Set the pose on the dashboard.
+    var dashboardPose = poseEstimator.getEstimatedPosition();
+    if (originPosition == kRedAllianceWallRightSide) {
+      // Flip the pose when red, since the dashboard field photo cannot be rotated.
+      dashboardPose = flipAlliance(dashboardPose);
     }
+    field2d.setRobotPose(dashboardPose);
+    target2d.setPose(targetPose);
+    SmartDashboard.putData("Field", field2d);
+    poseDash.update(Constants.debugMode);
+  }
 
-    public double getAlignX(Translation2d target) {
-        return target.getX() - poseEstimator.getEstimatedPosition().getX();
+  public boolean isClosestStationRight() {
+    if (poseEstimator.getEstimatedPosition().getY() > VisionConstants.halfwayAcrossFieldY) {
+      return false;
+    } else {
+      return true;
     }
+  }
 
-    public double getAlignY(Translation2d target) {
-        return target.getY() - poseEstimator.getEstimatedPosition().getY();
+  public Pose2d getClosestBranch(boolean right) {
+    if (right) {
+      return poseEstimator.getEstimatedPosition().nearest(VisionConstants.rightBranches);
+    } else {
+      return poseEstimator.getEstimatedPosition().nearest(VisionConstants.leftBranches);
     }
+  }
 
-    public double turnToTarget(Translation2d target) {
-        double offsetX = target.getX() - poseEstimator.getEstimatedPosition().getX();
-        double offsetY = target.getY() - poseEstimator.getEstimatedPosition().getY();
-        //return (360 - Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
-        return (Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
-    }
+  public double getAlignX(Translation2d target) {
+    return target.getX() - poseEstimator.getEstimatedPosition().getX();
+  }
 
-    public double getDegrees() {
-        return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
-    }
+  public double getAlignY(Translation2d target) {
+    return target.getY() - poseEstimator.getEstimatedPosition().getY();
+  }
 
-    public Pose2d getCurrentPose() {
-        return poseEstimator.getEstimatedPosition();
-    }
+  public double turnToTarget(Translation2d target) {
+    double offsetX = target.getX() - poseEstimator.getEstimatedPosition().getX();
+    double offsetY = target.getY() - poseEstimator.getEstimatedPosition().getY();
+    // return (360 - Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
+    return (Math.toDegrees(Math.atan2(offsetY, offsetX)) % 360);
+  }
 
-    public PhotonPipelineResult getLatestTag() {
-        return photonEstimator2.grabLatestTag();
-    }
+  public double getDegrees() {
+    return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+  }
 
-    public ChassisSpeeds getChassisSpeeds() {
-        return DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStateSupplier.get());
-    }
+  public Pose2d getCurrentPose() {
+    return poseEstimator.getEstimatedPosition();
+  }
 
-    public Rotation2d getCurrentRotation() {
-        return poseEstimator.getEstimatedPosition().getRotation();
-    }
+  public PhotonPipelineResult getLatestTag() {
+    return photonEstimator2.grabLatestTag();
+  }
 
-    public RobotConfig getRobotConfig() {
-        return config;
-    }
+  public ChassisSpeeds getChassisSpeeds() {
+    return DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStateSupplier.get());
+  }
 
-    public Pose2d getTargetPose() {
-        return targetPose;
-    }
+  public Rotation2d getCurrentRotation() {
+    return poseEstimator.getEstimatedPosition().getRotation();
+  }
 
-    public void setTargetPose(Pose2d newTarget) {
-        targetPose = newTarget;
-    }
+  public RobotConfig getRobotConfig() {
+    return config;
+  }
 
-    public Command setTargetPoseCommand(Pose2d newTarget) {
-        return Commands.runOnce(() -> setTargetPose(newTarget));
-    }
+  public Pose2d getTargetPose() {
+    return targetPose;
+  }
 
-    public boolean atTargetPose() {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return atTargetX(relative)
-                && atTargetY(relative)
-                && atTargetTheta(relative);
-    }
+  public void setTargetPose(Pose2d newTarget) {
+    targetPose = newTarget;
+  }
 
-    public boolean atTargetPose(boolean hasDistance) {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return atTargetX(relative, hasDistance)
-                && atTargetY(relative)
-                && atTargetTheta(relative);
-    }
+  public Command setTargetPoseCommand(Pose2d newTarget) {
+    return Commands.runOnce(() -> setTargetPose(newTarget));
+  }
 
-    public boolean atTargetX() {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getX()) < VisionConstants.xTolerance;
-    }
+  public boolean atTargetPose() {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return atTargetX(relative) && atTargetY(relative) && atTargetTheta(relative);
+  }
 
-    public boolean atTargetX(Pose2d pose) {
-        return Math.abs(pose.getX()) < VisionConstants.xTolerance;
-    }
+  public boolean atTargetPose(boolean hasDistance) {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return atTargetX(relative, hasDistance) && atTargetY(relative) && atTargetTheta(relative);
+  }
 
-    public boolean atTargetX(boolean hasDistance) {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return hasDistance ? Math.abs(relative.getX()) < VisionConstants.xToleranceHasDistance : Math.abs(relative.getX()) < VisionConstants.xTolerance;
-    }
+  public boolean atTargetX() {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return Math.abs(relative.getX()) < VisionConstants.xTolerance;
+  }
 
-    public boolean atTargetX(Pose2d pose, boolean hasDistance) {
-        return hasDistance ? Math.abs(pose.getX()) < VisionConstants.xToleranceHasDistance : Math.abs(pose.getX()) < VisionConstants.xTolerance;
-    }
+  public boolean atTargetX(Pose2d pose) {
+    return Math.abs(pose.getX()) < VisionConstants.xTolerance;
+  }
 
-    public boolean atTargetY() {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getY()) < VisionConstants.yTolerance;
-    }
+  public boolean atTargetX(boolean hasDistance) {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return hasDistance
+        ? Math.abs(relative.getX()) < VisionConstants.xToleranceHasDistance
+        : Math.abs(relative.getX()) < VisionConstants.xTolerance;
+  }
 
-    public boolean atTargetY(Pose2d pose) {
-        return Math.abs(pose.getY()) < VisionConstants.yTolerance;
-    }
+  public boolean atTargetX(Pose2d pose, boolean hasDistance) {
+    return hasDistance
+        ? Math.abs(pose.getX()) < VisionConstants.xToleranceHasDistance
+        : Math.abs(pose.getX()) < VisionConstants.xTolerance;
+  }
 
-    public boolean atTargetY(boolean hasDistance) {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return hasDistance ? Math.abs(relative.getY()) < VisionConstants.yToleranceHasDistance : Math.abs(relative.getY()) < VisionConstants.yTolerance;
-    }
+  public boolean atTargetY() {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return Math.abs(relative.getY()) < VisionConstants.yTolerance;
+  }
 
-    public boolean atTargetY(Pose2d pose, boolean hasDistance) {
-        return hasDistance ? Math.abs(pose.getY()) < VisionConstants.yToleranceHasDistance : Math.abs(pose.getY()) < VisionConstants.yTolerance;
-    }
+  public boolean atTargetY(Pose2d pose) {
+    return Math.abs(pose.getY()) < VisionConstants.yTolerance;
+  }
 
-    public boolean atTargetTheta() {
-        Pose2d relative = getCurrentPose().relativeTo(targetPose);
-        return Math.abs(relative.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
-    }
+  public boolean atTargetY(boolean hasDistance) {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return hasDistance
+        ? Math.abs(relative.getY()) < VisionConstants.yToleranceHasDistance
+        : Math.abs(relative.getY()) < VisionConstants.yTolerance;
+  }
 
-    public boolean atTargetTheta(Pose2d pose) {
-        return Math.abs(pose.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
-    }
+  public boolean atTargetY(Pose2d pose, boolean hasDistance) {
+    return hasDistance
+        ? Math.abs(pose.getY()) < VisionConstants.yToleranceHasDistance
+        : Math.abs(pose.getY()) < VisionConstants.yTolerance;
+  }
 
-    /**
-     * Resets the current pose to the specified pose. This should ONLY be called
-     * when the robot's position on the field is known, like at the beginning of
-     * a match.
-     * 
-     * @param newPose new pose
-     */
-    public void setCurrentPose(Pose2d newPose) {
-        poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
-        //drive.setGyroAdjustment(newPose.getRotation().getDegrees());
-    }
+  public boolean atTargetTheta() {
+    Pose2d relative = getCurrentPose().relativeTo(targetPose);
+    return Math.abs(relative.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
+  }
 
-    /**
-     * Resets the position on the field to 0,0 0-degrees, with forward being
-     * downfield. This resets
-     * what "forward" is for field oriented driving.
-     */
-    public void resetFieldPosition() {
-        setCurrentPose(new Pose2d());
-    }
+  public boolean atTargetTheta(Pose2d pose) {
+    return Math.abs(pose.getRotation().getDegrees()) < VisionConstants.thetaTolerance;
+  }
 
-    /**
-     * Transforms a pose to the opposite alliance's coordinate system. (0,0) is
-     * always on the right corner of your
-     * alliance wall, so for 2023, the field elements are at different coordinates
-     * for each alliance.
-     * 
-     * @param poseToFlip pose to transform to the other alliance
-     * @return pose relative to the other alliance's coordinate system
-     */
-    private Pose2d flipAlliance(Pose2d poseToFlip) {
-        return poseToFlip.relativeTo(VisionConstants.FLIPPING_POSE);
-    }
+  /**
+   * Resets the current pose to the specified pose. This should ONLY be called when the robot's
+   * position on the field is known, like at the beginning of a match.
+   *
+   * @param newPose new pose
+   */
+  public void setCurrentPose(Pose2d newPose) {
+    poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
+    // drive.setGyroAdjustment(newPose.getRotation().getDegrees());
+  }
 
-    private Heading getHeading() {
-        return new Heading(Timer.getFPGATimestamp(), getCurrentRotation());
-    }
+  /**
+   * Resets the position on the field to 0,0 0-degrees, with forward being downfield. This resets
+   * what "forward" is for field oriented driving.
+   */
+  public void resetFieldPosition() {
+    setCurrentPose(new Pose2d());
+  }
+
+  /**
+   * Transforms a pose to the opposite alliance's coordinate system. (0,0) is always on the right
+   * corner of your alliance wall, so for 2023, the field elements are at different coordinates for
+   * each alliance.
+   *
+   * @param poseToFlip pose to transform to the other alliance
+   * @return pose relative to the other alliance's coordinate system
+   */
+  private Pose2d flipAlliance(Pose2d poseToFlip) {
+    return poseToFlip.relativeTo(VisionConstants.FLIPPING_POSE);
+  }
+
+  private Heading getHeading() {
+    return new Heading(Timer.getFPGATimestamp(), getCurrentRotation());
+  }
 }

@@ -1,7 +1,19 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils;
 
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -9,90 +21,104 @@ import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.utils.LEDEffects.LEDEffect;
 
-/** Add your docs here. */
+/** Represents a named subset of the full LED buffer that can be animated independently. */
 public class LEDStrip {
-    String name;
-    int start;
-    int stop;
-    AddressableLEDBufferView bufferView;
-    Color color = LEDEffects.flytBlue;
-    LEDEffect effect = LEDEffect.SOLID;
-    boolean helperBool = false;
+  /** Descriptive name so the coordinator can reference the strip. */
+  String name;
 
-    public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop) {
-        name = _name;
-        start = _start;
-        stop = _stop;
-        bufferView = _buffer.createView(start, stop);
-    }
-    
-    public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop, boolean _reversed) {
-        name = _name;
-        start = _start;
-        stop = _stop;
-        bufferView = _buffer.createView(start, stop);
-        bufferView = bufferView.reversed();
-    }
+  /** Starting index in the master LED buffer. */
+  int start;
 
-    public AddressableLEDBufferView getBufferView() {
-        return bufferView;
-    }
+  /** Ending index (exclusive) in the master LED buffer. */
+  int stop;
 
-    public void setBufferView(AddressableLEDBuffer _buffer) {
-        if (bufferView.isReversed()) {
-            bufferView = _buffer.createView(start, stop);
-            bufferView = bufferView.reversed();
-        } else {
-            bufferView = _buffer.createView(start, stop);
-        }
-    }
+  /** View into the master buffer used to render effects. */
+  AddressableLEDBufferView bufferView;
 
-    public String getName() {
-        return name;
-    }
+  /** Base color for effects when no override is supplied. */
+  Color color = LEDEffects.flytBlue;
 
-    public LEDEffect getEffect() {
-        return effect;
-    }
+  /** Active animation effect to apply. */
+  LEDEffect effect = LEDEffect.SOLID;
 
-    public boolean getReversed() {
-        return bufferView.isReversed();
-    }
+  /** Generic helper flag that allows custom behaviors to annotate strips. */
+  boolean helperBool = false;
 
-    public Color getColor() {
-        return color;
-    }
+  public LEDStrip(String _name, AddressableLEDBuffer _buffer, int _start, int _stop) {
+    name = _name;
+    start = _start;
+    stop = _stop;
+    bufferView = _buffer.createView(start, stop);
+  }
 
-    public int getStart() {
-        return start;
-    }
+  public LEDStrip(
+      String _name, AddressableLEDBuffer _buffer, int _start, int _stop, boolean _reversed) {
+    name = _name;
+    start = _start;
+    stop = _stop;
+    bufferView = _buffer.createView(start, stop);
+    bufferView = bufferView.reversed();
+  }
 
-    public int getStop() {
-        return stop;
-    }
+  public AddressableLEDBufferView getBufferView() {
+    return bufferView;
+  }
 
-    public int getLength() {
-        return bufferView.getLength();
+  public void setBufferView(AddressableLEDBuffer _buffer) {
+    if (bufferView.isReversed()) {
+      bufferView = _buffer.createView(start, stop);
+      bufferView = bufferView.reversed();
+    } else {
+      bufferView = _buffer.createView(start, stop);
     }
+  }
 
-    public void setEffect(LEDEffect _effect) {
-        effect = _effect;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setEffect(LEDEffect _effect, Color _color) {
-        effect = _effect;
-        color = _color;
-    }
+  public LEDEffect getEffect() {
+    return effect;
+  }
 
-    public void setColor(Color _color) {
-        color = colorUtils.gammaCorrection(_color);
-    }
+  public boolean getReversed() {
+    return bufferView.isReversed();
+  }
 
-    public boolean getHelperBool() {
-        return helperBool;
-    }
+  public Color getColor() {
+    return color;
+  }
 
-    public void setHelperBool(boolean helper) {
-        helperBool = helper;
-    }
+  public int getStart() {
+    return start;
+  }
+
+  public int getStop() {
+    return stop;
+  }
+
+  public int getLength() {
+    return bufferView.getLength();
+  }
+
+  public void setEffect(LEDEffect _effect) {
+    effect = _effect;
+  }
+
+  public void setEffect(LEDEffect _effect, Color _color) {
+    effect = _effect;
+    color = _color;
+  }
+
+  public void setColor(Color _color) {
+    color = colorUtils.gammaCorrection(_color);
+  }
+
+  public boolean getHelperBool() {
+    return helperBool;
+  }
+
+  public void setHelperBool(boolean helper) {
+    helperBool = helper;
+  }
 }
