@@ -1,7 +1,19 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils;
 
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -11,20 +23,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.LEDEffects.LEDEffect;
 import java.util.ArrayList;
 
+/** Manages LED strips and applies predefined animation effects across the robot. */
 public class LEDUtility extends SubsystemBase {
+  /** Physical PWM LED controller driving all strips. */
   AddressableLED addressableLED;
+
+  /** Total number of LEDs accounted for across every registered strip. */
   int overallLength = 0;
+
+  /** Shared buffer that backs the addressable LED output. */
   AddressableLEDBuffer filler = new AddressableLEDBuffer(0);
+
+  /** List of all named strips currently managed by the utility. */
   ArrayList<LEDStrip> newLedStrips = new ArrayList<>();
 
   /** Creates a new LEDUtility. */
   public LEDUtility(int _port) {
-    this(new AddressableLED(_port));
-  }
-
-  /** Creates a new LEDUtility with an injected AddressableLED. */
-  public LEDUtility(AddressableLED led) {
-    addressableLED = led;
+    addressableLED = new AddressableLED(_port);
     addressableLED.start();
   }
 
@@ -64,27 +79,12 @@ public class LEDUtility extends SubsystemBase {
 
   // DEFAULT LED PATTERN, CHANGE PER SEASON
   public void setDefault() {
-    LEDStrip left = getStrip("Left");
-    if (left != null) {
-      left.setEffect(LEDEffect.PULSE);
-      left.setColor(LEDEffects.flytBlue);
-    }
-
-    LEDStrip right = getStrip("Right");
-    if (right != null) {
-      right.setEffect(LEDEffect.PULSE);
-      right.setColor(LEDEffects.flytBlue);
-    }
-
-    LEDStrip topLeft = getStrip("TopLeft");
-    if (topLeft != null) {
-      topLeft.setEffect(LEDEffect.ALLIANCE);
-    }
-
-    LEDStrip topRight = getStrip("TopRight");
-    if (topRight != null) {
-      topRight.setEffect(LEDEffect.ALLIANCE);
-    }
+    getStrip("Left").setEffect(LEDEffect.PULSE);
+    getStrip("Left").setColor(LEDEffects.flytBlue);
+    getStrip("Right").setEffect(LEDEffect.PULSE);
+    getStrip("Right").setColor(LEDEffects.flytBlue);
+    getStrip("TopLeft").setEffect(LEDEffect.ALLIANCE);
+    getStrip("TopRight").setEffect(LEDEffect.ALLIANCE);
   }
 
   private void setLength(int length) {

@@ -1,5 +1,22 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils;
 
+/** Utility math helpers used by the swerve drivetrain for stepping and wrapping angles. */
 public class SwerveUtils {
 
   /**
@@ -12,13 +29,12 @@ public class SwerveUtils {
    *     specified target.
    */
   public static double StepTowards(double _current, double _target, double _stepsize) {
-    double step = Math.abs(_stepsize);
-    if (Math.abs(_current - _target) <= step) {
+    if (Math.abs(_current - _target) <= _stepsize) {
       return _target;
     } else if (_target < _current) {
-      return _current - step;
+      return _current - _stepsize;
     } else {
-      return _current + step;
+      return _current + _stepsize;
     }
   }
 
@@ -38,23 +54,24 @@ public class SwerveUtils {
   public static double StepTowardsCircular(double _current, double _target, double _stepsize) {
     _current = WrapAngle(_current);
     _target = WrapAngle(_target);
-    double step = Math.abs(_stepsize);
 
     double stepDirection = Math.signum(_target - _current);
     double difference = Math.abs(_current - _target);
 
-    if (difference <= step) {
+    if (difference <= _stepsize) {
       return _target;
     } else if (difference > Math.PI) { // does the system need to wrap over eventually?
       // handle the special case where you can reach the target in one step while also wrapping
-      if (_current + 2 * Math.PI - _target < step || _target + 2 * Math.PI - _current < step) {
+      if (_current + 2 * Math.PI - _target < _stepsize
+          || _target + 2 * Math.PI - _current < _stepsize) {
         return _target;
       } else {
-        return WrapAngle(_current - stepDirection * step); // this will handle wrapping gracefully
+        return WrapAngle(
+            _current - stepDirection * _stepsize); // this will handle wrapping gracefully
       }
 
     } else {
-      return _current + stepDirection * step;
+      return _current + stepDirection * _stepsize;
     }
   }
 

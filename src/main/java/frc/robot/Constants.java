@@ -1,11 +1,22 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot;
 
 import static edu.wpi.first.math.util.Units.degreesToRadians;
-import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,9 +30,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import java.util.List;
-import org.ironmaple.simulation.drivesims.COTS;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -55,16 +63,6 @@ public final class Constants {
     public static final double transportSetpoint = 0;
     public static final double climberOutSetpoint = -210;
     public static final double climberInSetpoint = -85;
-
-    // Simulation parameters
-    // Gear reduction between motor and climber arm
-    public static final double kSimGearing = 250.0;
-    // Approximate length of the climber arm (meters)
-    public static final double kSimArmLengthMeters = 0.25;
-    // Mass of the arm when deploying (kg)
-    public static final double kSimDeployMassKg = 5.0;
-    // Mass of the arm plus robot when retracting (kg)
-    public static final double kSimRetractMassKg = 55.0;
   }
 
   /** All elevator setpoints and feedforward values. */
@@ -72,11 +70,11 @@ public final class Constants {
     public static final int kLeftElevatorMotorId = 50;
     public static final int kRightElevatorMotorId = 51;
 
-    public static final double kPositionConversion =
-        0.01683762514; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
+    public static final double kPositionConversion = 0.01683762514; // ((7/34) * (15/31) * (0.0538 *
+    // Math.PI)); //
     // Meters Position
-    public static final double kVelocityConversion =
-        0.00028062708; // ((7/34) * (15/31) * (0.0538 * Math.PI)); //
+    public static final double kVelocityConversion = 0.00028062708; // ((7/34) * (15/31) * (0.0538 *
+    // Math.PI)); //
     // Meters Position
 
     public static final double kP = 0.125;
@@ -89,28 +87,20 @@ public final class Constants {
     public static final double kA = 0.1156;
     public static final double kG = 0.1987;
 
-    public static final double transportSetpoint = 0.3;
-    public static final double intakeSetpoint = 0.25;
-    public static final double L1 = 0;
-    public static final double L2 = 0.50;
-    public static final double L3 = 0.975;
-    public static final double L4 = 1.59;
+    public static final int kCurrentLimitAmps = 50;
+    public static final double kPositionToleranceMeters = 0.04;
 
-    // Simulation parameters
-    // Gear reduction from motor to drum: (7/34) * (15/31)
-    public static final double kSimGearing = (7.0 / 34.0) * (15.0 / 31.0);
-    public static final double kSimDrumRadiusMeters = 0.0538; // m
-    public static final double kSimCarriageMassKg = 10; // kg
-    public static final double kSimMinHeightMeters = 0.0; // m
-    public static final double kSimMaxHeightMeters = 1.3; // m
+    public static final double kProfiledKp = 64.0;
+    public static final double kProfiledKi = 0.0;
+    public static final double kProfiledKd = 1.0;
+    public static final double kProfiledMaxVelocityMetersPerSecond = 2.5;
+    public static final double kProfiledMaxAccelerationMetersPerSecondSquared = 9.0;
+    public static final double kProfileGoalPositionTolerance = 1e-3;
   }
 
   /** IDs and constants for the manipulator roller. */
   public static final class Manipulator {
     public static final int kManipulatorMotorId = 7;
-    // Simulation parameters
-    public static final double kSimGearing = 1.0; // ratio
-    public static final double kSimMOI = 5e-4; // kg*m^2
   }
 
   /** Extension and rotation constants for the differential arm. */
@@ -118,39 +108,47 @@ public final class Constants {
     // Motors
     public static final int kLeftMotorId = 60;
     public static final int kRightMotorId = 61;
-    public static final DCMotor kMotor = DCMotor.getNEO(1);
-    public static final DCMotor kSimMotor = DCMotor.getNEO(1);
-    // configuration
-    public static final double voltageComp = 0;
-    public static final int currentStallLim = 0;
-    public static final int currentFreeLim = 0;
 
-    public static final double v_kp = 0.00009;
-    public static final double v_ki = (0.002 * v_kp);
-    public static final double v_kd = 0;
-    public static final double v_KG = 0;
+    public static final int kArmCurrentLimit = 50;
+    public static final double kPositionConversionFactor = 34.2857;
+    public static final double kVelocityConversionFactor = 0.5714;
+    public static final int kQuadratureMeasurementPeriod = 10;
+    public static final int kQuadratureAverageDepth = 2;
 
-    public static final double transportExtensionSetpoint = 140;
-    public static final double transportRotationSetpoint = 230;
-    public static final double intakeExtensionSetpoint = 35;
-    public static final double intakeRotationSetpoint = 235;
+    public static final double kVelocityLoopP = 0.00009;
+    public static final double kVelocityLoopI = 0.002 * kVelocityLoopP;
+    public static final double kVelocityLoopD = 0.0;
+    public static final double kVelocityLoopG = 0.0;
 
-    public static final double l1Rot = 0;
-    public static final double l2_3Rot = 230;
-    public static final double l4Rot = 80;
+    public static final double kExtensionProfiledKp = 30.0;
+    public static final double kExtensionProfiledKi = 0.0;
+    public static final double kExtensionProfiledKd = 1.5;
+    public static final double kExtensionMaxVelocityMillimetersPerSecond = 3000.0;
+    public static final double kExtensionMaxAccelerationMillimetersPerSecondSquared = 12000.0;
+    public static final double kExtensionProfileGoalPositionTolerance = 1e-2;
 
-    public static final double l1Ext = 0;
-    public static final double l2_3Ext = 140;
-    public static final double l4Ext = 215;
+    public static final double kRotationProfiledKp = 60.0;
+    public static final double kRotationProfiledKi = 0.0;
+    public static final double kRotationProfiledKd = 4.0;
+    public static final double kRotationMaxVelocityDegreesPerSecond = 1400.0;
+    public static final double kRotationMaxAccelerationDegreesPerSecondSquared = 5600.0;
+    public static final double kRotationProfileGoalPositionTolerance = 1e-3;
+
+    public static final double kExtensionSlewRateMillimetersPerSecond = 700.0;
+    public static final double kRotationSlewRateDegreesPerSecond = 120.0;
+
+    public static final double kExtensionPositionToleranceMillimeters = 10;
+    public static final double kRotationToleranceDegrees = 15;
+
+    public static final double kMillimetersPerRotation = 200.0;
+    public static final double kDegreesPerRotation = 360.0;
 
     public static final int kLaserCanId = 5;
-
-    public static final double kEncoderPositionFactor = 34.2857;
-    public static final double kEncoderVelocityFactor = 0.5714;
-
-    public static final double kLinearDriveRadiusMeters =
-        (kEncoderPositionFactor / 1000.0) / (2.0 * Math.PI);
-    public static final double kDifferentialArmRadiusMeters = 0.031831; // m
+    public static final int kLaserRegionX = 8;
+    public static final int kLaserRegionY = 8;
+    public static final int kLaserRegionWidth = 16;
+    public static final int kLaserRegionHeight = 16;
+    public static final int kLaserMaxValidDistanceMillimeters = 430;
 
     // Lookup tables used for interpolating custom scoring positions.
     public static final double[][] l4RotationData = {
@@ -180,28 +178,6 @@ public final class Constants {
       {330, 170},
       {420, 225}
     };
-
-    // Differential arm simulation parameters (best-fit values)
-    public static final double kSimExtensionMassKg = 1.1292; // kg
-    public static final double kSimRotationMassKg = 2.0412; // kg
-    public static final double kSimRotationInertiaKgM2 = 0.0468219; // kg*m^2
-    public static final double kSimComOffsetMeters = 0.029518; // m
-    public static final double kSimExtensionInclinationRads = 0.523599; // rad
-    public static final double kSimGravity = 9.81; // m/s^2
-    public static final double kSimExtensionViscousDamping = 0.530938; // N*s/m
-    public static final double kSimExtensionCoulombFriction = 5; // N
-    public static final double kSimRotationViscousDamping = 0.375174; // N*m*s/rad
-    public static final double kSimRotationCoulombFriction = 0.5; // N*m
-    public static final double kSimLinearDriveRadiusMeters = 0.00545674; // m
-    public static final double kSimDifferentialArmRadiusMeters = 0.031831; // m
-    public static final double kSimSensorOffsetRads = 2.13296; // rad
-    public static final double kSimMotorRotorInertia = 6.52157e-7; // kg*m^2
-    public static final double kSimMinExtensionMeters = 0.0; // m
-    public static final double kSimMaxExtensionMeters = 0.5; // m
-    public static final double kSimMinThetaRads = 0.0; // rad
-    public static final double kSimMaxThetaRads = 2 * Math.PI; // rad
-    public static final double kSimStartingExtensionMeters = 0.0; // m
-    public static final double kSimStartingThetaRads = 0.0; // rad
   }
 
   /**
@@ -211,64 +187,116 @@ public final class Constants {
   public static final class ElevatorManipulatorPositions {
     private ElevatorManipulatorPositions() {}
 
-    public static final ManipulatorPosition SAFE_CORAL_TRAVEL =
-        new ManipulatorPosition(
-            Elevator.transportSetpoint,
-            DifferentialArm.transportExtensionSetpoint,
-            DifferentialArm.transportRotationSetpoint);
-    public static final ManipulatorPosition START_POSITION = SAFE_CORAL_TRAVEL;
+    // ============================ Setpoints ============================
+    // Elevator setpoints
+    public static final double kElevatorStart = 0.0;
+    public static final double kElevatorTransport = 0.025;
+    public static final double kElevatorIntake = kElevatorTransport;
+    public static final double kElevatorL1 = 0.2;
+    public static final double kElevatorL2 = 0.51;
+    public static final double kElevatorL3 = kElevatorL2 + 0.4;
+    public static final double kElevatorL4 = 1.5;
+    public static final double kElevatorAlgaeLow = 0.525;
+    public static final double kElevatorAlgaeHigh = kElevatorAlgaeLow + 0.4;
+    public static final double kElevatorProcessor = 0.125;
+    public static final double kElevatorClimb = 0.525;
+    public static final double kElevatorBarge = 1.625;
 
-    public static final ManipulatorPosition PRE_CORAL_INTAKE =
-        new ManipulatorPosition(Elevator.intakeSetpoint, 80, 225);
+    // Extension setpoints
+    public static final double kExtensionStart = 0;
+    public static final double kExtensionTransport = 80;
+    public static final double kExtensionIntake = 20;
+    public static final double kExtensionPrep = 110;
+    public static final double kExtensionL1 = 80;
+    public static final double kExtensionL2 = 140;
+    public static final double kExtensionL3 = kExtensionL2;
+    public static final double kExtensionL4 = 215;
+    public static final double kExtensionAlgaeIntake = 195;
+    public static final double kExtensionAlgaeTransport = 80;
+    public static final double kExtensionProcessor = 80;
+    public static final double kExtensionClimb = 80;
+    public static final double kExtensionBarge = 260;
 
+    // Rotation setpoints
+    public static final double kRotationStart = 0;
+    public static final double kRotationTransport = 235;
+    public static final double kRotationIntake = 235;
+    public static final double kRotationPrep = 235;
+    public static final double kRotationL1 = 200;
+    public static final double kRotationL2 = 230;
+    public static final double kRotationL3 = kRotationL2;
+    public static final double kRotationL4 = 80;
+    public static final double kRotationAlgaeIntake = 225;
+    public static final double kRotationAlgaeTransport = 200;
+    public static final double kRotationProcessor = 200;
+    public static final double kRotationClimb = 80;
+    public static final double kRotationBarge = 125;
+
+    // ======================= Travel / Start =======================
+    public static final ManipulatorPosition CORAL_TRANSPORT =
+        new ManipulatorPosition(kElevatorTransport, kExtensionTransport, kRotationTransport);
+
+    public static final ManipulatorPosition START_POSITION =
+        new ManipulatorPosition(kElevatorStart, kExtensionStart, kRotationStart);
+
+    // ========================= Coral Intake =========================
     public static final ManipulatorPosition INTAKE_CORAL =
+        new ManipulatorPosition(kElevatorIntake, kExtensionIntake, kRotationIntake);
+
+    // ====================== Coral Scoring (L1–L4) ======================
+    public static final ManipulatorPosition L1_PREP =
+        new ManipulatorPosition(kElevatorL1, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition SCORE_L1 =
+        new ManipulatorPosition(kElevatorL1, kExtensionL1, kRotationL1);
+    public static final ManipulatorPosition L1_POST_SCORE = L1_PREP;
+
+    public static final ManipulatorPosition L2_PREP =
+        new ManipulatorPosition(kElevatorL2, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition SCORE_L2 =
+        new ManipulatorPosition(kElevatorL2, kExtensionL2, kRotationL2);
+    public static final ManipulatorPosition L2_POST_SCORE = L2_PREP;
+
+    public static final ManipulatorPosition L3_PREP =
+        new ManipulatorPosition(kElevatorL3, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition SCORE_L3 =
+        new ManipulatorPosition(kElevatorL3, kExtensionL3, kRotationL3);
+    public static final ManipulatorPosition L3_POST_SCORE = L3_PREP;
+
+    public static final ManipulatorPosition L4_PREP =
+        new ManipulatorPosition(kElevatorL4, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition SCORE_L4 =
+        new ManipulatorPosition(kElevatorL4, kExtensionL4, kRotationL4);
+    public static final ManipulatorPosition L4_POST_SCORE = L4_PREP;
+
+    // ============================== Algae ==============================
+    public static final ManipulatorPosition PREP_ALGAE_LOW =
+        new ManipulatorPosition(kElevatorAlgaeLow, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition ALGAE_LOW =
+        new ManipulatorPosition(kElevatorAlgaeLow, kExtensionAlgaeIntake, kRotationAlgaeIntake);
+    public static final ManipulatorPosition PREP_ALGAE_HIGH =
+        new ManipulatorPosition(kElevatorAlgaeHigh, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition ALGAE_HIGH =
+        new ManipulatorPosition(kElevatorAlgaeHigh, kExtensionAlgaeIntake, kRotationAlgaeIntake);
+    public static final ManipulatorPosition ALGAE_TRANSPORT =
         new ManipulatorPosition(
-            Elevator.intakeSetpoint,
-            DifferentialArm.intakeExtensionSetpoint,
-            DifferentialArm.intakeRotationSetpoint);
+            kElevatorTransport, kExtensionAlgaeTransport, kRotationAlgaeTransport);
 
-    public static final ManipulatorPosition L1_PREP = new ManipulatorPosition(0.675, 80, 235);
-    public static final ManipulatorPosition SCORE_L1 = L1_PREP;
-    public static final ManipulatorPosition L1_POST_SCORE = SAFE_CORAL_TRAVEL;
-
-    public static final ManipulatorPosition L2_PREP = new ManipulatorPosition(0.74, 80, 230);
-    public static final ManipulatorPosition SCORE_L2 = L2_PREP;
-    public static final ManipulatorPosition L2_POST_SCORE = SAFE_CORAL_TRAVEL;
-
-    public static final ManipulatorPosition L3_PREP = new ManipulatorPosition(1.14, 80, 230);
-    public static final ManipulatorPosition SCORE_L3 = L3_PREP;
-    public static final ManipulatorPosition L3_POST_SCORE = SAFE_CORAL_TRAVEL;
-
-    public static final ManipulatorPosition L4_PREP = new ManipulatorPosition(1.72, 140, 235);
-    public static final ManipulatorPosition SCORE_L4 = L4_PREP;
-    public static final ManipulatorPosition L4_POST_SCORE = SAFE_CORAL_TRAVEL;
-
-    public static final ManipulatorPosition PREP_ALGAE_INTAKE = SAFE_CORAL_TRAVEL;
-    public static final ManipulatorPosition PREP_ALGAE_L2 =
-        new ManipulatorPosition(0.625, 185, 225);
-    public static final ManipulatorPosition PREP_ALGAE_L3 =
-        new ManipulatorPosition(1.025, 185, 225);
-    public static final ManipulatorPosition SAFE_ALGAE_TRAVEL = SAFE_CORAL_TRAVEL;
-
+    // ========================= Processor / Barge =========================
     public static final ManipulatorPosition SCORE_PROCESSOR =
-        new ManipulatorPosition(0.125, 80, 195);
+        new ManipulatorPosition(kElevatorProcessor, kExtensionProcessor, kRotationProcessor);
 
-    public static final ManipulatorPosition PREP_SCORE_BARGE = SAFE_CORAL_TRAVEL;
-    public static final ManipulatorPosition SCORE_BARGE = SAFE_CORAL_TRAVEL;
+    public static final ManipulatorPosition PREP_BARGE =
+        new ManipulatorPosition(kElevatorBarge, kExtensionPrep, kRotationPrep);
+    public static final ManipulatorPosition SCORE_BARGE =
+        new ManipulatorPosition(kElevatorBarge, kExtensionBarge, kRotationBarge);
+    public static final ManipulatorPosition BARGE_POST_SCORE = PREP_BARGE;
 
-    public static final ManipulatorPosition CLIMB_PREP = SAFE_CORAL_TRAVEL;
-    public static final ManipulatorPosition CLIMB_READY =
-        new ManipulatorPosition(
-            0.525,
-            DifferentialArm.transportExtensionSetpoint,
-            DifferentialArm.transportRotationSetpoint);
+    // =============================== Climb ===============================
+    public static final ManipulatorPosition CLIMB =
+        new ManipulatorPosition(kElevatorClimb, kExtensionClimb, kRotationClimb);
 
-    public static final ManipulatorPosition CANCELLED = SAFE_CORAL_TRAVEL;
-
-    public static final ManipulatorPosition L1 = SCORE_L1;
-    public static final ManipulatorPosition L2 = SCORE_L2;
-    public static final ManipulatorPosition L3 = SCORE_L3;
-    public static final ManipulatorPosition L4 = SCORE_L4;
+    // ============================== Misc / Aliases ==============================
+    public static final ManipulatorPosition CANCELLED = CORAL_TRANSPORT;
 
     public record ManipulatorPosition(
         double elevatorMeters, double extensionMillimeters, double rotationDegrees) {}
@@ -276,36 +304,22 @@ public final class Constants {
 
   /** Drivetrain-specific configuration such as module locations and CAN IDs. */
   public static final class DriveConstants {
+    // Driving Parameters - Note that these are not the maximum capable speeds of
+    // the robot, rather the allowed maximum speeds
+    public static final double kMaxSpeedMetersPerSecond = 5.74;
+    public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
+
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26.5);
     // Distance between centers of right and left wheels on robot
     public static final double kWheelBase = Units.inchesToMeters(26.5);
     // Distance between front and back wheels on robot
-    public static final Translation2d[] kModuleTranslations = {
-      new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-      new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-      new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-      new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
-    };
     public static final SwerveDriveKinematics kDriveKinematics =
-        new SwerveDriveKinematics(kModuleTranslations);
-
-    // Driving Parameters - Note that these are not the maximum capable speeds of
-    // the robot, rather the allowed maximum speeds
-    public static final double kMaxSpeedMetersPerSecond =
-        ModuleConstants.kDriveWheelFreeSpeedMetersPerSecond;
-    public static final double kMaxAngularSpeed =
-        kMaxSpeedMetersPerSecond
-            / Math.hypot(kWheelBase / 2.0, kTrackWidth / 2.0); // radians per second
-
-    // Physical properties used for simulation
-    public static final double kRobotMassKg = 50.0;
-    public static final double kLinearDampingCoeff = 0.2;
-    public static final double kAngularDampingCoeff = 0.05;
-    // Blend factor for softening non-holonomic constraints in simulation (1.0 = rigid)
-    public static final double kConstraintBeta = 0.9;
-    public static final double kRobotMomentOfInertia =
-        kRobotMassKg * (kWheelBase * kWheelBase + kTrackWidth * kTrackWidth) / 12.0;
+        new SwerveDriveKinematics(
+            new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+            new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+            new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+            new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
 
     // Angular offsets of the modules relative to the chassis in radians
     public static final double kFrontLeftChassisAngularOffset = (-Math.PI / 2);
@@ -325,23 +339,6 @@ public final class Constants {
     public static final int kRearRightTurningCanId = 47;
 
     public static final boolean kGyroReversed = false;
-
-    public static final DriveTrainSimulationConfig mapleSimConfig =
-        DriveTrainSimulationConfig.Default()
-            .withCustomModuleTranslations(kModuleTranslations)
-            .withRobotMass(Kilogram.of(kRobotMassKg))
-            .withGyro(COTS.ofNav2X())
-            .withSwerveModule(
-                new SwerveModuleSimulationConfig(
-                    ModuleConstants.kDriveMotor,
-                    ModuleConstants.kSteerMotor,
-                    ModuleConstants.kDrivingMotorReduction,
-                    ModuleConstants.kSteerReduction,
-                    Volts.of(0.1),
-                    Volts.of(0.1),
-                    Meters.of(ModuleConstants.kWheelDiameterMeters / 2.0),
-                    KilogramSquareMeters.of(0.02),
-                    1.2));
   }
 
   /** Gear ratios and kinematics values that apply to an individual swerve module. */
@@ -355,33 +352,27 @@ public final class Constants {
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
     public static final double kWheelDiameterMeters = 0.0736;
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
-    // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear,
-    // and 15 teeth on the bevel pinion
+    // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
+    // teeth on the bevel pinion
     public static final double kDrivingMotorReduction =
-        (45.0 * 22) / (kDrivingMotorPinionTeeth * 15.0);
+        (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
+    public static final double kDriveWheelFreeSpeedRps =
+        (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDrivingMotorReduction;
 
-    // Encoder conversion factors: raw motor rotations -> meters
-    public static final double kDriveEncoderPositionFactor =
-        kWheelCircumferenceMeters / kDrivingMotorReduction; // meters per motor rotation
-    // The Spark Flex reports velocity in RPM, so convert motor RPM to linear wheel
-    // speed using 60 seconds per minute.
-    public static final double kDriveEncoderVelocityFactor =
-        kDriveEncoderPositionFactor / 60.0; // meters per second per RPM
+    public static final double kDrivingVelocityFF = 0.13569;
+    public static final double kDrivingP = 0.012343;
+    public static final double kDrivingI = 0.0;
+    public static final double kDrivingD = 0.0;
 
-    // Free speed of the drive wheel in meters per second
-    public static final double kDriveWheelFreeSpeedMetersPerSecond =
-        kDrivingMotorFreeSpeedRps * kDriveEncoderPositionFactor;
+    public static final double kTurningP = 4.3865;
+    public static final double kTurningI = 0.0;
+    public static final double kTurningD = 0.0;
 
-    // Steering and efficiency parameters
-    public static final double kSteerReduction = 9424.0 / 203.0;
-    public static final double kDriveEfficiency = 0.92;
+    public static final int kDrivingCurrentLimit = 50;
+    public static final int kTurningCurrentLimit = 20;
+    public static final double kNominalVoltage = 12.0;
 
-    // Current limit for drive motors in simulation (amps)
-    public static final int kDriveCurrentLimitAmps = 50;
-
-    // Motor models used for simulation
-    public static final DCMotor kDriveMotor = DCMotor.getNeoVortex(1);
-    public static final DCMotor kSteerMotor = DCMotor.getNeo550(1);
+    public static final double kTurningEncoderFactor = 2 * Math.PI;
   }
 
   /** Mappings for the driver controller. */
@@ -392,9 +383,6 @@ public final class Constants {
 
   /** Motion limits and controller values that are specific to autonomous pathing. */
   public static final class AutoConstants {
-    /** Default translation scalar for DriveTestAuto (1.0 = full speed). */
-    public static final double kDriveTestDefaultTranslationScalar = 0.1;
-
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
@@ -421,9 +409,6 @@ public final class Constants {
     public static final double kFreeSpeedRpm = 6784;
   }
 
-  /** Radius around a location that counts as "inside" an intake zone in simulation (m). */
-  public static final double SIM_INTAKE_TOLERANCE_METERS = 0.5;
-
   /** Shared geometry describing the robot's vision sensors and AprilTag layout. */
   public static final class VisionConstants {
     public static final double CAMERA_HEIGHT_METERS = 0.9144;
@@ -442,14 +427,6 @@ public final class Constants {
         new Transform3d(
             new Translation3d(0.0015, -0.3279, (0.9473 - 0.102)),
             new Rotation3d(degreesToRadians(180), degreesToRadians(-45), degreesToRadians(-200)));
-
-    // Simulated camera parameters
-    public static final int CAMERA_RESOLUTION_WIDTH = 960; // pixels
-    public static final int CAMERA_RESOLUTION_HEIGHT = 720; // pixels
-    public static final double CAMERA_FOV_DEGREES = 90; // diagonal field of view
-    public static final double CAMERA_FPS = 20.0; // frames per second
-    public static final double CAMERA_AVG_LATENCY_MS = 30.0; // milliseconds
-    public static final double CAMERA_LATENCY_STDDEV_MS = 5.0; // milliseconds
 
     public static final double FIELD_LENGTH_METERS = 16.54175;
     public static final double FIELD_WIDTH_METERS = 8.0137;
@@ -481,36 +458,36 @@ public final class Constants {
     // All Variables in Blue coordinate system
     // PHANTOM LAKES
     // public static final List<Pose2d> leftBranches = List.of(
-    //         new Pose2d(3.17, 4.19, new Rotation2d(Math.toRadians(-1))), // 1
-    //         new Pose2d(3.68, 2.96, new Rotation2d(Math.toRadians(58))), // 2
-    //         new Pose2d(5.00, 2.79, new Rotation2d(Math.toRadians(118))), // 3
-    //         new Pose2d(5.80, 3.84, new Rotation2d(Math.toRadians(180))), // 4
-    //         new Pose2d(5.30, 5.07, new Rotation2d(Math.toRadians(-121))), // 5
-    //         new Pose2d(3.98, 5.25, new Rotation2d(Math.toRadians(-61))));// 6
+    // new Pose2d(3.17, 4.19, new Rotation2d(Math.toRadians(-1))), // 1
+    // new Pose2d(3.68, 2.96, new Rotation2d(Math.toRadians(58))), // 2
+    // new Pose2d(5.00, 2.79, new Rotation2d(Math.toRadians(118))), // 3
+    // new Pose2d(5.80, 3.84, new Rotation2d(Math.toRadians(180))), // 4
+    // new Pose2d(5.30, 5.07, new Rotation2d(Math.toRadians(-121))), // 5
+    // new Pose2d(3.98, 5.25, new Rotation2d(Math.toRadians(-61))));// 6
     // public static final List<Pose2d> rightBranches = List.of(
-    //         new Pose2d(3.17, 3.86, new Rotation2d(Math.toRadians(-1))), // 1
-    //         new Pose2d(3.98, 2.80, new Rotation2d(Math.toRadians(58))), // 2
-    //         new Pose2d(5.29, 2.96, new Rotation2d(Math.toRadians(118))), // 3
-    //         new Pose2d(5.80, 4.19, new Rotation2d(Math.toRadians(180))), // 4
-    //         new Pose2d(4.99, 5.25, new Rotation2d(Math.toRadians(-121))), // 5
-    //         new Pose2d(3.68, 5.07, new Rotation2d(Math.toRadians(-61))));// 6
+    // new Pose2d(3.17, 3.86, new Rotation2d(Math.toRadians(-1))), // 1
+    // new Pose2d(3.98, 2.80, new Rotation2d(Math.toRadians(58))), // 2
+    // new Pose2d(5.29, 2.96, new Rotation2d(Math.toRadians(118))), // 3
+    // new Pose2d(5.80, 4.19, new Rotation2d(Math.toRadians(180))), // 4
+    // new Pose2d(4.99, 5.25, new Rotation2d(Math.toRadians(-121))), // 5
+    // new Pose2d(3.68, 5.07, new Rotation2d(Math.toRadians(-61))));// 6
     // public static final List<Pose2d> rightBranchL1 = List.of(
-    //         new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
-    //         new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
-    //         new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
-    //         new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
-    //         new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
-    //         new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
+    // new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
+    // new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
+    // new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
+    // new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
+    // new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
+    // new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
     // public static final List<Pose2d> leftBranchL1 = List.of(
-    //         new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
-    //         new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
-    //         new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
-    //         new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
-    //         new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
-    //         new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
+    // new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
+    // new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
+    // new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
+    // new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
+    // new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
+    // new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
     // public static final List<Pose2d> coralStations = List.of(
-    //         new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
-    //         new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
+    // new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
+    // new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
 
     // R2OC Red and Blue average Pose
     public static final List<Pose2d> leftBranches =
@@ -531,20 +508,20 @@ public final class Constants {
             new Pose2d(3.691, 5.073, new Rotation2d(Math.toRadians(-61.4)))); // 19_RIGHT
 
     // R2OC
-    //  public static final List<Pose2d> leftBranches = List.of(
-    //          new Pose2d(3.180, 4.135, new Rotation2d(Math.toRadians(-1.6))),   // 18_LEFT
-    //          new Pose2d(3.680, 2.980, new Rotation2d(Math.toRadians(57.9))),   // 17_LEFT
-    //          new Pose2d(4.995, 2.805, new Rotation2d(Math.toRadians(118.4))),  // 22_LEFT
-    //          new Pose2d(5.795, 3.843, new Rotation2d(Math.toRadians(178.1))),  // 21_LEFT
-    //          new Pose2d(5.284, 5.071, new Rotation2d(Math.toRadians(-121.2))), // 20_LEFT
-    //          new Pose2d(3.989, 5.241, new Rotation2d(Math.toRadians(-62)))); // 19_LEFT
-    //  public static final List<Pose2d> rightBranches = List.of(
-    //          new Pose2d(3.178, 3.842, new Rotation2d(Math.toRadians(-0.6))),   // 18_RIGHT
-    //          new Pose2d(3.985, 2.804, new Rotation2d(Math.toRadians(58.9))),   // 17_RIGHT
-    //          new Pose2d(5.286, 2.971, new Rotation2d(Math.toRadians(119))),  // 22_RIGHT
-    //          new Pose2d(5.795, 4.204, new Rotation2d(Math.toRadians(179.6))),  // 21_RIGHT
-    //          new Pose2d(4.983, 5.244, new Rotation2d(Math.toRadians(-120.3))), // 20_RIGHT
-    //          new Pose2d(3.694, 5.072, new Rotation2d(Math.toRadians(-61.6)))); // 19_RIGHT
+    // public static final List<Pose2d> leftBranches = List.of(
+    // new Pose2d(3.180, 4.135, new Rotation2d(Math.toRadians(-1.6))), // 18_LEFT
+    // new Pose2d(3.680, 2.980, new Rotation2d(Math.toRadians(57.9))), // 17_LEFT
+    // new Pose2d(4.995, 2.805, new Rotation2d(Math.toRadians(118.4))), // 22_LEFT
+    // new Pose2d(5.795, 3.843, new Rotation2d(Math.toRadians(178.1))), // 21_LEFT
+    // new Pose2d(5.284, 5.071, new Rotation2d(Math.toRadians(-121.2))), // 20_LEFT
+    // new Pose2d(3.989, 5.241, new Rotation2d(Math.toRadians(-62)))); // 19_LEFT
+    // public static final List<Pose2d> rightBranches = List.of(
+    // new Pose2d(3.178, 3.842, new Rotation2d(Math.toRadians(-0.6))), // 18_RIGHT
+    // new Pose2d(3.985, 2.804, new Rotation2d(Math.toRadians(58.9))), // 17_RIGHT
+    // new Pose2d(5.286, 2.971, new Rotation2d(Math.toRadians(119))), // 22_RIGHT
+    // new Pose2d(5.795, 4.204, new Rotation2d(Math.toRadians(179.6))), // 21_RIGHT
+    // new Pose2d(4.983, 5.244, new Rotation2d(Math.toRadians(-120.3))), // 20_RIGHT
+    // new Pose2d(3.694, 5.072, new Rotation2d(Math.toRadians(-61.6)))); // 19_RIGHT
     public static final List<Pose2d> rightBranchL1 =
         List.of(
             new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
@@ -563,38 +540,50 @@ public final class Constants {
             new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344)))); // back
 
     // public static final List<Pose2d> coralStations = List.of(
-    //         new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
-    //         new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
+    // new Pose2d(1.43, 0.72, new Rotation2d(Math.toRadians(55))),
+    // new Pose2d(1.38, 7.31, new Rotation2d(Math.toRadians(-55))));
 
     // // SHOP
     // public static final List<Pose2d> leftBranches = List.of(
-    //        new Pose2d(3.18, 4.23, new Rotation2d(Math.toRadians(-4))), // front (18_LEFT)
-    //         new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left (20_LEFT)
-    //         new Pose2d(4.96, 2.78, new Rotation2d(Math.toRadians(116))), // back right (22_LEFT)
-    //         new Pose2d(3.66, 2.97, new Rotation2d(Math.toRadians(57))), // front right (17_LEFT)
-    //         new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left (19_RIGHT)
-    //         new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back (21_LEFT)
+    // new Pose2d(3.18, 4.23, new Rotation2d(Math.toRadians(-4))), // front
+    // (18_LEFT)
+    // new Pose2d(5.24, 5.10, new Rotation2d(Math.toRadians(-120))), // back left
+    // (20_LEFT)
+    // new Pose2d(4.96, 2.78, new Rotation2d(Math.toRadians(116))), // back right
+    // (22_LEFT)
+    // new Pose2d(3.66, 2.97, new Rotation2d(Math.toRadians(57))), // front right
+    // (17_LEFT)
+    // new Pose2d(3.93, 5.21, new Rotation2d(Math.toRadians(-60))), // front left
+    // (19_RIGHT)
+    // new Pose2d(5.79, 3.93, new Rotation2d(Math.toRadians(180))));// back
+    // (21_LEFT)
     // public static final List<Pose2d> rightBranches = List.of(
-    //         new Pose2d(3.18, 3.85, new Rotation2d(Math.toRadians(-2))), // front (18_RIGHT)
-    //         new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left (20_RIGHT)
-    //         new Pose2d(5.28, 2.95, new Rotation2d(Math.toRadians(118))), // back right (22_RIGHT)
-    //         new Pose2d(3.95, 2.80, new Rotation2d(Math.toRadians(58))), // front right (17_RIGHT)
-    //         new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left (19_RIGHT)
-    //         new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back (21_RIGHT)
+    // new Pose2d(3.18, 3.85, new Rotation2d(Math.toRadians(-2))), // front
+    // (18_RIGHT)
+    // new Pose2d(4.93, 5.27, new Rotation2d(Math.toRadians(-120))), // back left
+    // (20_RIGHT)
+    // new Pose2d(5.28, 2.95, new Rotation2d(Math.toRadians(118))), // back right
+    // (22_RIGHT)
+    // new Pose2d(3.95, 2.80, new Rotation2d(Math.toRadians(58))), // front right
+    // (17_RIGHT)
+    // new Pose2d(3.64, 5.04, new Rotation2d(Math.toRadians(-60))), // front left
+    // (19_RIGHT)
+    // new Pose2d(5.78, 4.26, new Rotation2d(Math.toRadians(180))));// back
+    // (21_RIGHT)
     // public static final List<Pose2d> rightBranchL1 = List.of(
-    //         new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
-    //         new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
-    //         new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
-    //         new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
-    //         new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
-    //         new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
+    // new Pose2d(3.06, 3.57, new Rotation2d(Math.toRadians(189))), // front
+    // new Pose2d(5.02, 5.42, new Rotation2d(Math.toRadians(320))), // back left
+    // new Pose2d(5.37, 2.93, new Rotation2d(Math.toRadians(82))), // back right
+    // new Pose2d(3.72, 2.95, new Rotation2d(Math.toRadians(55))), // front right
+    // new Pose2d(3.64, 5.15, new Rotation2d(Math.toRadians(266))), // front left
+    // new Pose2d(5.90, 4.28, new Rotation2d(Math.toRadians(19))));// back
     // public static final List<Pose2d> leftBranchL1 = List.of(
-    //         new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
-    //         new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
-    //         new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
-    //         new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
-    //         new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
-    //         new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
+    // new Pose2d(3.08, 4.08, new Rotation2d(Math.toRadians(155))), // front
+    // new Pose2d(5.25, 5.20, new Rotation2d(Math.toRadians(278))), // back left
+    // new Pose2d(5.00, 2.74, new Rotation2d(Math.toRadians(48))), // back right
+    // new Pose2d(3.76, 2.82, new Rotation2d(Math.toRadians(95))), // front right
+    // new Pose2d(4.02, 5.31, new Rotation2d(Math.toRadians(230))), // front left
+    // new Pose2d(5.87, 3.87, new Rotation2d(Math.toRadians(344))));// back
 
     public static final Translation2d reefCenter = new Translation2d(176 * inToM, 158.5 * inToM);
     public static final Translation2d processor = new Translation2d(6, 0);

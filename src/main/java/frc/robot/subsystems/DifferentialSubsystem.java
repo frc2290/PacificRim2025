@@ -1,108 +1,217 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.subsystems;
 
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.commands.Waits.ExtensionAndRotationWait;
-import frc.robot.commands.Waits.ExtensionSetWait;
-import frc.robot.commands.Waits.RotationSetWait;
-import frc.robot.io.DifferentialArmIO;
-import frc.robot.io.DifferentialArmIOSim;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.LinearInterpolator;
 
-/** Subsystem controlling the differential arm through an IO abstraction. */
-public class DifferentialSubsystem extends SubsystemBase implements AutoCloseable {
-  private final DifferentialArmIO io;
+/** Owns the differential arm that controls manipulator rotation and extension. */
+public class DifferentialSubsystem extends SubsystemBase {
 
-  private final ProfiledPIDController extensionPid =
-      new ProfiledPIDController(30, 0, 1.5, new Constraints(3000, 12000));
-  private final ProfiledPIDController rotationPid =
-      new ProfiledPIDController(60, 0, 4, new Constraints(1400, 5600));
+  /** Motion-profiled PID that handles telescoping the arm in millimeters. */
+  private ProfiledPIDController extensionPid =
+      new ProfiledPIDController(
+          DifferentialArm.kExtensionProfiledKp,
+          DifferentialArm.kExtensionProfiledKi,
+          DifferentialArm.kExtensionProfiledKd,
+          new Constraints(
+              DifferentialArm.kExtensionMaxVelocityMillimetersPerSecond,
+              DifferentialArm.kExtensionMaxAccelerationMillimetersPerSecondSquared));
 
-  private final FlytLogger differentialDash = new FlytLogger("Differential");
+  /** Motion-profiled PID that rotates the arm while respecting acceleration limits. */
+  private ProfiledPIDController rotationPid =
+      new ProfiledPIDController(
+          DifferentialArm.kRotationProfiledKp,
+          DifferentialArm.kRotationProfiledKi,
+          DifferentialArm.kRotationProfiledKd,
+          new Constraints(
+              DifferentialArm.kRotationMaxVelocityDegreesPerSecond,
+              DifferentialArm.kRotationMaxAccelerationDegreesPerSecondSquared));
 
-  private final double differentialArmRadiusMeters;
-  private final double linearDriveRadiusMeters;
-  private final double maxExtensionVelocityMmPerSec;
-  private final double maxRotationVelocityDegPerSec;
+  private SparkMax leftMotor;
+  private SparkMax rightMotor;
 
-  private double extensionSetpoint = 0.0;
-  private double rotationSetpoint = 0.0;
+  private SparkMaxConfig leftConfig = new SparkMaxConfig();
+  private SparkMaxConfig rightConfig = new SparkMaxConfig();
 
-  private final LinearInterpolator l4RotationInterpolator =
+  private RelativeEncoder leftEnc;
+  private RelativeEncoder rightEnc;
+
+  private SparkClosedLoopController leftArm;
+  private SparkClosedLoopController rightArm;
+
+  /** Dashboard helper for streaming arm telemetry to AdvantageScope. */
+  private FlytLogger differentialDash = new FlytLogger("Differential");
+
+  private double extensionSetpoint = 0;
+  private double rotationSetpoint = 0;
+
+  @SuppressWarnings("unused")
+  private SlewRateLimiter extendSlew =
+      new SlewRateLimiter(DifferentialArm.kExtensionSlewRateMillimetersPerSecond);
+
+  @SuppressWarnings("unused")
+  private SlewRateLimiter rotateSlew =
+      new SlewRateLimiter(DifferentialArm.kRotationSlewRateDegreesPerSecond);
+
+  /** Laser rangefinder mounted near the manipulator for interpolation of scoring positions. */
+  private LaserCan lc;
+
+  private int laserCanDistance = 0;
+  private boolean hasLaserCanDistance = false;
+
+  /** Lookup table for upper reef rotations keyed by laser distance. */
+  private LinearInterpolator l4RotationInterpolator =
       new LinearInterpolator(DifferentialArm.l4RotationData);
-  private final LinearInterpolator l4ExtensionInterpolator =
+
+  /** Lookup table for upper reef extensions keyed by laser distance. */
+  private LinearInterpolator l4ExtensionInterpolator =
       new LinearInterpolator(DifferentialArm.l4ExtensionData);
-  private final LinearInterpolator l2_3RotationInterpolator =
+
+  /** Lookup table for mid reef rotations keyed by laser distance. */
+  private LinearInterpolator l2_3RotationInterpolator =
       new LinearInterpolator(DifferentialArm.l2_3RotationData);
-  private final LinearInterpolator l2_3ExtensionInterpolator =
+
+  /** Lookup table for mid reef extensions keyed by laser distance. */
+  private LinearInterpolator l2_3ExtensionInterpolator =
       new LinearInterpolator(DifferentialArm.l2_3ExtensionData);
 
-  private double extensionVelocity;
-  private double rotationVelocity;
-  private double leftCommand;
-  private double rightCommand;
+  double extensionVelocity;
+  double rotationVelocity;
+  double leftVelocityCommand;
+  double rightVelocityCommand;
 
-  private int laserCanDistance;
-  private boolean hasLaserCanDistance;
+  public DifferentialSubsystem() {
+    leftMotor = new SparkMax(DifferentialArm.kLeftMotorId, MotorType.kBrushless);
+    rightMotor = new SparkMax(DifferentialArm.kRightMotorId, MotorType.kBrushless);
 
-  public DifferentialSubsystem(DifferentialArmIO io) {
-    this.io = io;
-    DCMotor motorModel;
-    if (io instanceof DifferentialArmIOSim) {
-      linearDriveRadiusMeters = DifferentialArm.kSimLinearDriveRadiusMeters;
-      differentialArmRadiusMeters = DifferentialArm.kSimDifferentialArmRadiusMeters;
-      motorModel = DifferentialArm.kSimMotor;
-    } else {
-      linearDriveRadiusMeters = DifferentialArm.kLinearDriveRadiusMeters;
-      differentialArmRadiusMeters = DifferentialArm.kDifferentialArmRadiusMeters;
-      motorModel = DifferentialArm.kMotor;
+    leftConfig
+        .inverted(true)
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(DifferentialArm.kArmCurrentLimit)
+        .encoder
+        .positionConversionFactor(DifferentialArm.kPositionConversionFactor)
+        .velocityConversionFactor(DifferentialArm.kVelocityConversionFactor)
+        .quadratureMeasurementPeriod(DifferentialArm.kQuadratureMeasurementPeriod)
+        .quadratureAverageDepth(DifferentialArm.kQuadratureAverageDepth);
+    leftConfig
+        .closedLoop
+        .p(DifferentialArm.kVelocityLoopP, ClosedLoopSlot.kSlot0)
+        .i(DifferentialArm.kVelocityLoopI, ClosedLoopSlot.kSlot0)
+        .d(DifferentialArm.kVelocityLoopD, ClosedLoopSlot.kSlot0)
+        .outputRange(-1, 1);
+
+    leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    rightConfig.apply(leftConfig);
+
+    rightMotor.configure(
+        rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    leftEnc = leftMotor.getEncoder();
+    leftEnc.setPosition(0);
+    rightEnc = rightMotor.getEncoder();
+    rightEnc.setPosition(0);
+
+    leftArm = leftMotor.getClosedLoopController();
+    rightArm = rightMotor.getClosedLoopController();
+
+    extensionPid.reset(extensionSetpoint);
+    extensionPid.setTolerance(DifferentialArm.kExtensionPositionToleranceMillimeters);
+    rotationPid.reset(rotationSetpoint);
+    rotationPid.setTolerance(DifferentialArm.kRotationToleranceDegrees);
+
+    lc = new LaserCan(DifferentialArm.kLaserCanId);
+
+    // Configure the LaserCAN for close range measurements so the interpolators have
+    // reliable data.
+    try {
+      lc.setRangingMode(LaserCan.RangingMode.SHORT);
+      lc.setRegionOfInterest(
+          new LaserCan.RegionOfInterest(
+              DifferentialArm.kLaserRegionX,
+              DifferentialArm.kLaserRegionY,
+              DifferentialArm.kLaserRegionWidth,
+              DifferentialArm.kLaserRegionHeight));
+      lc.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
+    } catch (ConfigurationFailedException e) {
+      System.out.println("LaserCan Configuration failed! " + e);
     }
     maxExtensionVelocityMmPerSec = motorModel.freeSpeedRadPerSec * linearDriveRadiusMeters * 1000.0;
     maxRotationVelocityDegPerSec = mmToDegrees(maxExtensionVelocityMmPerSec);
     extensionPid.reset(extensionSetpoint);
     rotationPid.reset(rotationSetpoint);
 
-    differentialDash.addDoublePublisher("Left POS", true, this::getLeftPos);
-    differentialDash.addDoublePublisher("Right POS", true, this::getRightPos);
-    differentialDash.addDoublePublisher("Extension POS", false, this::getExtensionPosition);
-    differentialDash.addDoublePublisher("Rotation POS", false, this::getRotationPosition);
-    differentialDash.addBoolPublisher("At Extension", false, this::atExtenstionSetpoint);
-    differentialDash.addBoolPublisher("At Rotation", false, this::atRotationSetpoint);
-    differentialDash.addDoublePublisher("Ext Setpoint", false, this::getExtensionSetpoint);
-    differentialDash.addDoublePublisher("Rot Setpoint", false, this::getRotationSetpoint);
-    differentialDash.addDoublePublisher("Ext Command Vel", true, () -> extensionVelocity);
+    differentialDash.addDoublePublisher("Extension Position", false, () -> getExtensionPosition());
+    differentialDash.addDoublePublisher("Rotation Position", false, () -> getRotationPosition());
+    differentialDash.addBoolPublisher("At Extension", false, () -> atExtenstionSetpoint());
+    differentialDash.addBoolPublisher("At Rotation", false, () -> atRotationSetpoint());
+    differentialDash.addDoublePublisher("Extension Setpoint", false, () -> getExtensionSetpoint());
+    differentialDash.addDoublePublisher("Rotation Setpoint", false, () -> getRotationSetpoint());
+    differentialDash.addDoublePublisher("Left Output", true, () -> leftMotor.getAppliedOutput());
+    differentialDash.addDoublePublisher("Left Current", true, () -> leftMotor.getOutputCurrent());
+    differentialDash.addDoublePublisher("Right Output", true, () -> rightMotor.getAppliedOutput());
+    differentialDash.addDoublePublisher("Right Current", true, () -> rightMotor.getOutputCurrent());
+    differentialDash.addDoublePublisher("Voltage", true, () -> leftMotor.getBusVoltage());
     differentialDash.addDoublePublisher(
-        "Ext Vel", true, () -> (io.getLeftVelocity() + io.getRightVelocity()) / 2);
-    differentialDash.addDoublePublisher("Rot Command Vel", true, () -> rotationVelocity);
+        "Extension Command Velocity", true, () -> extensionVelocity);
     differentialDash.addDoublePublisher(
-        "Rot Vel", true, () -> (io.getLeftVelocity() - io.getRightVelocity()) / 2);
-    differentialDash.addDoublePublisher("Left Command", true, () -> leftCommand);
-    differentialDash.addDoublePublisher("Right Command", true, () -> rightCommand);
-    differentialDash.addDoublePublisher("Left Current", true, io::getLeftCurrentAmps);
-    differentialDash.addDoublePublisher("Right Current", true, io::getRightCurrentAmps);
+        "Extension Velocity", true, () -> (leftEnc.getVelocity() + rightEnc.getVelocity()) / 2);
+    differentialDash.addDoublePublisher("Rotation Command Velocity", true, () -> rotationVelocity);
+    differentialDash.addDoublePublisher(
+        "Rotation Velocity", true, () -> (leftEnc.getVelocity() - rightEnc.getVelocity()) / 2);
+    differentialDash.addDoublePublisher(
+        "Left Velocity Error", true, () -> leftVelocityCommand - leftEnc.getVelocity());
+    differentialDash.addDoublePublisher(
+        "Right Velocity Error", true, () -> rightVelocityCommand - rightEnc.getVelocity());
     differentialDash.addIntegerPublisher("LaserCan Distance", true, () -> laserCanDistance);
   }
 
-  /** Default constructor using a simple simulation backend. */
-  public DifferentialSubsystem() {
-    this(new DifferentialArmIOSim());
-  }
-
+  /** Direct percent-output control for telescoping, primarily used for testing. */
   public void extend(double setpoint) {
-    io.setArmVelocitySetpoints(setpoint, setpoint);
+    leftMotor.set(setpoint);
+    rightMotor.set(setpoint);
   }
 
+  /** Direct percent-output control for rotation, primarily used for testing. */
   public void rotate(double setpoint) {
-    io.setArmVelocitySetpoints(setpoint, -setpoint);
+    leftMotor.set(setpoint);
+    rightMotor.set(-setpoint);
   }
 
   public void setExtensionSetpoint(double setpoint) {
@@ -110,7 +219,8 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   }
 
   public Command setExtensionSetpointCommand(double setpoint) {
-    return new ExtensionSetWait(this, setpoint);
+    return Commands.run(() -> setExtensionSetpoint(setpoint), this)
+        .until(this::atExtenstionSetpoint);
   }
 
   public void setRotationSetpoint(double setpoint) {
@@ -118,11 +228,17 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   }
 
   public Command setRotationSetpointCommand(double setpoint) {
-    return new RotationSetWait(this, setpoint);
+    return Commands.run(() -> setRotationSetpoint(setpoint), this).until(this::atRotationSetpoint);
   }
 
   public Command setRotAndExtSetpointCommand(double ext, double rot) {
-    return new ExtensionAndRotationWait(this, ext, rot);
+    return Commands.run(
+            () -> {
+              setExtensionSetpoint(ext);
+              setRotationSetpoint(rot);
+            },
+            this)
+        .until(() -> atRotationSetpoint() && atExtenstionSetpoint());
   }
 
   public double getExtensionSetpoint() {
@@ -142,46 +258,44 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   }
 
   public double getLeftPos() {
-    return io.getLeftPosition();
+    return leftEnc.getPosition();
   }
 
   public double getRightPos() {
-    return io.getRightPosition();
+    return rightEnc.getPosition();
   }
 
   public double getExtensionPosition() {
     return (getLeftPos() + getRightPos()) / 2;
+    // return (motor1.getPos()+motor2.getPos())/2;
   }
 
   public double getRotationPosition() {
-    double spoolDifferenceMillimeters = (getLeftPos() - getRightPos()) / 2.0;
-    double spoolDifferenceMeters = spoolDifferenceMillimeters / 1000.0;
-    double rotationRadians = spoolDifferenceMeters / differentialArmRadiusMeters;
-    return Units.radiansToDegrees(rotationRadians);
-  }
-
-  /** Average spool velocity reported by the IO in native units per second. */
-  public double getMeasuredExtensionVelocity() {
-    return (io.getLeftVelocity() + io.getRightVelocity()) / 2.0;
-  }
-
-  /** Differential rotation velocity reported by the IO in native units per second. */
-  public double getMeasuredRotationVelocity() {
-    return (io.getLeftVelocity() - io.getRightVelocity()) / 2.0;
+    return -(((getLeftPos() - getRightPos()) / 2) / DifferentialArm.kMillimetersPerRotation)
+        * DifferentialArm.kDegreesPerRotation;
+    // return endeffector.getWristPos();
   }
 
   public boolean atExtenstionSetpoint() {
-    return (extensionSetpoint - 5) <= getExtensionPosition()
-        && getExtensionPosition() <= (extensionSetpoint + 5);
+    return extensionPid.atSetpoint() && isExtenstionProfileFinished();
   }
 
   public boolean atRotationSetpoint() {
-    return (rotationSetpoint - 5) <= getRotationPosition()
-        && getRotationPosition() <= (rotationSetpoint + 5);
+    return rotationPid.atSetpoint() && isRotationProfileFinished();
   }
 
-  public double getCurrentDraw() {
-    return io.getLeftCurrentAmps() + io.getRightCurrentAmps();
+  private boolean isExtenstionProfileFinished() {
+    var goal = extensionPid.getGoal();
+    var setpoint = extensionPid.getSetpoint();
+    return MathUtil.isNear(
+        goal.position, setpoint.position, DifferentialArm.kExtensionProfileGoalPositionTolerance);
+  }
+
+  private boolean isRotationProfileFinished() {
+    var goal = rotationPid.getGoal();
+    var setpoint = rotationPid.getSetpoint();
+    return MathUtil.isNear(
+        goal.position, setpoint.position, DifferentialArm.kRotationProfileGoalPositionTolerance);
   }
 
   public int getLaserCanDistance() {
@@ -209,53 +323,41 @@ public class DifferentialSubsystem extends SubsystemBase implements AutoCloseabl
   }
 
   private double degreesToMM(double degrees) {
-    double rotationRadians = Units.degreesToRadians(degrees);
-    double spoolDifferenceMeters = rotationRadians * differentialArmRadiusMeters;
-    return spoolDifferenceMeters * 1000.0;
-  }
-
-  private double mmToDegrees(double millimeters) {
-    double spoolDifferenceMeters = millimeters / 1000.0;
-    double rotationRadians = spoolDifferenceMeters / differentialArmRadiusMeters;
-    return Units.radiansToDegrees(rotationRadians);
-  }
-
-  /** Latest commanded velocity for the left side of the differential in mm/s. */
-  public double getLeftVelocityCommand() {
-    return leftCommand;
-  }
-
-  /** Latest commanded velocity for the right side of the differential in mm/s. */
-  public double getRightVelocityCommand() {
-    return rightCommand;
+    return (degrees / DifferentialArm.kDegreesPerRotation)
+        * DifferentialArm.kMillimetersPerRotation;
   }
 
   @Override
   public void periodic() {
-    io.update();
-    laserCanDistance = io.getLaserDistanceMm();
-    hasLaserCanDistance = io.hasLaserDistance();
+    // Poll the LaserCAN for distance data that helps compute interpolated presets.
+    LaserCan.Measurement measurement = lc.getMeasurement();
+    if (measurement != null
+        && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
+        && measurement.distance_mm < DifferentialArm.kLaserMaxValidDistanceMillimeters) {
+      laserCanDistance = measurement.distance_mm;
+      hasLaserCanDistance = true;
+      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
+    } else {
+      hasLaserCanDistance = false;
+    }
 
-    extensionVelocity =
-        MathUtil.clamp(
-            extensionPid.calculate(getExtensionPosition(), extensionSetpoint),
-            -maxExtensionVelocityMmPerSec,
-            maxExtensionVelocityMmPerSec);
-    rotationVelocity =
-        MathUtil.clamp(
-            rotationPid.calculate(getRotationPosition(), rotationSetpoint),
-            -maxRotationVelocityDegPerSec,
-            maxRotationVelocityDegPerSec);
-    double rotationCommandMmPerSec = degreesToMM(rotationVelocity);
-    leftCommand = extensionVelocity + rotationCommandMmPerSec;
-    rightCommand = extensionVelocity - rotationCommandMmPerSec;
-    io.setArmVelocitySetpoints(leftCommand, rightCommand);
-
+    // Convert PID outputs into velocity commands for each motor. Extension is the
+    // average, rotation
+    // is produced by commanding opposite directions on the two motors.
+    extensionVelocity = extensionPid.calculate(getExtensionPosition(), extensionSetpoint);
+    rotationVelocity = rotationPid.calculate(getRotationPosition(), rotationSetpoint);
+    // double extFeed = extFeedforward.calculate(extensionVelocity);
+    // double rotFeed =
+    // rotFeedforward.calculate((degreesToRadians(getRotationPosition()) - 0.139),
+    // rotationVelocity);
+    leftVelocityCommand = extensionVelocity - degreesToMM(rotationVelocity);
+    rightVelocityCommand = extensionVelocity + degreesToMM(rotationVelocity);
+    leftArm.setReference(leftVelocityCommand, ControlType.kVelocity);
+    rightArm.setReference(rightVelocityCommand, ControlType.kVelocity);
+    // leftArm.setReference(extendSlew.calculate(extensionSetpoint) -
+    // degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
+    // rightArm.setReference(extendSlew.calculate(extensionSetpoint) +
+    // degreesToMM(rotateSlew.calculate(rotationSetpoint)), ControlType.kPosition);
     differentialDash.update(Constants.debugMode);
-  }
-
-  @Override
-  public void close() {
-    io.close();
   }
 }

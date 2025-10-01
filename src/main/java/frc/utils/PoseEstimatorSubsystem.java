@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils;
 
 import static edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition.kBlueAllianceWallRightSide;
@@ -10,13 +26,13 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
@@ -27,8 +43,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.FieldConstants;
-import frc.robot.io.VisionIO;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 import frc.utils.PoseUtils.Heading;
@@ -38,10 +52,10 @@ import org.photonvision.targeting.PhotonPipelineResult;
 /** Pose estimator that uses odometry and AprilTags with PhotonVision. */
 public class PoseEstimatorSubsystem extends SubsystemBase {
 
-  // Kalman Filter Configuration. These can be "tuned-to-taste" based on how much
+  // Kalman Filter configuration. These can be "tuned-to-taste" based on how much
   // you trust your various sensors. Smaller numbers will cause the filter to
   // "trust" the estimate from that particular component more than the others.
-  // This in turn means the particualr component will have a stronger influence
+  // This in turn means the particular component will have a stronger influence
   // on the final pose estimate.
 
   /**
@@ -50,7 +64,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
    * then meters.
    */
   private static final Vector<N3> stateStdDevs =
-      VecBuilder.fill(0.1, 0.1, 0.01); // VecBuilder.fill(0.1, 0.1, 0.1);
+      VecBuilder.fill(0.1, 0.1, 0.01); // VecBuilder.fill(0.1, 0.1, 0.1).
 
   /**
    * Standard deviations of the vision measurements. Increase these numbers to trust global
@@ -58,30 +72,58 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
    * and radians.
    */
   private static final Vector<N3> visionMeasurementStdDevs =
-      VecBuilder.fill(0.25, 0.25, 0.1); // VecBuilder.fill(1.0, 1.0, 1.0);
+      VecBuilder.fill(0.25, 0.25, 0.1); // VecBuilder.fill(1.0, 1.0, 1.0).
 
+  /** Supplier for the current gyro heading. */
   private final Supplier<Rotation2d> rotationSupplier;
+
+  /** Supplier for the swerve module positions used in odometry updates. */
   private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
+
+  /** Supplier for module states so commands can query current wheel speeds. */
   private final Supplier<SwerveModuleState[]> moduleStateSupplier;
+
   private final SwerveDrivePoseEstimator poseEstimator;
+
+  /** Field visualization that displays the robot pose in AdvantageScope. */
   private final Field2d field2d = new Field2d();
+
   private final FieldObject2d target2d = field2d.getObject("Target");
-  private final VisionIO vision;
+
+  /** PhotonVision pipeline for the front camera. */
+  private final PhotonRunnable photonEstimator;
+
+  /** PhotonVision pipeline for the rear camera. */
+  private final PhotonRunnable photonEstimator2;
+
+  private final Notifier photonNotifier;
+  private final Notifier photonNotifier2;
 
   private OriginPosition originPosition = kBlueAllianceWallRightSide;
   private boolean sawTag = false;
 
   private RobotConfig config;
 
+  /** Pose that the drivetrain should aim toward (used by auto alignment commands). */
   private Pose2d targetPose = new Pose2d();
 
+  /** Logger that streams pose data for tuning and match review. */
   private FlytLogger poseDash = new FlytLogger("Pose");
 
-  public PoseEstimatorSubsystem(DriveSubsystem m_drive, VisionIO vision) {
+  public PoseEstimatorSubsystem(DriveSubsystem m_drive) {
+    photonEstimator =
+        new PhotonRunnable(
+            "FrontCamera", VisionConstants.APRILTAG_CAMERA_TO_ROBOT, () -> getHeading());
+    photonEstimator2 =
+        new PhotonRunnable(
+            "RearCamera", VisionConstants.APRILTAG_CAMERA2_TO_ROBOT, () -> getHeading());
+
+    photonNotifier = new Notifier(photonEstimator);
+    photonNotifier2 = new Notifier(photonEstimator2);
+
     this.rotationSupplier = m_drive::newHeading;
     this.modulePositionSupplier = m_drive::getModulePositions;
     this.moduleStateSupplier = m_drive::getModuleStates;
-    this.vision = vision;
 
     poseEstimator =
         new SwerveDrivePoseEstimator(
@@ -91,6 +133,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             new Pose2d(),
             stateStdDevs,
             visionMeasurementStdDevs);
+
+    // Start PhotonVision thread.
+    photonNotifier.setName("PhotonRunnable");
+    photonNotifier.startPeriodic(0.01);
+    photonNotifier2.setName("PhotonRunnable2");
+    photonNotifier2.startPeriodic(0.01);
 
     try {
       config = RobotConfig.fromGUISettings();
@@ -116,71 +164,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             poseEstimator.getEstimatedPosition().relativeTo(targetPose).getRotation().getDegrees());
   }
 
-  /**
-   * Test-focused constructor allowing direct injection of pose suppliers without starting vision
-   * threads. This constructor should be used only for unit testing where a {@link DriveSubsystem}
-   * is not available.
-   *
-   * @param rotationSupplier supplier for the robot heading
-   * @param modulePositionSupplier supplier for swerve module positions
-   * @param moduleStateSupplier supplier for swerve module states
-   */
-  public PoseEstimatorSubsystem(
-      Supplier<Rotation2d> rotationSupplier,
-      Supplier<SwerveModulePosition[]> modulePositionSupplier,
-      Supplier<SwerveModuleState[]> moduleStateSupplier) {
-    this.rotationSupplier = rotationSupplier;
-    this.modulePositionSupplier = modulePositionSupplier;
-    this.moduleStateSupplier = moduleStateSupplier;
-    this.vision = null;
-
-    poseEstimator =
-        new SwerveDrivePoseEstimator(
-            DriveConstants.kDriveKinematics,
-            rotationSupplier.get(),
-            modulePositionSupplier.get(),
-            new Pose2d(),
-            stateStdDevs,
-            visionMeasurementStdDevs);
-  }
-
-  /**
-   * Incorporate a raw vision pipeline result into the pose estimator.
-   *
-   * @param visionResult latest pipeline result from a camera
-   * @param cameraToRobot transform from the camera to the robot frame
-   * @param timestamp acquisition timestamp in seconds
-   */
-  public void addVisionMeasurement(
-      PhotonPipelineResult visionResult, Transform3d cameraToRobot, double timestamp) {
-    if (visionResult.hasTargets()) {
-      var bestTarget = visionResult.getBestTarget();
-      var tagPose =
-          FieldConstants.AprilTagLayoutType.OFFICIAL
-              .getLayout()
-              .getTagPose(bestTarget.getFiducialId());
-      if (tagPose.isPresent()) {
-        var robotPose =
-            tagPose
-                .get()
-                .transformBy(bestTarget.getBestCameraToTarget().inverse())
-                .transformBy(cameraToRobot);
-        poseEstimator.addVisionMeasurement(
-            robotPose.toPose2d(), timestamp, visionMeasurementStdDevs);
-      }
-    }
-  }
-
-  /** Adds a direct vision pose measurement in simulation. */
-  public void addVisionPoseMeasurement(Pose2d pose, double timestamp) {
-    poseEstimator.addVisionMeasurement(pose, timestamp);
-  }
-
-  /**
-   * Sets the alliance. This is used to configure the origin of the AprilTag map
-   *
-   * @param alliance alliance
-   */
+  /** Updates the AprilTag origin based on the current alliance color. */
   public void setAlliance(Alliance alliance) {
     boolean allianceChanged = false;
     switch (alliance) {
@@ -193,39 +177,60 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         originPosition = kRedAllianceWallRightSide;
         break;
       default:
-        // No valid alliance data. Nothing we can do about it
+        // No valid alliance data. Nothing we can do about it.
     }
 
     if (allianceChanged && sawTag) {
       // The alliance changed, which changes the coordinate system.
       // Since a tag was seen, and the tags are all relative to the coordinate system,
-      // the estimated pose
-      // needs to be transformed to the new coordinate system.
+      // the estimated pose needs to be transformed to the new coordinate system.
       var newPose = flipAlliance(getCurrentPose());
       poseEstimator.resetPosition(rotationSupplier.get(), modulePositionSupplier.get(), newPose);
     }
   }
 
+  /** Adds a direct vision pose measurement in simulation. */
+  public void addVisionPoseMeasurement(Pose2d pose, double timestamp) {
+    poseEstimator.addVisionMeasurement(pose, timestamp);
+  }
+
   @Override
   public void periodic() {
-    // Update pose estimator with drivetrain sensors
+    // Update pose estimator with drivetrain sensors.
     poseEstimator.update(rotationSupplier.get(), modulePositionSupplier.get());
 
-    if (vision != null) {
-      for (var meas : vision.getVisionMeasurements()) {
-        sawTag = true;
-        Pose2d pose2d = meas.pose;
-        if (originPosition != kBlueAllianceWallRightSide) {
-          pose2d = flipAlliance(pose2d);
-        }
-        poseEstimator.addVisionMeasurement(pose2d, meas.timestamp);
+    var visionPose = photonEstimator.grabLatestEstimatedPose();
+    if (visionPose != null) {
+      // New pose from vision.
+      sawTag = true;
+      var pose2d = visionPose.estimatedPose.toPose2d();
+      if (originPosition != kBlueAllianceWallRightSide) {
+        pose2d = flipAlliance(pose2d);
       }
+      // if (!DriverStation.isAutonomous() ||
+      // (poseEstimator.getEstimatedPosition().getTranslation().getDistance(VisionConstants.reefCenter) < 3)) {
+      poseEstimator.addVisionMeasurement(pose2d, visionPose.timestampSeconds);
+      // }
     }
 
-    // Set the pose on the dashboard
+    var visionPose2 = photonEstimator2.grabLatestEstimatedPose();
+    if (visionPose2 != null) {
+      // New pose from vision.
+      sawTag = true;
+      var pose2d2 = visionPose2.estimatedPose.toPose2d();
+      if (originPosition != kBlueAllianceWallRightSide) {
+        pose2d2 = flipAlliance(pose2d2);
+      }
+      // if (PhotonUtils.getDistanceToPose(getCurrentPose(), photonEstimator2.grabLatestResult()) <
+      // 3) {
+      poseEstimator.addVisionMeasurement(pose2d2, visionPose2.timestampSeconds);
+      // }
+    }
+
+    // Set the pose on the dashboard.
     var dashboardPose = poseEstimator.getEstimatedPosition();
     if (originPosition == kRedAllianceWallRightSide) {
-      // Flip the pose when red, since the dashboard field photo cannot be rotated
+      // Flip the pose when red, since the dashboard field photo cannot be rotated.
       dashboardPose = flipAlliance(dashboardPose);
     }
     field2d.setRobotPose(dashboardPose);
@@ -271,6 +276,10 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
   public Pose2d getCurrentPose() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  public PhotonPipelineResult getLatestTag() {
+    return photonEstimator2.grabLatestTag();
   }
 
   public ChassisSpeeds getChassisSpeeds() {

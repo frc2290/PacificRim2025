@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.commands.ElevatorManipulator;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +34,7 @@ public final class ManipulatorPositionCommandFactory {
    * Creates a command that drives the elevator and differential arm to the supplied setpoints
    * without marking the manipulator state machine as ready at the end of the sequence.
    */
-  public static Command createPrepCommand(
+  public static Command createPrepCommand( // Intermediate pos command
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
@@ -30,7 +46,7 @@ public final class ManipulatorPositionCommandFactory {
    * Creates a command that drives the elevator and differential arm to the supplied setpoints and
    * marks the manipulator state machine as ready once the position is reached.
    */
-  public static Command createScoreCommand(
+  public static Command createScoreCommand( // final pre score pos command
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
@@ -43,7 +59,7 @@ public final class ManipulatorPositionCommandFactory {
    * deploy order (extension, rotation, then elevator) without marking the manipulator as ready when
    * finished.
    */
-  public static Command createSafeDeployCommand(
+  public static Command createSafeDeployCommand( // sequential pos command
       ManipulatorStateMachine manipulatorState,
       DifferentialSubsystem diffArm,
       ElevatorSubsystem elevator,
@@ -105,9 +121,9 @@ public final class ManipulatorPositionCommandFactory {
                   manipulatorState.failedToReachGoal(false);
                 }),
             new ParallelCommandGroup(
-                diffArm.setExtensionSetpointCommand(position.extensionMillimeters()),
-                elevator.setElevatorSetpointCommand(position.elevatorMeters())),
-            diffArm.setRotationSetpointCommand(position.rotationDegrees()));
+                diffArm.setRotAndExtSetpointCommand(
+                    position.extensionMillimeters(), position.rotationDegrees()),
+                elevator.setElevatorSetpointCommand(position.elevatorMeters())));
 
     if (markReadyOnFinish) {
       command.addCommands(Commands.runOnce(() -> manipulatorState.atGoalState(true)));
@@ -116,4 +132,78 @@ public final class ManipulatorPositionCommandFactory {
     command.addRequirements(diffArm, elevator);
     return command;
   }
+
+  // private static Command createPositionCommand(
+  //     ManipulatorStateMachine manipulatorState,
+  //     DifferentialSubsystem diffArm,
+  //     ElevatorSubsystem elevator,
+  //     ManipulatorPosition position,
+  //     boolean markReadyOnFinish) {
+
+  //   if (markReadyOnFinish) {
+  //     return Commands.sequence(
+  //         // initialize (requirements passed here)
+  //         Commands.runOnce(
+  //             () -> {
+  //               manipulatorState.atGoalState(false);
+  //               manipulatorState.failedToReachGoal(false);
+  //               System.out.println("L3Prep Initializing");
+  //               diffArm.setExtensionSetpoint(position.extensionMillimeters());
+  //               diffArm.setRotationSetpoint(position.rotationDegrees());
+  //               elevator.setElevatorSetpoint(position.elevatorMeters());
+  //             },
+  //             diffArm,
+  //             elevator),
+
+  //         // wait until at setpoints (runs every scheduler cycle and finishes when condition
+  // true)
+  //         Commands.run(
+  //                 () -> {
+  //                   // optional: things to do each loop (logging, telemetry, etc.)
+  //                   if (diffArm.atRotationSetpoint()
+  //                       && elevator.atPosition()
+  //                       && diffArm.atExtenstionSetpoint()) {
+  //                     System.out.println("L3Prep Done");
+  //                   }
+  //                 },
+  //                 diffArm,
+  //                 elevator)
+  //             .until(
+  //                 () ->
+  //                     diffArm.atRotationSetpoint()
+  //                         && elevator.atPosition()
+  //                         && diffArm.atExtenstionSetpoint()),
+
+  //         // mark ready at the end
+  //         Commands.runOnce(() -> manipulatorState.atGoalState(true), diffArm, elevator));
+  //   } else {
+  //     return Commands.sequence(
+  //         Commands.runOnce(
+  //             () -> {
+  //               manipulatorState.atGoalState(false);
+  //               manipulatorState.failedToReachGoal(false);
+  //               System.out.println("L3Prep Initializing");
+  //               diffArm.setExtensionSetpoint(position.extensionMillimeters());
+  //               diffArm.setRotationSetpoint(position.rotationDegrees());
+  //               elevator.setElevatorSetpoint(position.elevatorMeters());
+  //             },
+  //             diffArm,
+  //             elevator),
+  //         Commands.run(
+  //                 () -> {
+  //                   if (diffArm.atRotationSetpoint()
+  //                       && elevator.atPosition()
+  //                       && diffArm.atExtenstionSetpoint()) {
+  //                     System.out.println("L3Prep Done");
+  //                   }
+  //                 },
+  //                 diffArm,
+  //                 elevator)
+  //             .until(
+  //                 () ->
+  //                     diffArm.atRotationSetpoint()
+  //                         && elevator.atPosition()
+  //                         && diffArm.atExtenstionSetpoint()));
+  //   }
+  // }
 }

@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils.FLYTLib;
 
 import com.studica.frc.AHRS;
@@ -10,6 +26,7 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.FLYTLib.FLYTDashboard.OldStuff.PDHDashboard;
 
+/** Legacy subsystem that exposes the NavX and PDH over NetworkTables. */
 public class RobotSystem extends SubsystemBase {
 
   // set naviax2mxp gyro on spi
@@ -17,7 +34,9 @@ public class RobotSystem extends SubsystemBase {
 
   // Rev power distribution panel
   private PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev); // set it up
-  private PDHDashboard PDHDash = new PDHDashboard(PDH); // initialize the dashboard
+
+  /** Dashboard view that publishes PDH telemetry over NetworkTables. */
+  private final PDHDashboard pdhDashboard = new PDHDashboard(PDH); // initialize the dashboard
 
   // Network tables for the controller configuration
   NetworkTable table;
@@ -62,5 +81,7 @@ public class RobotSystem extends SubsystemBase {
       table.getEntry("GyroYaw").setDouble(gyro.getYaw());
       table.getEntry("GyroYawOffset").setDouble(gyro_yawOffset);
     }
+
+    pdhDashboard.periodic();
   }
 }

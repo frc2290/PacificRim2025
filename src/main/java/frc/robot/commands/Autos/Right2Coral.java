@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.commands.Autos;
 
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -7,9 +23,9 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
 import frc.utils.PoseEstimatorSubsystem;
 
 /**
@@ -20,7 +36,7 @@ public class Right2Coral extends SequentialCommandGroup {
   public Right2Coral(
       PoseEstimatorSubsystem pose,
       DriveStateMachine driveState,
-      StateMachineCoardinator coordinator,
+      StateMachineCoordinator coordinator,
       ManipulatorStateMachine manipulatorState,
       ManipulatorSubsystem manipulator) {
     try {
@@ -38,12 +54,13 @@ public class Right2Coral extends SequentialCommandGroup {
                 // Enable path following and tell the manipulator that we intend to score first.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Score the preloaded coral, grab another from the feeder, then score again.
-          routineFactory.scoreCoral(startToReef, RobotState.L4),
+          routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),
           routineFactory.intakeCoral(reefToFeeder),
-          routineFactory.scoreCoral(feederToReef, RobotState.L4),
+          routineFactory.scoreCoral(feederToReef, ElevatorManipulatorState.L4),
           // Leave the drive state machine in a neutral configuration for teleop.
           Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED)));
     } catch (Exception ex) {

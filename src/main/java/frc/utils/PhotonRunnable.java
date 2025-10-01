@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -24,10 +40,17 @@ public class PhotonRunnable implements Runnable {
 
   private final PhotonPoseEstimator photonPoseEstimator;
   private final PhotonCamera photonCamera;
+
+  /** Latest pose estimate published from the PhotonVision thread. */
   private final AtomicReference<EstimatedRobotPose> atomicEstimatedRobotPose =
       new AtomicReference<EstimatedRobotPose>();
+
+  /** Heading supplier used to inject gyro data into the pose estimator. */
   private Supplier<Heading> heading;
+
+  /** Cached pipeline result from the last successful update. */
   private PhotonPipelineResult photonResults;
+
   private PhotonPipelineResult hasAResult = new PhotonPipelineResult();
   private AprilTagFieldLayout layout;
   private String cameraName;
@@ -41,13 +64,11 @@ public class PhotonRunnable implements Runnable {
     this.photonCamera = new PhotonCamera(cameraName);
     ;
     PhotonPoseEstimator photonPoseEstimator = null;
-    layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-    // Default to blue alliance in case Driver Station data is unavailable
-    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
-    if (alliance == Alliance.Red) {
+    layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+    // PV estimates will always be blue, they'll get flipped by robot thread
+    layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
+    if (DriverStation.getAlliance().get() == Alliance.Red) {
       layout.setOrigin(OriginPosition.kRedAllianceWallRightSide);
-    } else {
-      layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
     }
     if (photonCamera != null) {
       photonPoseEstimator =
@@ -56,25 +77,10 @@ public class PhotonRunnable implements Runnable {
     this.photonPoseEstimator = photonPoseEstimator;
   }
 
-  /**
-   * Creates a new runnable with injected camera and pose estimator for testing.
-   *
-   * @param camera photon camera instance
-   * @param estimator pose estimator instance
-   * @param headingSupplier supplier of current heading
-   */
-  public PhotonRunnable(
-      PhotonCamera camera, PhotonPoseEstimator estimator, Supplier<Heading> headingSupplier) {
-    this.cameraName = camera.getName();
-    this.heading = headingSupplier;
-    this.photonCamera = camera;
-    this.photonPoseEstimator = estimator;
-  }
-
   @Override
   public void run() {
     // Get AprilTag data
-    if (photonPoseEstimator != null && photonCamera != null && photonCamera.isConnected()) {
+    if (photonPoseEstimator != null && photonCamera != null) {
       List<PhotonPipelineResult> results = photonCamera.getAllUnreadResults();
 
       for (PhotonPipelineResult result : results) {

@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot;
 
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -6,36 +22,46 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants.ModuleConstants;
 
+/** Utility container for configuration objects that are shared across the robot. */
 public final class Configs {
+  /**
+   * Configuration package for every MAXSwerve module on the drivetrain. The static block ensures
+   * that each module receives identical settings every time the code starts.
+   */
   public static final class MAXSwerveModule {
+    /** Spark Flex configuration that is applied to every driving motor controller. */
     public static final SparkFlexConfig drivingConfig = new SparkFlexConfig();
+
+    /** Spark MAX configuration that is applied to every turning motor controller. */
     public static final SparkMaxConfig turningConfig = new SparkMaxConfig();
 
     static {
       // Use module constants to calculate conversion factors and feed forward gain.
-      double turningFactor = 2 * Math.PI;
-      // SPARK velocity feedforward expects a value in percent output per RPM.
-      // Use the motor's free speed in RPM so that a setpoint equal to the
-      // free speed results in full output from the controller.
-      double drivingVelocityFeedForward = 1.0 / Constants.NeoMotorConstants.kFreeSpeedRpm;
+      double drivingFactor =
+          ModuleConstants.kWheelDiameterMeters * Math.PI / ModuleConstants.kDrivingMotorReduction;
+      double turningFactor = ModuleConstants.kTurningEncoderFactor;
+      double drivingVelocityFeedForward = ModuleConstants.kDrivingVelocityFF;
+      // double turnPositionFeedforward = 0.31697;
+
       drivingConfig
           .idleMode(IdleMode.kBrake)
-          .smartCurrentLimit(ModuleConstants.kDriveCurrentLimitAmps);
+          .smartCurrentLimit(ModuleConstants.kDrivingCurrentLimit);
       drivingConfig
           .encoder
-          .positionConversionFactor(ModuleConstants.kDriveEncoderPositionFactor) // meters
-          .velocityConversionFactor(
-              ModuleConstants.kDriveEncoderVelocityFactor); // meters per second
+          .positionConversionFactor(drivingFactor) // meters
+          .velocityConversionFactor(drivingFactor / 60.0); // meters per second
       drivingConfig
           .closedLoop
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-          // These are example gains you may need to them for your own robot!
-          .pid(0.012343, 0, 0) // .pid(0.05, 0, 0) //.pid(0.012343, 0, 0) //.pid(0.05, 0, 0)
+          // These are example gains you may need to tune for your own robot!
+          .pid(ModuleConstants.kDrivingP, ModuleConstants.kDrivingI, ModuleConstants.kDrivingD)
           .velocityFF(drivingVelocityFeedForward)
           .outputRange(-1, 1);
-      drivingConfig.voltageCompensation(12);
+      drivingConfig.voltageCompensation(ModuleConstants.kNominalVoltage);
 
-      turningConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(20);
+      turningConfig
+          .idleMode(IdleMode.kBrake)
+          .smartCurrentLimit(ModuleConstants.kTurningCurrentLimit);
       turningConfig
           .absoluteEncoder
           // Invert the turning encoder, since the output shaft rotates in the opposite
@@ -46,10 +72,8 @@ public final class Configs {
       turningConfig
           .closedLoop
           .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-          // These are example gains you may need to them for your own robot!
-          .pid(
-              4.3865, 0,
-              0) // .pid(1, 0, 0)//.pid((4.3865/2.0), 0, 0) //.pid(4.3865, 0, 0) //.pid(1, 0, 0)
+          // These are example gains you may need to tune for your own robot!
+          .pid(ModuleConstants.kTurningP, ModuleConstants.kTurningI, ModuleConstants.kTurningD)
           .outputRange(-1, 1)
           // Enable PID wrap around for the turning motor. This will allow the PID
           // controller to go through 0 to get to the setpoint i.e. going from 350 degrees
@@ -57,7 +81,7 @@ public final class Configs {
           // longer route.
           .positionWrappingEnabled(true)
           .positionWrappingInputRange(0, turningFactor);
-      turningConfig.voltageCompensation(12);
+      turningConfig.voltageCompensation(ModuleConstants.kNominalVoltage);
     }
   }
 }
