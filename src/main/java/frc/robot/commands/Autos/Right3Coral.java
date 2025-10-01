@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.commands.Autos;
 
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -7,9 +23,9 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveStateMachine;
 import frc.robot.subsystems.DriveStateMachine.DriveState;
 import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorStateMachine.ElevatorManipulatorState;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.StateMachineCoardinator;
-import frc.robot.subsystems.StateMachineCoardinator.RobotState;
+import frc.robot.subsystems.StateMachineCoordinator;
 import frc.utils.PoseEstimatorSubsystem;
 
 /** Three piece right-side autonomous. Paths assume a feeder pickup in between each score. */
@@ -18,7 +34,7 @@ public class Right3Coral extends SequentialCommandGroup {
   public Right3Coral(
       PoseEstimatorSubsystem pose,
       DriveStateMachine driveState,
-      StateMachineCoardinator coordinator,
+      StateMachineCoordinator coordinator,
       ManipulatorStateMachine manipulatorState,
       ManipulatorSubsystem manipulator) {
     try {
@@ -38,14 +54,15 @@ public class Right3Coral extends SequentialCommandGroup {
                 // Start path following and make sure the manipulator begins in the safe pose.
                 driveState.setDriveCommand(DriveState.FOLLOW_PATH);
                 coordinator.requestToScore(false);
-                coordinator.setRobotGoal(RobotState.SAFE_CORAL_TRAVEL);
+                manipulatorState.setElevatorManipulatorCommand(
+                    ElevatorManipulatorState.SAFE_CORAL_TRAVEL);
               }),
           // Score, reload, and score two additional corals.
-          routineFactory.scoreCoral(startToReef, RobotState.L4),
+          routineFactory.scoreCoral(startToReef, ElevatorManipulatorState.L4),
           routineFactory.intakeCoral(reefToFeeder),
-          routineFactory.scoreCoral(feederToReefTwo, RobotState.L4),
+          routineFactory.scoreCoral(feederToReefTwo, ElevatorManipulatorState.L4),
           routineFactory.intakeCoral(reefTwoToFeeder),
-          routineFactory.scoreCoral(feederToReefThree, RobotState.L4),
+          routineFactory.scoreCoral(feederToReefThree, ElevatorManipulatorState.L4),
           // Return drivetrain control to the driver when auto finishes.
           Commands.runOnce(() -> driveState.setDriveCommand(DriveState.CANCELLED)));
     } catch (Exception ex) {

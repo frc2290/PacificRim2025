@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils.FLYTLib.FLYTDashboard.OldStuff;
 
 import edu.wpi.first.networktables.NetworkTable;
@@ -6,12 +22,16 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.utils.FLYTLib.FLYTMotorLib.FlytMotorController;
 import frc.utils.FLYTLib.GlobalVar;
 
+/** Dashboard helper that exposes PID tuning fields for FLYT motor controllers. */
 public class MotorDashboard extends SuperDashboard {
 
   // Network tables for the controller configuration
   NetworkTable table;
+
+  /** Motor controller being tuned by this dashboard view. */
   FlytMotorController controller;
-  private NetworkTableEntry kP, kI, kD, kFF, set, cType;
+
+  private NetworkTableEntry kP, kI, kD, kFF, set;
 
   // constructor, just needs motor controller object
   public MotorDashboard(FlytMotorController m_controller) {
@@ -23,7 +43,6 @@ public class MotorDashboard extends SuperDashboard {
     kD = table.getEntry("kD");
     kFF = table.getEntry("kFF");
     set = table.getEntry("SetPoint");
-    cType = table.getEntry("ControlType");
     kP.setDouble(0);
     kI.setDouble(0);
     kD.setDouble(0);

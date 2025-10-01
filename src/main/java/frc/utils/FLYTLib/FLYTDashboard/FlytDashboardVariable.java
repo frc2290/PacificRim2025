@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils.FLYTLib.FLYTDashboard;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -6,15 +22,22 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.Topic;
 import java.util.function.Supplier;
 
+/** Represents a single value published to the FLYT dashboard. */
 public class FlytDashboardVariable {
 
   private String name;
   private boolean debug;
+
+  /** Cached supplier used when the variable publishes boolean values. */
   private Supplier<Boolean> boolSupplier;
+
   private Supplier<Integer> intSupplier;
   private Supplier<Double> doubleSupplier;
   private Supplier<String> stringSupplier;
+
+  /** Keeps track of the active data type so the update() switch can publish correctly. */
   private int type = 0;
+
   private Topic topic;
   private GenericPublisher publisher;
   private DoubleSubscriber doubleSubscriber;

@@ -1,3 +1,19 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.utils.FLYTLib.FLYTMotorLib;
 
 import com.revrobotics.AbsoluteEncoder;
@@ -13,6 +29,7 @@ import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+/** Wrapper that configures a SPARK MAX using the legacy FLYT API. */
 public class SparkMaxController extends FlytMotorController {
 
   /*
@@ -20,6 +37,8 @@ public class SparkMaxController extends FlytMotorController {
    */
   // motor controller
   SparkMax sparkMax; // General controller
+
+  /** Configuration container shared across setup calls. */
   SparkMaxConfig config; // Controller configuration objects
 
   // encoders
@@ -38,8 +57,9 @@ public class SparkMaxController extends FlytMotorController {
   // private vars for internal calculation and specifications
   private boolean e_encoderAvailable = false; // check if enxternal encoder connected
   private boolean e_absalute = false; // check if specified encoder is absalute
-  private boolean pidREADY = false; // checks and sees if pid setup was successfully used
   private ControlType controlType; // control type
+
+  /** CAN device ID associated with this controller. */
   private double motorID; // motor id
 
   /**
@@ -253,7 +273,6 @@ public class SparkMaxController extends FlytMotorController {
     closedLoopCfg.feedbackSensor(
         primaryEnc ? FeedbackSensor.kPrimaryEncoder : FeedbackSensor.kAlternateOrExternalEncoder);
     config.apply(closedLoopCfg);
-    pidREADY = true;
 
     switch (controlType) {
       case 0:

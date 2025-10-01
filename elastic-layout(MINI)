@@ -1,147 +1,17 @@
 {
   "version": 1.0,
-  "grid_size": 128,
+  "grid_size": 50,
   "tabs": [
     {
       "name": "Robot",
       "grid_layout": {
         "layouts": [
           {
-            "title": "Elevator",
-            "x": 640.0,
-            "y": 256.0,
-            "width": 256.0,
-            "height": 384.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "At Position",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Boolean Box",
-                "properties": {
-                  "topic": "/Elevator/At Position",
-                  "period": 0.06,
-                  "data_type": "boolean",
-                  "true_color": 4283215696,
-                  "false_color": 4294198070,
-                  "true_icon": "None",
-                  "false_icon": "None"
-                }
-              },
-              {
-                "title": "Elevator Setpoint",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/Elevator/Elevator Setpoint",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "Elevator POS",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/Elevator/Elevator POS",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "Duty Cycle",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/Elevator/Duty Cycle",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              }
-            ]
-          },
-          {
-            "title": "Manipulator",
-            "x": 640.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "LEFT"
-            },
-            "children": [
-              {
-                "title": "Got Coral",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Boolean Box",
-                "properties": {
-                  "topic": "/Manipulator/Got Coral",
-                  "period": 0.06,
-                  "data_type": "boolean",
-                  "true_color": 4283215696,
-                  "false_color": 4294198070,
-                  "true_icon": "None",
-                  "false_icon": "None"
-                }
-              },
-              {
-                "title": "Manip Current",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/Manipulator/Manip Current",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "Motor Pos",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/Manipulator/Motor Pos",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              }
-            ]
-          },
-          {
             "title": "Coordinator",
             "x": 0.0,
             "y": 0.0,
-            "width": 384.0,
-            "height": 640.0,
+            "width": 450.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -151,8 +21,8 @@
                 "title": "Branch",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Coordinator/Branch",
@@ -165,8 +35,8 @@
                 "title": "Controller Profile",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Coordinator/Controller Profile",
@@ -179,8 +49,8 @@
                 "title": "Current State",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Coordinator/Current State",
@@ -190,45 +60,11 @@
                 }
               },
               {
-                "title": "Has Algae",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Boolean Box",
-                "properties": {
-                  "topic": "/Coordinator/Has Algae",
-                  "period": 0.06,
-                  "data_type": "boolean",
-                  "true_color": 4283215696,
-                  "false_color": 4294198070,
-                  "true_icon": "None",
-                  "false_icon": "None"
-                }
-              },
-              {
-                "title": "Has Coral",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Boolean Box",
-                "properties": {
-                  "topic": "/Coordinator/Has Coral",
-                  "period": 0.06,
-                  "data_type": "boolean",
-                  "true_color": 4283215696,
-                  "false_color": 4294198070,
-                  "true_icon": "None",
-                  "false_icon": "None"
-                }
-              },
-              {
                 "title": "Reef Align",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/Coordinator/Reef Align",
@@ -244,15 +80,15 @@
                 "title": "RobotDisabled",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/Coordinator/RobotDisabled",
                   "period": 0.06,
                   "data_type": "boolean",
-                  "true_color": 4290838785,
-                  "false_color": 4282184758,
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
                   "true_icon": "None",
                   "false_icon": "None"
                 }
@@ -260,11 +96,203 @@
             ]
           },
           {
-            "title": "Differential",
-            "x": 384.0,
+            "title": "Manipulator",
+            "x": 750.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 640.0,
+            "width": 300.0,
+            "height": 300.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Got Algae",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Manipulator/Got Algae",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Got Coral",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Manipulator/Got Coral",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Manip Current",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Manipulator/Manip Current",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Motor Pos",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Manipulator/Motor Pos",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Sees Coral",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Manipulator/Sees Coral",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Elevator",
+            "x": 650.0,
+            "y": 300.0,
+            "width": 300.0,
+            "height": 300.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "At Position",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Elevator/At Position",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Current",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Elevator/Current",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Duty Cycle",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Elevator/Duty Cycle",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Elevator Position",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Elevator/Elevator Position",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Elevator Setpoint",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Elevator/Elevator Setpoint",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Voltage",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Elevator/Voltage",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Differential",
+            "x": 450.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -274,8 +302,8 @@
                 "title": "At Extension",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/Differential/At Extension",
@@ -291,8 +319,8 @@
                 "title": "At Rotation",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/Differential/At Rotation",
@@ -308,8 +336,8 @@
                 "title": "Extension Command Velocity",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Extension Command Velocity",
@@ -322,8 +350,8 @@
                 "title": "Extension Position",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Extension Position",
@@ -336,8 +364,8 @@
                 "title": "Extension Setpoint",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Extension Setpoint",
@@ -350,8 +378,8 @@
                 "title": "Extension Velocity",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Extension Velocity",
@@ -364,8 +392,8 @@
                 "title": "LaserCan Distance",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/LaserCan Distance",
@@ -378,8 +406,8 @@
                 "title": "Left Current",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Left Current",
@@ -392,8 +420,8 @@
                 "title": "Left Output",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Left Output",
@@ -406,8 +434,8 @@
                 "title": "Left Velocity Error",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Left Velocity Error",
@@ -420,8 +448,8 @@
                 "title": "Right Current",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Right Current",
@@ -434,8 +462,8 @@
                 "title": "Right Output",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Right Output",
@@ -448,8 +476,8 @@
                 "title": "Right Velocity Error",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Right Velocity Error",
@@ -462,8 +490,8 @@
                 "title": "Rotation Command Velocity",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Rotation Command Velocity",
@@ -476,8 +504,8 @@
                 "title": "Rotation Position",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Rotation Position",
@@ -490,8 +518,8 @@
                 "title": "Rotation Setpoint",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Rotation Setpoint",
@@ -504,8 +532,8 @@
                 "title": "Rotation Velocity",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Rotation Velocity",
@@ -518,8 +546,8 @@
                 "title": "Voltage",
                 "x": 0.0,
                 "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "width": 150.0,
+                "height": 150.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/Differential/Voltage",
@@ -534,10 +562,10 @@
         "containers": [
           {
             "title": "SendableChooser[0]",
-            "x": 384.0,
-            "y": 768.0,
-            "width": 256.0,
-            "height": 128.0,
+            "x": 400.0,
+            "y": 800.0,
+            "width": 300.0,
+            "height": 108.79999999999995,
             "type": "ComboBox Chooser",
             "properties": {
               "topic": "/SmartDashboard/SendableChooser[0]",
@@ -547,10 +575,10 @@
           },
           {
             "title": "Field",
-            "x": 896.0,
-            "y": 256.0,
-            "width": 640.0,
-            "height": 384.0,
+            "x": 950.0,
+            "y": 300.0,
+            "width": 400.0,
+            "height": 300.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Field",
@@ -567,10 +595,10 @@
           },
           {
             "title": "Pose",
-            "x": 768.0,
-            "y": 640.0,
-            "width": 768.0,
-            "height": 128.0,
+            "x": 100.0,
+            "y": 450.0,
+            "width": 550.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Pose/Pose",
@@ -580,98 +608,11 @@
             }
           },
           {
-            "title": "Left Current",
-            "x": 128.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Differential/Left Current",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Right Current",
-            "x": 256.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Differential/Right Current",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Manip Current",
-            "x": 0.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Manipulator/Manip Current",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "At Target Pose",
-            "x": 384.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/Pose/At Target Pose",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Left Output",
-            "x": 512.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Differential/Left Output",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Right Output",
-            "x": 640.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Differential/Right Output",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
             "title": "Target",
-            "x": 1408.0,
+            "x": 1400.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 256.0,
+            "width": 300.0,
+            "height": 300.0,
             "type": "Text Display",
             "properties": {
               "topic": "/SmartDashboard/Field/Target",
@@ -682,10 +623,10 @@
           },
           {
             "title": "Climb Pos",
-            "x": 1536.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1500.0,
+            "y": 300.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Climb/Climb Pos",
@@ -696,10 +637,10 @@
           },
           {
             "title": "Climb Current",
-            "x": 1536.0,
-            "y": 384.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1500.0,
+            "y": 400.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Climb/Climb Current",
@@ -710,10 +651,10 @@
           },
           {
             "title": "Climb Servo Pos",
-            "x": 1536.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1500.0,
+            "y": 500.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Climb/Climb Servo Pos",
@@ -724,10 +665,10 @@
           },
           {
             "title": "LaserCan Distance",
-            "x": 1408.0,
-            "y": 768.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1400.0,
+            "y": 800.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/LaserCan Distance",
@@ -738,10 +679,10 @@
           },
           {
             "title": "photonvision2_Port_1182_Output_MJPEG_Server",
-            "x": 1152.0,
+            "x": 1050.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 256.0,
+            "width": 300.0,
+            "height": 300.0,
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/photonvision2_Port_1182_Output_MJPEG_Server",
@@ -750,24 +691,11 @@
             }
           },
           {
-            "title": "photonvision1_Port_1182_Output_MJPEG_Server",
-            "x": 896.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/photonvision1_Port_1182_Output_MJPEG_Server",
-              "period": 0.06,
-              "rotation_turns": 0
-            }
-          },
-          {
             "title": "Sees Coral",
-            "x": 1536.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1500.0,
+            "y": 600.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/Manipulator/Sees Coral",
@@ -777,6 +705,81 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
+            }
+          },
+          {
+            "title": "At Drive Position",
+            "x": 0.0,
+            "y": 450.0,
+            "width": 100.0,
+            "height": 150.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/DriveStateMachine/At Drive Position",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "SendableChooser[0]",
+            "x": 450.0,
+            "y": 300.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/SendableChooser[0]",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Ready to Score",
+            "x": 0.0,
+            "y": 300.0,
+            "width": 100.0,
+            "height": 150.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/ManipulatorStateMachine/Ready to Score",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Current State",
+            "x": 300.0,
+            "y": 300.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/DriveStateMachine/Current State",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Goal State",
+            "x": 100.0,
+            "y": 300.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/ManipulatorStateMachine/Goal State",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
             }
           }
         ]
@@ -791,8 +794,8 @@
             "title": "Ext Command Vel",
             "x": 0.0,
             "y": 0.0,
-            "width": 640.0,
-            "height": 256.0,
+            "width": 600.0,
+            "height": 300.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Ext Command Vel",
@@ -806,9 +809,9 @@
           {
             "title": "Ext Vel",
             "x": 0.0,
-            "y": 256.0,
-            "width": 640.0,
-            "height": 256.0,
+            "y": 300.0,
+            "width": 600.0,
+            "height": 300.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Ext Vel",
@@ -821,10 +824,10 @@
           },
           {
             "title": "Ext Setpoint",
-            "x": 640.0,
+            "x": 600.0,
             "y": 0.0,
-            "width": 384.0,
-            "height": 256.0,
+            "width": 400.0,
+            "height": 300.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Ext Setpoint",
@@ -837,10 +840,10 @@
           },
           {
             "title": "Extension POS",
-            "x": 640.0,
-            "y": 256.0,
-            "width": 384.0,
-            "height": 256.0,
+            "x": 600.0,
+            "y": 300.0,
+            "width": 400.0,
+            "height": 300.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Extension POS",
@@ -853,10 +856,10 @@
           },
           {
             "title": "Duty Cycle",
-            "x": 1024.0,
+            "x": 1000.0,
             "y": 0.0,
-            "width": 768.0,
-            "height": 512.0,
+            "width": 800.0,
+            "height": 500.0,
             "type": "Graph",
             "properties": {
               "topic": "/Elevator/Duty Cycle",
@@ -879,8 +882,8 @@
             "title": "Rot Command Vel",
             "x": 0.0,
             "y": 0.0,
-            "width": 512.0,
-            "height": 384.0,
+            "width": 500.0,
+            "height": 400.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Rot Command Vel",
@@ -894,9 +897,9 @@
           {
             "title": "Rot Vel",
             "x": 0.0,
-            "y": 384.0,
-            "width": 512.0,
-            "height": 384.0,
+            "y": 400.0,
+            "width": 500.0,
+            "height": 400.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Rot Vel",
@@ -909,10 +912,10 @@
           },
           {
             "title": "Rot Setpoint",
-            "x": 512.0,
+            "x": 500.0,
             "y": 0.0,
-            "width": 512.0,
-            "height": 384.0,
+            "width": 500.0,
+            "height": 400.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Rot Setpoint",
@@ -925,10 +928,10 @@
           },
           {
             "title": "Rotation POS",
-            "x": 512.0,
-            "y": 384.0,
-            "width": 512.0,
-            "height": 384.0,
+            "x": 500.0,
+            "y": 400.0,
+            "width": 500.0,
+            "height": 400.0,
             "type": "Graph",
             "properties": {
               "topic": "/Differential/Rotation POS",
@@ -941,10 +944,10 @@
           },
           {
             "title": "Left Current",
-            "x": 1024.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1000.0,
+            "y": 100.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Left Current",
@@ -955,10 +958,10 @@
           },
           {
             "title": "Left Output",
-            "x": 1152.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1200.0,
+            "y": 100.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Left Output",
@@ -969,10 +972,10 @@
           },
           {
             "title": "Right Current",
-            "x": 1024.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1000.0,
+            "y": 300.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Right Current",
@@ -983,10 +986,10 @@
           },
           {
             "title": "Right Output",
-            "x": 1152.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1200.0,
+            "y": 300.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Right Output",
@@ -997,10 +1000,10 @@
           },
           {
             "title": "Rotation POS",
-            "x": 1280.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1300.0,
+            "y": 100.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Rotation POS",
@@ -1011,10 +1014,10 @@
           },
           {
             "title": "Voltage",
-            "x": 1280.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1300.0,
+            "y": 300.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Voltage",
@@ -1025,10 +1028,10 @@
           },
           {
             "title": "Rot Setpoint",
-            "x": 1280.0,
+            "x": 1300.0,
             "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Rot Setpoint",
@@ -1039,10 +1042,10 @@
           },
           {
             "title": "Ext Setpoint",
-            "x": 1280.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1300.0,
+            "y": 500.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Ext Setpoint",
@@ -1053,10 +1056,10 @@
           },
           {
             "title": "Extension POS",
-            "x": 1408.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1400.0,
+            "y": 500.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Extension POS",
@@ -1067,10 +1070,10 @@
           },
           {
             "title": "At Rotation",
-            "x": 1536.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1500.0,
+            "y": 500.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/Differential/At Rotation",
@@ -1084,10 +1087,10 @@
           },
           {
             "title": "Ext Command Vel",
-            "x": 1024.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
+            "x": 1000.0,
+            "y": 400.0,
+            "width": 300.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Ext Command Vel",
@@ -1098,10 +1101,10 @@
           },
           {
             "title": "Ext Vel",
-            "x": 1024.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 128.0,
+            "x": 1000.0,
+            "y": 500.0,
+            "width": 300.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Ext Vel",
@@ -1112,10 +1115,10 @@
           },
           {
             "title": "Rot Command Vel",
-            "x": 1280.0,
-            "y": 384.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1300.0,
+            "y": 400.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Rot Command Vel",
@@ -1126,10 +1129,10 @@
           },
           {
             "title": "Left Command",
-            "x": 1024.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1000.0,
+            "y": 600.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Left Command",
@@ -1140,10 +1143,10 @@
           },
           {
             "title": "Right Command",
-            "x": 1152.0,
-            "y": 640.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 1200.0,
+            "y": 600.0,
+            "width": 150.0,
+            "height": 150.0,
             "type": "Text Display",
             "properties": {
               "topic": "/Differential/Right Command",
@@ -1164,8 +1167,8 @@
             "title": "Drive Rot PID",
             "x": 0.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 384.0,
+            "width": 300.0,
+            "height": 400.0,
             "type": "PIDController",
             "properties": {
               "topic": "/SmartDashboard/Drive Rot PID",
@@ -1174,10 +1177,10 @@
           },
           {
             "title": "Drive X PID",
-            "x": 256.0,
+            "x": 300.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 384.0,
+            "width": 300.0,
+            "height": 400.0,
             "type": "PIDController",
             "properties": {
               "topic": "/SmartDashboard/Drive X PID",
@@ -1186,10 +1189,10 @@
           },
           {
             "title": "Drive Y PID",
-            "x": 512.0,
+            "x": 500.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 384.0,
+            "width": 300.0,
+            "height": 400.0,
             "type": "PIDController",
             "properties": {
               "topic": "/SmartDashboard/Drive Y PID",
@@ -1205,10 +1208,10 @@
         "layouts": [
           {
             "title": "DriveStateMachine",
-            "x": 640.0,
+            "x": 600.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 512.0,
+            "width": 300.0,
+            "height": 500.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -1280,10 +1283,10 @@
           },
           {
             "title": "ManipulatorStateMachine",
-            "x": 896.0,
+            "x": 900.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 768.0,
+            "width": 300.0,
+            "height": 800.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"

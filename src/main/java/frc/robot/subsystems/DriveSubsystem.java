@@ -1,8 +1,29 @@
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
+import edu.wpi.first.hal.FRCNetComm.tInstances;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -10,220 +31,129 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.io.DriveIO;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 
-/** Drivetrain subsystem backed by a pluggable IO layer. */
-public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
-  private final DriveIO io;
+/** Controls the robot's swerve drivetrain and exposes helper methods for commands. */
+public class DriveSubsystem extends SubsystemBase {
 
-  // Controllers
+  // Create MAXSwerveModules
+  private final MAXSwerveModule m_frontLeft =
+      new MAXSwerveModule(
+          DriveConstants.kFrontLeftDrivingCanId,
+          DriveConstants.kFrontLeftTurningCanId,
+          DriveConstants.kFrontLeftChassisAngularOffset);
+
+  private final MAXSwerveModule m_frontRight =
+      new MAXSwerveModule(
+          DriveConstants.kFrontRightDrivingCanId,
+          DriveConstants.kFrontRightTurningCanId,
+          DriveConstants.kFrontRightChassisAngularOffset);
+
+  private final MAXSwerveModule m_rearLeft =
+      new MAXSwerveModule(
+          DriveConstants.kRearLeftDrivingCanId,
+          DriveConstants.kRearLeftTurningCanId,
+          DriveConstants.kBackLeftChassisAngularOffset);
+
+  private final MAXSwerveModule m_rearRight =
+      new MAXSwerveModule(
+          DriveConstants.kRearRightDrivingCanId,
+          DriveConstants.kRearRightTurningCanId,
+          DriveConstants.kBackRightChassisAngularOffset);
+
+  // The gyro sensor
+  private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
+
+  // private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
+
+  /** Scaling factor used when the robot is in "slow" mode for precision driving. */
   private double slowSpeed = 1.0;
-  private final PIDController rotPid = new PIDController(0.01, 0.0, 0.0);
-  private final PIDController xPid = new PIDController(1, 0.0, 0.085);
-  private final PIDController yPid = new PIDController(1, 0.0, 0.085);
 
-  // Odometry
-  private final SwerveDriveOdometry odometry =
-      new SwerveDriveOdometry(
-          DriveConstants.kDriveKinematics,
-          new Rotation2d(),
-          new SwerveModulePosition[] {
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition()
-          });
+  /** PID used for heading control when commands request a specific angle. */
+  private PIDController rotPid = new PIDController(0.01, 0.0, 0.0); // 0.015 0 0
 
-  // NetworkTables publishers
-  private final StructArrayPublisher<SwerveModuleState> moduleStatePublisher;
-  private final DoublePublisher cmdVxPublisher;
-  private final DoublePublisher cmdVyPublisher;
-  private final DoublePublisher cmdOmegaPublisher;
-  private final DoublePublisher actVxPublisher;
-  private final DoublePublisher actVyPublisher;
-  private final DoublePublisher actOmegaPublisher;
-  private final DoubleArrayPublisher moduleCurrentPublisher;
-  private final DoubleArrayPublisher moduleOutputPublisher;
-  private final DoublePublisher batteryVoltagePublisher;
+  /** PID used to correct X position errors during auto-alignment routines. */
+  private PIDController xPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
-  // Last commanded speeds
-  private ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
+  /** PID used to correct Y position errors during auto-alignment routines. */
+  private PIDController yPid = new PIDController(1, 0.0, 0.085); // 2 0.0 0.5
 
-  // SysId routines
-  private final SysIdRoutine sysIdRoutine =
+  private final StructArrayPublisher<SwerveModuleState> swerveStatePublisher =
+      NetworkTableInstance.getDefault()
+          .getStructArrayTopic("Swerve/States", SwerveModuleState.struct)
+          .publish();
+
+  private final StructPublisher<ChassisSpeeds> chassisSpeedsPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Swerve/ChassisSpeeds", ChassisSpeeds.struct)
+          .publish();
+
+  private final StructPublisher<Rotation2d> rotationPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Swerve/RobotRotation", Rotation2d.struct)
+          .publish();
+
+  // Create the SysId routine
+  /** Characterization routine for the drive motors. */
+  private SysIdRoutine sysIdRoutine =
       new SysIdRoutine(
           new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
           new SysIdRoutine.Mechanism(
-              (voltage) -> this.runDriveCharacterization(voltage.in(Volts)), null, this));
+              (voltage) -> this.runDriveCharacterization(voltage.in(Volts)),
+              null, // No log consumer, since data is recorded by URCL
+              this));
 
-  private final SysIdRoutine sysIdRoutineTurn =
+  /** Characterization routine for the steering motors. */
+  private SysIdRoutine sysIdRoutineTurn =
       new SysIdRoutine(
           new SysIdRoutine.Config(null, Volts.of(4), Seconds.of(5)),
           new SysIdRoutine.Mechanism(
-              (voltage) -> this.runTurnCharacterization(voltage.in(Volts)), null, this));
+              (voltage) -> this.runTurnCharacterization(voltage.in(Volts)),
+              null, // No log consumer, since data is recorded by URCL
+              this));
 
-  public DriveSubsystem(DriveIO io) {
-    this.io = io;
+  /** Creates a new DriveSubsystem. */
+  public DriveSubsystem() {
+    // Usage reporting for MAXSwerve template
+    HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
+    m_gyro.setAngleAdjustment(180);
     rotPid.enableContinuousInput(0, 360);
-
-    var nt = NetworkTableInstance.getDefault();
-    moduleStatePublisher =
-        nt.getStructArrayTopic("Drive/ModuleStates", SwerveModuleState.struct).publish();
-    cmdVxPublisher = nt.getDoubleTopic("Drive/Commanded/Vx").publish();
-    cmdVyPublisher = nt.getDoubleTopic("Drive/Commanded/Vy").publish();
-    cmdOmegaPublisher = nt.getDoubleTopic("Drive/Commanded/Omega").publish();
-    actVxPublisher = nt.getDoubleTopic("Drive/Actual/Vx").publish();
-    actVyPublisher = nt.getDoubleTopic("Drive/Actual/Vy").publish();
-    actOmegaPublisher = nt.getDoubleTopic("Drive/Actual/Omega").publish();
-    moduleCurrentPublisher = nt.getDoubleArrayTopic("Drive/ModuleCurrents").publish();
-    moduleOutputPublisher = nt.getDoubleArrayTopic("Drive/AppliedOutputs").publish();
-    batteryVoltagePublisher = nt.getDoubleTopic("Drive/BatteryVoltage").publish();
 
     SmartDashboard.putData("Drive Rot PID", rotPid);
     SmartDashboard.putData("Drive X PID", xPid);
     SmartDashboard.putData("Drive Y PID", yPid);
   }
 
+  public void setGyroAdjustment(double adjustment) {
+    m_gyro.setAngleAdjustment(adjustment);
+  }
+
   @Override
   public void periodic() {
-    io.periodic();
+    var measuredStates = getModuleStates();
 
-    odometry.update(io.getGyroAngle(), io.getModulePositions());
-    moduleStatePublisher.set(io.getModuleStates());
-
-    var actual = DriveConstants.kDriveKinematics.toChassisSpeeds(io.getModuleStates());
-    actVxPublisher.set(actual.vxMetersPerSecond);
-    actVyPublisher.set(actual.vyMetersPerSecond);
-    actOmegaPublisher.set(actual.omegaRadiansPerSecond);
-    moduleCurrentPublisher.set(io.getModuleCurrents());
-    moduleOutputPublisher.set(io.getDriveAppliedOutputs());
-    batteryVoltagePublisher.set(io.getBatteryVoltage());
-
-    Field2d field = io.getField();
-    if (field != null) {
-      field.setRobotPose(io.getSimPose());
-    }
+    swerveStatePublisher.set(measuredStates);
+    chassisSpeedsPublisher.set(DriveConstants.kDriveKinematics.toChassisSpeeds(measuredStates));
+    rotationPublisher.set(m_gyro.getRotation2d());
   }
 
-  // Basic accessors
-  public Field2d getField() {
-    return io.getField();
-  }
-
-  public Pose2d getPose() {
-    return odometry.getPoseMeters();
-  }
-
-  public Pose2d getSimPose() {
-    return io.getSimPose();
-  }
-
-  public SwerveDriveSimulation getDriveSimulation() {
-    return io.getDriveSimulation();
-  }
-
-  public double[] getModuleCurrents() {
-    return io.getModuleCurrents();
-  }
-
-  public double[] getDriveAppliedOutputs() {
-    return io.getDriveAppliedOutputs();
-  }
-
-  public SwerveModulePosition[] getModulePositions() {
-    return io.getModulePositions();
-  }
-
-  public SwerveModuleState[] getModuleStates() {
-    return io.getModuleStates();
-  }
-
-  /** Returns the total current draw of all modules. */
-  public double getCurrentDraw() {
-    double total = 0.0;
-    for (double c : io.getModuleCurrents()) {
-      total += c;
-    }
-    return total;
-  }
-
-  public double getHeading() {
-    return io.getGyroAngle().getDegrees();
-  }
-
-  public Rotation2d newHeading() {
-    return io.getGyroAngle();
-  }
-
-  public void zeroHeading() {
-    io.zeroGyro();
-  }
-
-  public void setGyroAdjustment(double adjustment) {
-    io.setGyroAdjustment(adjustment);
-  }
-
-  // Driving methods
-  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-    double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond * slowSpeed;
-    double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond * slowSpeed;
-    double rotDelivered = rot * DriveConstants.kMaxAngularSpeed * slowSpeed;
-
-    ChassisSpeeds commanded =
-        fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                xSpeedDelivered,
-                ySpeedDelivered,
-                rotDelivered,
-                Rotation2d.fromDegrees(-getHeading()))
-            : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered);
-    lastCommandedSpeeds = commanded;
-    cmdVxPublisher.set(commanded.vxMetersPerSecond);
-    cmdVyPublisher.set(commanded.vyMetersPerSecond);
-    cmdOmegaPublisher.set(commanded.omegaRadiansPerSecond);
-    io.setChassisSpeeds(commanded);
-  }
-
-  public void driveChassisSpeeds(ChassisSpeeds speeds) {
-    lastCommandedSpeeds = speeds;
-    cmdVxPublisher.set(speeds.vxMetersPerSecond);
-    cmdVyPublisher.set(speeds.vyMetersPerSecond);
-    cmdOmegaPublisher.set(speeds.omegaRadiansPerSecond);
-    io.setChassisSpeeds(speeds);
-  }
-
-  public void setX() {
-    io.setModuleStates(
-        new SwerveModuleState[] {
-          new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
-          new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
-          new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
-          new SwerveModuleState(0, Rotation2d.fromDegrees(45))
-        });
-  }
-
-  // Utilities
   public void setSlowSpeed() {
     slowSpeed = 0.5;
   }
 
   public void setRegularSpeed() {
-    slowSpeed = 1.0;
+    slowSpeed = 1;
   }
 
   public boolean isSlowSpeed() {
-    return slowSpeed < 1.0;
+    return slowSpeed < 1;
   }
 
   public PIDController getRotPidController() {
@@ -262,14 +192,153 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         : sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse);
   }
 
-  @Override
-  public void close() {}
+  /**
+   * Method to drive the robot using joystick info.
+   *
+   * @param xSpeed Speed of the robot in the x direction (forward).
+   * @param ySpeed Speed of the robot in the y direction (sideways).
+   * @param rot Angular rate of the robot.
+   * @param fieldRelative Whether the provided x and y speeds are relative to the field.
+   */
+  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+    // Convert the commanded speeds into the correct units for the drivetrain
+    // double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond * slowSpeed;
+    // double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond * slowSpeed;
+    // double rotDelivered = rot * DriveConstants.kMaxAngularSpeed * slowSpeed;
+    double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
+    double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
+    double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
+
+    var swerveModuleStates =
+        DriveConstants.kDriveKinematics.toSwerveModuleStates(
+            fieldRelative
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                    xSpeedDelivered,
+                    ySpeedDelivered,
+                    rotDelivered,
+                    Rotation2d.fromDegrees(-m_gyro.getAngle()))
+                : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
+    m_frontLeft.setDesiredState(swerveModuleStates[0]);
+    m_frontRight.setDesiredState(swerveModuleStates[1]);
+    m_rearLeft.setDesiredState(swerveModuleStates[2]);
+    m_rearRight.setDesiredState(swerveModuleStates[3]);
+  }
+
+  public void driveChassisSpeeds(ChassisSpeeds speeds) {
+    // System.out.println(speeds.vxMetersPerSecond + " " + speeds.vyMetersPerSecond
+    // + " " + speeds.omegaRadiansPerSecond);
+    var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
+    m_frontLeft.setDesiredState(swerveModuleStates[0]);
+    m_frontRight.setDesiredState(swerveModuleStates[1]);
+    m_rearLeft.setDesiredState(swerveModuleStates[2]);
+    m_rearRight.setDesiredState(swerveModuleStates[3]);
+  }
+
+  /** Sets the wheels into an X formation to prevent movement. */
+  public void setX() {
+    m_frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+    m_frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
+    m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
+    m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+  }
+
+  /**
+   * Sets the swerve ModuleStates.
+   *
+   * @param desiredStates The desired SwerveModule states.
+   */
+  public void setModuleStates(SwerveModuleState[] desiredStates) {
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        desiredStates, DriveConstants.kMaxSpeedMetersPerSecond);
+    m_frontLeft.setDesiredState(desiredStates[0]);
+    m_frontRight.setDesiredState(desiredStates[1]);
+    m_rearLeft.setDesiredState(desiredStates[2]);
+    m_rearRight.setDesiredState(desiredStates[3]);
+  }
+
+  public SwerveModuleState[] getModuleStates() {
+    SwerveModuleState[] states =
+        new SwerveModuleState[] {
+          m_frontLeft.getState(),
+          m_frontRight.getState(),
+          m_rearLeft.getState(),
+          m_rearRight.getState()
+        };
+    return states;
+  }
+
+  public SwerveModulePosition[] getModulePositions() {
+    SwerveModulePosition[] positions =
+        new SwerveModulePosition[] {
+          m_frontLeft.getPosition(),
+          m_frontRight.getPosition(),
+          m_rearLeft.getPosition(),
+          m_rearRight.getPosition()
+        };
+    return positions;
+  }
+
+  /** Resets the drive encoders to currently read a position of 0. */
+  public void resetEncoders() {
+    m_frontLeft.resetEncoders();
+    m_rearLeft.resetEncoders();
+    m_frontRight.resetEncoders();
+    m_rearRight.resetEncoders();
+  }
+
+  /** Zeroes the heading of the robot. */
+  public void zeroHeading() {
+    m_gyro.reset();
+  }
+
+  /**
+   * Returns the heading of the robot.
+   *
+   * @return the robot's heading in degrees, from -180 to 180
+   */
+  public double getHeading() {
+    // return Rotation2d.fromDegrees(m_gyro.getAngle(IMUAxis.kZ)).getDegrees();
+    return (m_gyro.getYaw() * (DriveConstants.kGyroReversed ? -1.0 : 1.0));
+  }
+
+  /**
+   * Returns the turn rate of the robot.
+   *
+   * @return The turn rate of the robot, in degrees per second
+   */
+  public double getTurnRate() {
+    return m_gyro.getRate() * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
+  }
+
+  public Rotation2d newHeading() {
+    return m_gyro.getRotation2d();
+    // return Rotation2d.fromDegrees(-m_gyro.getAngle());
+  }
+
+  public void setDriveCoast() {
+    m_frontLeft.setDriveCoast();
+    m_frontRight.setDriveCoast();
+    m_rearLeft.setDriveCoast();
+    m_rearRight.setDriveCoast();
+  }
 
   private void runDriveCharacterization(double output) {
-    // No-op in IO abstraction; handled by IO implementations if needed
+    // Apply the same voltage to every drive motor so SysId can observe the response.
+    m_frontLeft.runDriveCharacterization(output);
+    m_frontRight.runDriveCharacterization(output);
+    m_rearLeft.runDriveCharacterization(output);
+    m_rearRight.runDriveCharacterization(output);
   }
 
   private void runTurnCharacterization(double output) {
-    // No-op in IO abstraction; handled by IO implementations if needed
+    // Apply the same voltage to every turning motor for SysId logging.
+    m_frontLeft.runTurnCharacterization(output);
+    m_frontRight.runTurnCharacterization(output);
+    m_rearLeft.runTurnCharacterization(output);
+    m_rearRight.runTurnCharacterization(output);
   }
 }

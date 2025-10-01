@@ -1,15 +1,23 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// Copyright (c) 2025 FRC 2290
+// http://https://github.com/frc2290
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
 package frc.robot.subsystems;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.sim.SparkAbsoluteEncoderSim;
-import com.revrobotics.sim.SparkFlexSim;
-import com.revrobotics.sim.SparkMaxSim;
-import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -21,11 +29,11 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Configs;
 import frc.robot.Constants.ModuleConstants;
 import frc.utils.FLYTLib.FLYTDashboard.FlytLogger;
 
+/** Wrapper around a single REV MAXSwerve module that handles configuration and state reporting. */
 public class MAXSwerveModule {
   private final SparkFlex m_drivingSpark;
   private final SparkMax m_turningSpark;
@@ -39,13 +47,8 @@ public class MAXSwerveModule {
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
+  /** Logger used to inspect per-module telemetry during tuning sessions. */
   private FlytLogger test = new FlytLogger("Swerve");
-
-  // Simulation members
-  private SparkFlexSim driveSim;
-  private SparkMaxSim turnSim;
-  private SparkRelativeEncoderSim driveEncoderSim;
-  private SparkAbsoluteEncoderSim turnEncoderSim;
 
   /**
    * Constructs a MAXSwerveModule and configures the driving and turning motor, encoder, and PID
@@ -78,46 +81,18 @@ public class MAXSwerveModule {
     m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
     m_drivingEncoder.setPosition(0);
 
-    if (RobotBase.isSimulation()) {
-      driveSim = new SparkFlexSim(m_drivingSpark, ModuleConstants.kDriveMotor);
-      turnSim = new SparkMaxSim(m_turningSpark, ModuleConstants.kSteerMotor);
-      driveEncoderSim = driveSim.getRelativeEncoderSim();
-      turnEncoderSim = turnSim.getAbsoluteEncoderSim();
-    }
-
     test.addDoublePublisher(
-        "Drive Velocity " + drivingCANId, false, () -> m_drivingEncoder.getVelocity());
-    test.addDoublePublisher(
-        "Turn Position " + turningCANId, false, () -> m_turningEncoder.getPosition());
-    test.addDoublePublisher(
-        "Drive Command " + m_drivingSpark.getDeviceId(),
+        "Drive Velocity Error " + drivingCANId,
         false,
-        () -> getState().speedMetersPerSecond);
-    test.addStringPublisher(
-        "Turn Command " + m_turningSpark.getDeviceId(), false, () -> getState().angle.toString());
-  }
-
-  /**
-   * Test-oriented constructor that allows hardware dependencies to be supplied externally for unit
-   * testing.
-   */
-  public MAXSwerveModule(
-      SparkFlex drivingSpark,
-      SparkMax turningSpark,
-      RelativeEncoder drivingEncoder,
-      AbsoluteEncoder turningEncoder,
-      SparkClosedLoopController drivingClosedLoopController,
-      SparkClosedLoopController turningClosedLoopController,
-      double chassisAngularOffset) {
-    m_drivingSpark = drivingSpark;
-    m_turningSpark = turningSpark;
-    m_drivingEncoder = drivingEncoder;
-    m_turningEncoder = turningEncoder;
-    m_drivingClosedLoopController = drivingClosedLoopController;
-    m_turningClosedLoopController = turningClosedLoopController;
-    m_chassisAngularOffset = chassisAngularOffset;
-    m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
-    m_drivingEncoder.setPosition(0);
+        () -> m_desiredState.speedMetersPerSecond - m_drivingEncoder.getVelocity());
+    test.addDoublePublisher(
+        "Steer Angle Error " + turningCANId,
+        false,
+        () ->
+            m_desiredState
+                .angle
+                .minus(new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset))
+                .getRadians());
   }
 
   /**
@@ -167,7 +142,7 @@ public class MAXSwerveModule {
     m_turningClosedLoopController.setReference(
         correctedDesiredState.angle.getRadians(), ControlType.kPosition);
 
-    m_desiredState = correctedDesiredState;
+    m_desiredState = desiredState;
 
     test.update(true);
   }
@@ -175,25 +150,6 @@ public class MAXSwerveModule {
   /** Zeroes all the SwerveModule encoders. */
   public void resetEncoders() {
     m_drivingEncoder.setPosition(0);
-  }
-
-  /**
-   * Returns the current draw of both drive and turning motors in this module.
-   *
-   * @return Sum of drive and turning motor currents.
-   */
-  public double getCurrentDraw() {
-    return Math.abs(m_drivingSpark.getOutputCurrent())
-        + Math.abs(m_turningSpark.getOutputCurrent());
-  }
-
-  /**
-   * Returns the drive motor applied output as a fraction of the supply voltage.
-   *
-   * @return Applied output in the range [-1, 1].
-   */
-  public double getDriveAppliedOutput() {
-    return m_drivingSpark.getAppliedOutput();
   }
 
   public void runDriveCharacterization(double output) {
@@ -212,30 +168,5 @@ public class MAXSwerveModule {
         Configs.MAXSwerveModule.drivingConfig.idleMode(IdleMode.kCoast),
         ResetMode.kNoResetSafeParameters,
         PersistMode.kNoPersistParameters);
-  }
-
-  /** Returns the internal SparkFlexSim for drive motor, if available. */
-  public SparkFlexSim getDriveSim() {
-    return driveSim;
-  }
-
-  /** Returns the internal SparkMaxSim for steer motor, if available. */
-  public SparkMaxSim getTurnSim() {
-    return turnSim;
-  }
-
-  /** Returns the closed-loop controller for the driving motor. */
-  public SparkClosedLoopController getDrivingController() {
-    return m_drivingClosedLoopController;
-  }
-
-  /** Returns the closed-loop controller for the turning motor. */
-  public SparkClosedLoopController getTurningController() {
-    return m_turningClosedLoopController;
-  }
-
-  /** Returns the most recently commanded state for this module. */
-  public SwerveModuleState getDesiredState() {
-    return m_desiredState;
   }
 }

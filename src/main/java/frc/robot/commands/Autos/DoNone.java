@@ -14,25 +14,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
-package frc.utils.FLYTLib;
+package frc.robot.commands.Autos;
 
-// servo class, to control simple servos that are conencted directly to roborio
-/** Placeholder servo wrapper kept for backward compatibility with older utilities. */
-public class Servo {
-  Servo servo;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.DriveSubsystem;
 
-  // constructor, takes in the id of the servo (pin number? CHECK!)
-  Servo(int id) {
-    servo = new Servo(1);
+/** One piece autonomous that drives to the right branch and scores a single coral. */
+public class DoNone extends Command {
+
+  DriveSubsystem drive;
+
+  public DoNone(DriveSubsystem m_drive) {
+    drive = m_drive;
   }
 
-  // sets the absalute angle
-  public void setAngle(double position) {
-    servo.setAngle(75);
+  @Override
+  public void initialize() {
+    drive.drive(0, 0, 0, false);
   }
 
-  // sets the position of the servo 0 to 1
-  public void set(double position) {
-    servo.set(.5);
+  @Override
+  public boolean isFinished() {
+    return false;
   }
 }

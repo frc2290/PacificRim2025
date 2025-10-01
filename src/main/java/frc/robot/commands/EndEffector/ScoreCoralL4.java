@@ -14,25 +14,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
-package frc.utils.FLYTLib;
+package frc.robot.commands.EndEffector;
 
-// servo class, to control simple servos that are conencted directly to roborio
-/** Placeholder servo wrapper kept for backward compatibility with older utilities. */
-public class Servo {
-  Servo servo;
+import frc.robot.subsystems.ManipulatorStateMachine;
+import frc.robot.subsystems.ManipulatorSubsystem;
 
-  // constructor, takes in the id of the servo (pin number? CHECK!)
-  Servo(int id) {
-    servo = new Servo(1);
-  }
+/** Runs the manipulator roller in reverse to score a coral into the reef. */
+public class ScoreCoralL4 extends ScoreCoral {
 
-  // sets the absalute angle
-  public void setAngle(double position) {
-    servo.setAngle(75);
-  }
+  private static final double kL4EjectPower = -1.0;
 
-  // sets the position of the servo 0 to 1
-  public void set(double position) {
-    servo.set(.5);
+  /**
+   * Creates a command that waits for the manipulator state machine to report ready, then runs the
+   * roller to deposit the coral at L4.
+   */
+  public ScoreCoralL4(
+      ManipulatorStateMachine manipulatorStateMachine, ManipulatorSubsystem manipulatorSubsystem) {
+    super(manipulatorStateMachine, manipulatorSubsystem, kL4EjectPower);
   }
 }
