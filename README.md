@@ -11,3 +11,5 @@ Drive state machines take care of running different driving modes, as well as tu
 The state coordinator allows communication between states, which allows controlled sync between systems, minimizing the chance of unknown states as well, and it handles errors and control inputs.
 
 Lastly, one of the most useful features that allowed for the simplification of driver input management was the control profiles manager, which depended on the robot's scoring mode. This feature changed key bindings on the controller to produce different actions, including manual mode override.
+
+Another new useful implementation is command factory where we stopped making position command file for each position by making this facotory where we input position in the graphcommand thus when command is called it is automaticaly constructed with right position.
